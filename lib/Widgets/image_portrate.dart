@@ -1,0 +1,40 @@
+import 'package:flutter/material.dart';
+import 'dart:io';
+
+import '../../util/constants.dart';
+
+enum ImageType { ASSET_IMAGE, FILE_IMAGE, NONE }
+
+class ImagePortrait extends StatelessWidget {
+  final double height;
+  final String imagePath;
+  final ImageType imageType;
+
+  ImagePortrait(
+      {required this.imageType, required this.imagePath, this.height = 250.0});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: this.height * 0.65,
+      height: MediaQuery.of(context).size.height / 3,
+      decoration: BoxDecoration(
+          border: Border.all(width: 2, color: Theme.of(context).colorScheme.secondary),
+          borderRadius: BorderRadius.all(Radius.circular(50.0))),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(50.0),
+        child: getImage(),
+      ),
+    );
+  }
+
+  Widget? getImage() {
+    if (imageType == ImageType.NONE || imagePath == null) return null;
+    if (imageType == ImageType.FILE_IMAGE) {
+      return Image.file(File(imagePath), fit: BoxFit.fill);
+    } else if (imageType == ImageType.ASSET_IMAGE) {
+      return Image.asset(imagePath, fit: BoxFit.fitHeight);
+    } else
+      return null;
+  }
+}

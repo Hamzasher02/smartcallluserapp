@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1073445060111-2t2rp01qmh0eaqssk44kg7d77s4tmm03.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1073445060111-2t2rp01qmh0eaqssk44kg7d77s4tmm03</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>1073445060111-3snn2qkj7l7l2lk1tbiovdfsencfcm6l.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDKgENNkuNuXRD0irhz-KknOQfm6M25p98</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1073445060111</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.hk.smartCallApp</string>
+	<key>PROJECT_ID</key>
+	<string>smart-call-app</string>
+	<key>STORAGE_BUCKET</key>
+	<string>smart-call-app.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1073445060111:ios:c6a1bc1ab85e21546c2d7a</string>
+</dict>
+</plist>
