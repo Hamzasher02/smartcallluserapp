@@ -75,10 +75,7 @@ void main() async {
   });
 }
 
-
-
-
-void requestPermissions() async{
+void requestPermissions() async {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
 
   NotificationSettings settings = await messaging.requestPermission(
@@ -93,13 +90,12 @@ void requestPermissions() async{
 }
 
 class MyApp extends StatefulWidget {
-  final GlobalKey<NavigatorState> navigatorKey;
+  final GlobalKey<NavigatorState>? navigatorKey;
 
   const MyApp({
-    required this.navigatorKey,
+    this.navigatorKey,
     Key? key,
   }) : super(key: key);
-
 
   @override
   State createState() => MyAppState();
@@ -109,36 +105,37 @@ class MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-        providers: [ChangeNotifierProvider(create: (context) => UserProvider())],
-        child:
-        MaterialApp(
-          navigatorKey: widget.navigatorKey,
-            title: 'Flutter Demo',
-            debugShowCheckedModeBanner: false,
-            theme: lightTheme,
-            darkTheme: darkTheme,
-            supportedLocales: const [
-              Locale('en'),
-              Locale('el'),
-              Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
-              Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
-            ],
-            localizationsDelegates: const [
-              CountryLocalizations.delegate,
-            ],
-            home:  AnimatedSplashScreen(
-              // backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                splash: const CustomImage(
-                  path: Kimages.mainLogo,
-
+      providers: [ChangeNotifierProvider(create: (context) => UserProvider())],
+      child: MaterialApp(
+        navigatorKey: widget.navigatorKey,
+        title: 'Flutter Demo',
+        debugShowCheckedModeBanner: false,
+        theme: lightTheme,
+        darkTheme: darkTheme,
+        supportedLocales: const [
+          Locale('en'),
+          Locale('el'),
+          Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+          Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+        ],
+        localizationsDelegates: const [
+          CountryLocalizations.delegate,
+        ],
+        home: AnimatedSplashScreen(
+          // backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          splash: const CustomImage(
+            path: Kimages.mainLogo,
+          ),
+          //onLoaded: (composition) {}
+          splashIconSize: 200,
+          duration: 2500,
+          nextScreen: isLoggedIn == null || isLoggedIn == false
+              ? const AuthenticationScreen()
+              : const MainPage(
+                  tab: 0,
                 ),
-                //onLoaded: (composition) {}
-                splashIconSize: 200,
-                duration: 2500,
-                nextScreen:  isLoggedIn == null || isLoggedIn == false
-                ?const AuthenticationScreen()
-                    :const MainPage(tab: 0,)
-            )
-        ));
+        ),
+      ),
+    );
   }
 }

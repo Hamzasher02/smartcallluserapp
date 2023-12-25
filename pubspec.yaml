@@ -100,6 +100,8 @@ dependencies:
   video_player: ^2.8.1
   # dialog
   quickalert: ^1.0.1
+  # loading
+  skeletons: ^0.0.3
 
 
 dev_dependencies:

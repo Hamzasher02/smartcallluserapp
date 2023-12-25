@@ -9,10 +9,7 @@ class ChatsList extends StatefulWidget {
   final Function(ChatWithUser) onChatWithUserTap;
   final String myUserId;
 
-  ChatsList(
-      {required this.chatWithUserList,
-      required this.onChatWithUserTap,
-      required this.myUserId});
+  ChatsList({required this.chatWithUserList, required this.onChatWithUserTap, required this.myUserId});
 
   @override
   _ChatsListState createState() => _ChatsListState();
@@ -41,9 +38,7 @@ class _ChatsListState extends State<ChatsList> {
   }
 
   bool changeMessageSeen(int index) {
-    return widget.chatWithUserList[index].chat.lastMessage?.seen == false &&
-        widget.chatWithUserList[index].chat.lastMessage?.senderId !=
-            widget.myUserId;
+    return widget.chatWithUserList[index].chat.lastMessage?.seen == false && widget.chatWithUserList[index].chat.lastMessage?.senderId != widget.myUserId;
   }
 
   String myid = '';
@@ -58,30 +53,41 @@ class _ChatsListState extends State<ChatsList> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      separatorBuilder: (BuildContext context, int index) =>
-          Divider(color: Colors.grey),
-      itemCount: widget.chatWithUserList.length,
-      itemBuilder: (BuildContext _, int index) => ChatListTile(
-        chatWithUser: widget.chatWithUserList[index],
-        onTap: () {
-          //if(myverificationstatus.compareTo('Verified')==0) {
-          if (widget.chatWithUserList[index].chat.lastMessage != null &&
-              changeMessageSeen(index)) {
-            widget.chatWithUserList[index].chat.lastMessage?.seen = true;
-            chatUpdated();
-          }
-          widget.onChatWithUserTap(widget.chatWithUserList[index]);
-          // }
-          // else
-          //   {
-          //     //showPaymentWarningDialog(context);
-          //     showSwpipDialog(context);
-          //   }
-        },
-        onLongPress: () {},
-        myUserId: widget.myUserId,
+    return RefreshIndicator(
+      triggerMode: RefreshIndicatorTriggerMode.anywhere,
+      color: Theme.of(context).colorScheme.onPrimary,
+      onRefresh: _refresh,
+      child: ListView.separated(
+        separatorBuilder: (BuildContext context, int index) => const SizedBox(
+          height: 10,
+        ),
+        itemCount: widget.chatWithUserList.length,
+        itemBuilder: (BuildContext _, int index) => ChatListTile(
+          chatWithUser: widget.chatWithUserList[index],
+          onTap: () {
+            //if(myverificationstatus.compareTo('Verified')==0) {
+            if (widget.chatWithUserList[index].chat.lastMessage != null && changeMessageSeen(index)) {
+              widget.chatWithUserList[index].chat.lastMessage?.seen = true;
+              chatUpdated();
+            }
+            widget.onChatWithUserTap(widget.chatWithUserList[index]);
+            // }
+            // else
+            //   {
+            //     //showPaymentWarningDialog(context);
+            //     showSwpipDialog(context);
+            //   }
+          },
+          onLongPress: () {},
+          myUserId: widget.myUserId,
+        ),
       ),
     );
+  }
+
+  Future _refresh() async {
+    setState(() {
+
+    });
   }
 }

@@ -11,6 +11,7 @@ import '../db/provider/user_provider.dart';
 
 class ChatScreen extends StatefulWidget {
   final AppUser user;
+
   const ChatScreen({required this.user});
 
   @override
@@ -32,12 +33,17 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void chatWithUserPressed(ChatWithUser chatWithUser) async {
-    Navigator.of(context).push(MaterialPageRoute(
+    Navigator.of(context).push(
+      MaterialPageRoute(
         builder: (context) => MessageScreen(
           chatId: compareAndCombineIds(myid, chatWithUser.user.id),
           myUserId: myid,
-          otherUserId: chatWithUser.user.id, user: widget.user, otherUserName: chatWithUser.user.name,
-        )));
+          otherUserId: chatWithUser.user.id,
+          user: widget.user,
+          otherUserName: chatWithUser.user.name,
+        ),
+      ),
+    );
     // Navigator.pushNamed(context, ChatScreen.id, arguments: {
     //   "chat_id": chatWithUser.chat.id,
     //   "user_id": user.id,
@@ -56,81 +62,83 @@ class _ChatScreenState extends State<ChatScreen> {
     return myid;
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<String?>(
-        future: userId(),
-        builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting)
-            return Center(
-                child: Container(
-                    height: 50,
-                    width: 50,
-                    child: CircularProgressIndicator(
-                      color: Theme.of(context).primaryColor,
-                      strokeWidth: 2,
-                    )));
-
-          if (snapshot.hasError)
-            return Center(child: Text(snapshot.hasError.toString()));
-
-          final myId = snapshot.data;
-          // yCNNxSOczhe2t8FNQRTQjszOJSb2
-          if (myId == null) return Center(child: Text('MyId is null'));
-
-          return Scaffold(
-            body:
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-              child: Consumer<UserProvider>(
-                builder: (context, userProvider, child) {
-                  return FutureBuilder<List<ChatWithUser>>(
-                      future: userProvider.getChatsWithUser(myid),
-                      builder: (context, chatWithUsersSnapshot) {
-                        print(chatWithUsersSnapshot.error);
-                        if (chatWithUsersSnapshot.data == null &&
-                            chatWithUsersSnapshot.connectionState !=
-                                ConnectionState.done) {
-                          print(chatWithUsersSnapshot.data);
-                          print(chatWithUsersSnapshot.error.toString());
-                          return Center(
-                              child: Container(
-                                  height: 50,
-                                  width: 50,
-                                  child: CircularProgressIndicator(
-                                    color: Theme.of(context).primaryColor,
-                                    strokeWidth: 2,
-                                  )));
-                        } else {
-                          return chatWithUsersSnapshot.data == null
-                              ? Center(
-                              child: Column(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.warning_amber_outlined),
-                                    SizedBox(
-                                      height: 10,
-                                    ),
-                                    // Lottie.asset('assets/lottie/no data found.json',width: 200),
-                                    Text(
-                                      'No Chats Found',
-                                      style: TextStyle(fontSize: 20),
-                                    ),
-                                  ]))
-                              : ChatsList(
-                            chatWithUserList: chatWithUsersSnapshot.data!,
-                            onChatWithUserTap: chatWithUserPressed,
-                            myUserId: myId,
-                          );
-                        }
-                      });
-                },
+      future: userId(),
+      builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: SizedBox(
+              height: 50,
+              width: 50,
+              child: CircularProgressIndicator(
+                color: Theme.of(context).primaryColor,
+                strokeWidth: 2,
               ),
             ),
           );
-        });
+        }
+
+        if (snapshot.hasError) return Center(child: Text(snapshot.hasError.toString()));
+
+        final myId = snapshot.data;
+        // yCNNxSOczhe2t8FNQRTQjszOJSb2
+        if (myId == null) return const Center(child: Text('MyId is null'));
+
+        return Scaffold(
+          body: Container(
+            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+            child: Consumer<UserProvider>(
+              builder: (context, userProvider, child) {
+                return FutureBuilder<List<ChatWithUser>>(
+                  future: userProvider.getChatsWithUser(myid),
+                  builder: (context, chatWithUsersSnapshot) {
+                    print(chatWithUsersSnapshot.error);
+                    if (chatWithUsersSnapshot.data == null && chatWithUsersSnapshot.connectionState != ConnectionState.done) {
+                      print(chatWithUsersSnapshot.data);
+                      print(chatWithUsersSnapshot.error.toString());
+                      return Center(
+                        child: SizedBox(
+                          height: 50,
+                          width: 50,
+                          child: CircularProgressIndicator(
+                            color: Theme.of(context).primaryColor,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      );
+                    } else {
+                      return chatWithUsersSnapshot.data == null
+                          ? const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.warning_amber_outlined),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  // Lottie.asset('assets/lottie/no data found.json',width: 200),
+                                  Text(
+                                    'No Chats Found',
+                                    style: TextStyle(fontSize: 20),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ChatsList(
+                              chatWithUserList: chatWithUsersSnapshot.data!,
+                              onChatWithUserTap: chatWithUserPressed,
+                              myUserId: myId,
+                            );
+                    }
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
   }
 }

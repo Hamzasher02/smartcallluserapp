@@ -57,15 +57,94 @@
 //   [const Color(0xff161632), const Color(0xff3D364E)],
 // ];
 import 'package:flutter/cupertino.dart';
-
+import 'package:smart_call_app/db/Models/policy_model.dart';
 
 const kDuration = Duration(milliseconds: 300);
 
-
-double getHeight(BuildContext context){
+double getHeight(BuildContext context) {
   return MediaQuery.of(context).size.height;
 }
 
-double getWidth(BuildContext context){
+double getWidth(BuildContext context) {
   return MediaQuery.of(context).size.width;
 }
+
+List<PolicyClass> policyList = [
+  PolicyClass(
+    title: "User Conduct:",
+    answer: '''
+  • Users must be respectful and considerate towards others.
+  • Harassment, hate speech, or any form of abusive behavior will not be tolerated.
+  • Users are responsible for the content they share, including photos and messages.
+  ''',
+  ),
+  PolicyClass(
+    title: "Age and Eligibility:",
+    answer: '''
+  • Users must be at least 18 years old to use the app.
+  • Any misrepresentation of age or identity is strictly prohibited.
+  ''',
+  ),
+  PolicyClass(
+    title: "Profile and Content Guidelines:",
+    answer: '''
+  • Users must provide accurate information in their profiles.
+  • Prohibited content includes nudity, explicit or offensive material, and copyrighted content without proper authorization.
+  • The app reserves the right to review and remove any content that violates these guidelines.
+  ''',
+  ),
+  PolicyClass(
+    title: "Safety and Privacy:",
+    answer: '''
+  • Users are encouraged to exercise caution when sharing personal information.
+  • The app employs security measures, but users should also be vigilant regarding their own safety.
+  • Report any suspicious or inappropriate behavior to our support team.
+  ''',
+  ),
+  PolicyClass(
+    title: "Reporting and Blocking:",
+    answer: '''
+  • Users can report any violations of the app's policies.
+  • The app provides a blocking feature to allow users to control their interactions.
+  ''',
+  ),
+  PolicyClass(
+    title: "Moderation and Enforcement:",
+    answer: '''
+  • The app reserves the right to monitor and moderate user activity to ensure compliance with policies.
+  • Violations may result in warnings, suspensions, or permanent account removal, depending on the severity of the offense.
+  ''',
+  ),
+  PolicyClass(
+    title: "Consent and Respect:",
+    answer: '''
+  • Users must obtain explicit consent before sharing personal information or engaging in private conversations.
+  • Respect boundaries and communicate openly with others.
+  ''',
+  ),
+  PolicyClass(
+    title: "Meeting in Person:",
+    answer: '''
+  • Users are responsible for their own safety when arranging to meet in person.
+  • Choose public locations for initial meetings and inform a friend or family member about the meeting details.
+  ''',
+  ),
+  PolicyClass(
+    title: "Terms of Service:",
+    answer: '''
+  • Users must adhere to the terms of service outlined by the app.
+  ''',
+  ),
+  PolicyClass(
+    title: "Continuous Improvement:",
+    answer: '''
+  • The app is committed to continuous improvement and welcomes user feedback to enhance safety and user experience.
+  ''',
+  ),
+];
+
+String disclaimerText = """
+SMART CALL APP is not responsible for the actions of its users and cannot guarantee the authenticity of user-provided information.\n
+By using SMART CALL APP, users agree to abide by these policies. The app reserves the right to update and modify these policies as needed.\n
+This is a general template, and you may need to consult with legal professionals to ensure that your policy complies with relevant laws and regulations.\n
+""";

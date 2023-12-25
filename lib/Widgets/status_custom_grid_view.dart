@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:skeletons/skeletons.dart';
 import 'package:video_player/video_player.dart';
 
 import '../db/remote/firebase_database_source.dart';
@@ -7,20 +9,23 @@ import 'country_to_flag.dart';
 class StatusCustomGridView extends StatefulWidget {
   final String img;
   final String type;
+
   const StatusCustomGridView({
-    Key? key, required this.img, required this.type,
+    Key? key,
+    required this.img,
+    required this.type,
   }) : super(key: key);
+
   @override
   State<StatusCustomGridView> createState() => _StatusCustomGridViewState();
 }
 
 class _StatusCustomGridViewState extends State<StatusCustomGridView> {
-
   late VideoPlayerController _controller;
   String type = 'img';
+
   // VideoPlayerController _controller;
   late Future<void> _initializeVideoPlayerFuture;
-
 
   @override
   void initState() {
@@ -32,11 +37,11 @@ class _StatusCustomGridViewState extends State<StatusCustomGridView> {
     if (widget.type == 'vid') {
       //VideoPlayerController _controller = VideoPlayerController.network(widget.img);
       _controller = VideoPlayerController.networkUrl(Uri.parse(widget.img));
-          // ..initialize().then((_) {
-        //   // Ensure the first frame is shown after the video is initialized,
-        //   //even before the play button has been pressed.
-        //   setState(() {});
-        // });
+      // ..initialize().then((_) {
+      //   // Ensure the first frame is shown after the video is initialized,
+      //   //even before the play button has been pressed.
+      //   setState(() {});
+      // });
       _initializeVideoPlayerFuture = _controller.initialize();
     }
   }
@@ -50,41 +55,50 @@ class _StatusCustomGridViewState extends State<StatusCustomGridView> {
   @override
   Widget build(BuildContext context) {
     return type == widget.type
-      ?
-      Center(
-        child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(0),
-                    image: DecorationImage(
-                        image: NetworkImage(widget.img),
-                        fit: BoxFit.fill),
-                  ),
-        ))
-    :FutureBuilder(
-      future: _initializeVideoPlayerFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          // If the VideoPlayerController has finished initialization, use
-          // the data it provides to limit the aspect ratio of the video.
-          return AspectRatio(
-            aspectRatio: _controller.value.aspectRatio,
-            // Use the VideoPlayer widget to display the video.
-            child: VideoPlayer(_controller),
+        ? Center(
+            child: ClipRRect(
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
+              child: CachedNetworkImage(
+                imageUrl: widget.img,
+                height: MediaQuery.of(context).size.height,
+                width: MediaQuery.of(context).size.width,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => const Skeleton(
+                    isLoading: true,
+                    skeleton: SkeletonAvatar(
+                      style: SkeletonAvatarStyle(
+                        shape: BoxShape.rectangle,
+                      ),
+                    ),
+                    child: Text("")),
+              ),
+            ),
+          )
+        : ClipRRect(
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+            child: FutureBuilder(
+              future: _initializeVideoPlayerFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  // If the VideoPlayerController has finished initialization, use
+                  // the data it provides to limit the aspect ratio of the video.
+                  return AspectRatio(
+                    aspectRatio: _controller.value.aspectRatio,
+                    // Use the VideoPlayer widget to display the video.
+                    child: VideoPlayer(_controller),
+                  );
+                } else {
+                  // If the VideoPlayerController is still initializing, show a
+                  // loading spinner.
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xff607d8b),
+                    ),
+                  );
+                }
+              },
+            ),
           );
-        } else {
-          // If the VideoPlayerController is still initializing, show a
-          // loading spinner.
-          return const Center(
-            child: CircularProgressIndicator(color: Color(0xff607d8b),),
-          );
-        }
-      },
-    )
-    ;
-
-
-
-
 
     // return Center(
     //     child: Container(
@@ -123,6 +137,5 @@ class _StatusCustomGridViewState extends State<StatusCustomGridView> {
     //   return  showMaterialModalBottomSheet(
     //       context: context,
     //       builder: (context) =>
-
-    }
+  }
 }

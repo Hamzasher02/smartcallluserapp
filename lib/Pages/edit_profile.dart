@@ -22,7 +22,6 @@ class EditProfile extends StatefulWidget {
 }
 
 class _EditProfileState extends State<EditProfile> {
-
   String exam = '1';
   String country = 'Select Country';
   String gender = 'Male';
@@ -103,120 +102,106 @@ class _EditProfileState extends State<EditProfile> {
         pillColor: Theme.of(context).primaryColor,
         backgroundColor: Theme.of(context).colorScheme.background,
         child: Expanded(child: SingleChildScrollView(
-          child: StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
-                return SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 600,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Container(
-                                  height: 40,
-                                  width: double.infinity,
-                                  color: Theme.of(context).secondaryHeaderColor,
-                                  child: const Padding(
-                                    padding: EdgeInsets.fromLTRB(30, 10, 10, 10),
-                                    child: Text(
-                                      "Add Photo",
-                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                  )),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              const Text("Profile Picture"),
-                              Expanded(
-                                child: Padding(
-                                  padding:
-                                  const EdgeInsets.fromLTRB(30, 10, 30, 10),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
+          child: StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
+            return SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 600,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                              height: 40,
+                              width: double.infinity,
+                              color: Theme.of(context).secondaryHeaderColor,
+                              child: const Padding(
+                                padding: EdgeInsets.fromLTRB(30, 10, 10, 10),
+                                child: Text(
+                                  "Add Photo",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              )),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          const Text("Profile Picture"),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Stack(
                                     children: [
-                                      const SizedBox(
-                                        height: 10,
-                                      ),
-                                      Stack(
-                                        children: [
-                                          SizedBox(
-                                            height: 400,
-                                            width: 200,
-                                            child: _imagePath == ""
-                                                ? ImagePortrait(
-                                              imageType: ImageType.NONE,
-                                              imagePath: '',
-                                            )
-                                                : ImagePortrait(
-                                              imagePath: _imagePath,
-                                              imageType: ImageType.FILE_IMAGE,
-                                            ),
-                                          ),
-                                          Positioned.fill(
-                                            left: _imagePath == "" ? 0 : 150,
-                                            top: _imagePath == "" ? 0 : 350,
-                                            child: Align(
-                                              alignment: Alignment.center,
-                                              child: _imagePath == ""
-                                                  ? RoundedIconButton(
-                                                onPressed:
-                                                pickImageFromGallery,
-                                                iconData: Icons.add,
-                                                iconSize: 20,
-                                                buttonColor: Theme.of(context)
-                                                    .secondaryHeaderColor,
-                                              )
-                                                  : RoundedIconButton(
-                                                  onPressed:
-                                                  pickImageFromGallery,
-                                                  iconData:
-                                                  Icons.autorenew_outlined,
-                                                  iconSize: 20,
-                                                  buttonColor: Theme.of(context)
-                                                      .secondaryHeaderColor),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(
-                                        height: 20,
-                                      ),
                                       SizedBox(
-                                        width: double.maxFinite,
-                                        height: 40,
-                                        child: ElevatedButton(
-                                            style: ButtonStyle(
-                                              shape: MaterialStateProperty.all(
-                                                RoundedRectangleBorder(
-                                                  // Change your radius here
-                                                  borderRadius:
-                                                  BorderRadius.circular(28),
-                                                ),
+                                        height: 400,
+                                        width: 200,
+                                        child: _imagePath == ""
+                                            ? ImagePortrait(
+                                                imageType: ImageType.NONE,
+                                                imagePath: '',
+                                              )
+                                            : ImagePortrait(
+                                                imagePath: _imagePath,
+                                                imageType: ImageType.FILE_IMAGE,
                                               ),
-                                              backgroundColor:
-                                              MaterialStateProperty.all<Color>(
-                                                  Theme.of(context).colorScheme.onPrimary),
+                                      ),
+                                      Positioned.fill(
+                                        left: _imagePath == "" ? 0 : 150,
+                                        top: _imagePath == "" ? 0 : 350,
+                                        child: Align(
+                                          alignment: Alignment.center,
+                                          child: _imagePath == ""
+                                              ? RoundedIconButton(
+                                                  onPressed: pickImageFromGallery,
+                                                  iconData: Icons.add,
+                                                  iconSize: 20,
+                                                  buttonColor: Theme.of(context).secondaryHeaderColor,
+                                                )
+                                              : RoundedIconButton(
+                                                  onPressed: pickImageFromGallery, iconData: Icons.autorenew_outlined, iconSize: 20, buttonColor: Theme.of(context).secondaryHeaderColor),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  SizedBox(
+                                    width: double.maxFinite,
+                                    height: 40,
+                                    child: ElevatedButton(
+                                        style: ButtonStyle(
+                                          shape: MaterialStateProperty.all(
+                                            RoundedRectangleBorder(
+                                              // Change your radius here
+                                              borderRadius: BorderRadius.circular(28),
                                             ),
-                                            child: const Text("Save",
-                                                style: TextStyle(fontSize: 18)),
-                                            onPressed: () => setState(() {
+                                          ),
+                                          backgroundColor: MaterialStateProperty.all<Color>(Theme.of(context).colorScheme.onPrimary),
+                                        ),
+                                        child: const Text("Save", style: TextStyle(fontSize: 18)),
+                                        onPressed: () => setState(() {
                                               // _primaryphoto = 'Selected';
                                               // _primaryphotocheck = true;
                                               update();
                                             })),
-                                      ),
-                                    ],
                                   ),
-                                ),
-                              )
-                            ],
-                          ),
-                        )
-                      ],
-                    ));
-              }),
+                                ],
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    )
+                  ],
+                ));
+          }),
         )));
   }
 
@@ -229,8 +214,20 @@ class _EditProfileState extends State<EditProfile> {
       appBar: AppBar(
         centerTitle: true,
         automaticallyImplyLeading: false,
-        title: Text('Edit Profile',style: TextStyle(fontSize: 28,color: Theme.of(context).colorScheme.primary,fontWeight: FontWeight.bold),),
+        title: Text(
+          'Edit Profile',
+          style: TextStyle(fontSize: 28, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.white,
+          ),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -257,14 +254,18 @@ class _EditProfileState extends State<EditProfile> {
                       backgroundColor: Theme.of(context).colorScheme.secondary,
                       child: _imagePath == ""
                           ? ClipRRect(
-                        borderRadius: BorderRadius.circular(60.0),
-                        child: Image.network(widget.myuser.profilePhotoPath,fit: BoxFit.fill,width: 120,),
-                      )
-                     // Text(_primaryphoto)
+                              borderRadius: BorderRadius.circular(60.0),
+                              child: Image.network(
+                                widget.myuser.profilePhotoPath,
+                                fit: BoxFit.fill,
+                                width: 120,
+                              ),
+                            )
+                          // Text(_primaryphoto)
                           : ImagePortrait(
-                        imagePath: _imagePath,
-                        imageType: ImageType.FILE_IMAGE,
-                      ),
+                              imagePath: _imagePath,
+                              imageType: ImageType.FILE_IMAGE,
+                            ),
 
                       // _imagePath == "" ? Text(_primaryphoto) :
                     ),
@@ -417,8 +418,7 @@ class _EditProfileState extends State<EditProfile> {
                           countryListTheme: CountryListThemeData(
                             flagSize: 25,
                             // backgroundColor: Colors.white,
-                            backgroundColor:
-                            Theme.of(context).secondaryHeaderColor,
+                            backgroundColor: Theme.of(context).secondaryHeaderColor,
                             textStyle: const TextStyle(
                               fontSize: 16,
                             ),
@@ -433,8 +433,7 @@ class _EditProfileState extends State<EditProfile> {
                               prefixIcon: const Icon(Icons.search),
                               border: OutlineInputBorder(
                                 borderSide: BorderSide(
-                                  color:
-                                  const Color(0xFF8C98A8).withOpacity(0.2),
+                                  color: const Color(0xFF8C98A8).withOpacity(0.2),
                                 ),
                               ),
                             ),
@@ -444,14 +443,12 @@ class _EditProfileState extends State<EditProfile> {
                             setState(() {});
                           }
 
-                        // print('Select country: ${country.displayName}'),
-                      );
+                          // print('Select country: ${country.displayName}'),
+                          );
                     },
                     child: Text(
                       country,
-                      style: TextStyle(
-                          fontSize: 18,
-                          color: Theme.of(context).colorScheme.primary),
+                      style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.primary),
                     ),
                   ),
                 ),
@@ -462,8 +459,7 @@ class _EditProfileState extends State<EditProfile> {
                   width: 400,
                   child: DropdownButton<String>(
                     value: gender,
-                    items: <String>['Male', 'Female', 'Other']
-                        .map<DropdownMenuItem<String>>((String gen) {
+                    items: <String>['Male', 'Female', 'Other'].map<DropdownMenuItem<String>>((String gen) {
                       return DropdownMenuItem<String>(
                         value: gen,
                         child: Text(
@@ -485,73 +481,64 @@ class _EditProfileState extends State<EditProfile> {
                 SizedBox(
                   width: 400,
                   height: 50,
-                  child: isLoading ==false? ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                        Theme.of(context).colorScheme.secondary,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          isLoading = true;
-                        });
-                        print(gender);
-                        print(country);
-                        print(exam);
-                        print(_nameController.text);
-                        _userRegistration.name = _nameController.text;
-                        _userRegistration.age = exam;
-                        _userRegistration.country =  country;
-                        _userRegistration.gender = gender;
-                        if(_nameController.text.isEmpty){
-                          setState(() {
-                            isLoading = false;
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    "Please Enter Name",
-                                    style: TextStyle(color: Colors.black), textAlign: TextAlign.center
-                                ),
-                                backgroundColor: Colors.redAccent,
-                                behavior: SnackBarBehavior.floating,
-                                width: 200),
-                          );
-                        }else
-                        if(country=='Select Country'){
-                          setState(() {
-                            isLoading = false;
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    "Please Select Country",
-                                    style: TextStyle(color: Colors.black), textAlign: TextAlign.center
-                                ),
-                                backgroundColor: Colors.redAccent,
-                                behavior: SnackBarBehavior.floating,
-                                width: 200),
-                          );
-
-                        }else{
-                       widget.myuser.country = country;
-                       widget.myuser.name = _nameController.text;
-                       widget.myuser.gender = gender;
-                       widget.myuser.age = exam;
-                       instance.collection('users').doc(widget.myuser.id).update(widget.myuser.toMap());
-                       ScaffoldMessenger.of(context)
-                           .showSnackBar(SnackBar(content: Text('Update Successful')));
-                       Navigator.push(context,
-                           MaterialPageRoute(builder: (context) => const MainPage(tab: 0)));
-                        }
-                      },
-                      child: Text(
-                        'Update',
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Theme.of(context).colorScheme.primary),
-                      )):const Center(
-                    child: CircularProgressIndicator(color: Color(0xff607d8b),),
-                  ),
+                  child: isLoading == false
+                      ? ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.secondary,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            print(gender);
+                            print(country);
+                            print(exam);
+                            print(_nameController.text);
+                            _userRegistration.name = _nameController.text;
+                            _userRegistration.age = exam;
+                            _userRegistration.country = country;
+                            _userRegistration.gender = gender;
+                            if (_nameController.text.isEmpty) {
+                              setState(() {
+                                isLoading = false;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text("Please Enter Name", style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
+                                    backgroundColor: Colors.redAccent,
+                                    behavior: SnackBarBehavior.floating,
+                                    width: 200),
+                              );
+                            } else if (country == 'Select Country') {
+                              setState(() {
+                                isLoading = false;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text("Please Select Country", style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
+                                    backgroundColor: Colors.redAccent,
+                                    behavior: SnackBarBehavior.floating,
+                                    width: 200),
+                              );
+                            } else {
+                              widget.myuser.country = country;
+                              widget.myuser.name = _nameController.text;
+                              widget.myuser.gender = gender;
+                              widget.myuser.age = exam;
+                              instance.collection('users').doc(widget.myuser.id).update(widget.myuser.toMap());
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Update Successful')));
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const MainPage(tab: 0)));
+                            }
+                          },
+                          child: Text(
+                            'Update',
+                            style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.primary),
+                          ))
+                      : const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xff607d8b),
+                          ),
+                        ),
                 ),
               ],
             ),

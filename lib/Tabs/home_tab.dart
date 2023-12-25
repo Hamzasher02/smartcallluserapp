@@ -27,14 +27,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List pages = [ ForYouPage(myuser: widget.myuser, country: country==null?"random":country!.countryCode,), FavouritesPage(myuser: widget.myuser,)];
+    List pages = [
+      ForYouPage(
+        myuser: widget.myuser,
+        country: country == null ? "random" : country!.countryCode,
+      ),
+      FavouritesPage(
+        myuser: widget.myuser,
+      )
+    ];
     // country?.countryCode = "AL";
     return NestedScrollView(
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
             automaticallyImplyLeading: false,
-            pinned: false,
+            pinned: true,
             backgroundColor: Theme.of(context).colorScheme.onPrimary,
             floating: true,
             forceElevated: innerBoxIsScrolled,
@@ -48,37 +56,31 @@ class _HomeScreenState extends State<HomeScreen> {
                   IconButton(
                     icon: Icon(
                       _onlineVisible ? Icons.visibility : Icons.visibility_off,
+                      color: Colors.white,
                     ),
                     onPressed: () {
                       setState(() {
                         _onlineVisible = !_onlineVisible;
                       });
-                      if(_onlineVisible){
+                      if (_onlineVisible) {
                         _databaseSource.updateStatus(widget.myuser.id, "online");
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content: Text(
-                                "Online",
-                                style: TextStyle(color: Colors.black), textAlign: TextAlign.center
-                              ),
+                              content: Text("Online", style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
                               backgroundColor: Colors.greenAccent,
                               behavior: SnackBarBehavior.floating,
                               width: 200),
                         );
-                      }else{
+                      } else {
                         _databaseSource.updateStatus(widget.myuser.id, "offline");
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content: Text(
-                                  "Offline",
-                                  style: TextStyle(color: Colors.black), textAlign: TextAlign.center
-                              ),
+                              content: Text("Offline", style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
                               backgroundColor: Colors.red,
                               behavior: SnackBarBehavior.floating,
                               width: 200),
                         );
                       }
-
                     },
                   ),
                 ],
@@ -102,12 +104,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
   GestureDetector CountryListPicker(BuildContext context) {
     return GestureDetector(
         onTap: () {
           setState(() {
-            country=null;
+            country = null;
           });
           showCountryPicker(
               context: context,
@@ -147,11 +148,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 });
               });
         },
-        child: country == null ? const Icon(Icons.public,color: Colors.white,size: 30,):Text(country!.flagEmoji,
-            style: country == null
-                ? const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)
-                : const TextStyle(
-                    fontSize: 28, fontWeight: FontWeight.normal)));
+        child: country == null
+            ? const Icon(
+                Icons.public,
+                color: Colors.white,
+                size: 30,
+              )
+            : Text(country!.flagEmoji, style: country == null ? const TextStyle(fontSize: 28, fontWeight: FontWeight.bold) : const TextStyle(fontSize: 28, fontWeight: FontWeight.normal)));
   }
 
   Widget _buildTabText() {
@@ -161,18 +164,14 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           InkWell(
             onTap: () {
-              _pageController.animateToPage(0,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.bounceInOut);
+              _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.bounceInOut);
             },
             child: Text(
               'ForYou',
               style: TextStyle(
                   fontSize: 16,
-                  fontWeight:_currentPage == 0 ?  FontWeight.bold : FontWeight.w500,
-                  color: _currentPage == 0
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.secondary),
+                  fontWeight: _currentPage == 0 ? FontWeight.bold : FontWeight.w500,
+                  color: _currentPage == 0 ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.secondary),
             ),
           ),
           Container(
@@ -183,18 +182,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           InkWell(
             onTap: () {
-              _pageController.animateToPage(1,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.bounceInOut);
+              _pageController.animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.bounceInOut);
             },
             child: Text(
               'Favourites',
               style: TextStyle(
                   fontSize: 16,
-                  fontWeight:_currentPage == 1 ?  FontWeight.bold : FontWeight.w500,
-                  color: _currentPage == 1
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.secondary),
+                  fontWeight: _currentPage == 1 ? FontWeight.bold : FontWeight.w500,
+                  color: _currentPage == 1 ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.secondary),
             ),
           ),
         ],

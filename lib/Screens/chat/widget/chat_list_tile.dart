@@ -2,18 +2,13 @@ import 'package:flutter/material.dart';
 import '../../../db/Models/chat_with_user.dart';
 import '../../../db/entity/utils.dart';
 
-
 class ChatListTile extends StatelessWidget {
   final ChatWithUser chatWithUser;
   final void Function()? onTap;
   final Function onLongPress;
   final String myUserId;
 
-  ChatListTile(
-      {required this.chatWithUser,
-      required this.onTap,
-      required this.onLongPress,
-      required this.myUserId});
+  ChatListTile({required this.chatWithUser, required this.onTap, required this.onLongPress, required this.myUserId});
 
   @override
   Widget build(BuildContext context) {
@@ -21,29 +16,47 @@ class ChatListTile extends StatelessWidget {
       onTap: onTap,
       onLongPress: () {},
       child: Container(
-        height: 63,
+        height: MediaQuery.of(context).size.height * 0.085,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: const [
+            BoxShadow(
+              offset: Offset(-0.5, 0.5),
+              color: Colors.black87,
+              spreadRadius: 0.2
+            ),
+          ],
+        ),
         child: Row(
           children: [
-            Container(
-              width: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Theme.of(context).colorScheme.onPrimary, width: 2.0),
-              ),
-              child: CircleAvatar(
-                radius: 50,
-                backgroundImage:
-                    NetworkImage(chatWithUser.user.profilePhotoPath),
+            Expanded(
+              flex: 1,
+              child: Container(
+                width: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Theme.of(context).colorScheme.onPrimary, width: 2.0),
+                ),
+                child: CircleAvatar(
+                  radius: 50,
+                  backgroundImage: NetworkImage(chatWithUser.user.profilePhotoPath),
+                ),
               ),
             ),
             Expanded(
-                child: Padding(
-              padding: EdgeInsets.only(left: 8, top: 8, bottom: 8),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [getTopRow(), getBottomRow()],
+              flex: 4,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    getTopRow(),
+                    getBottomRow(),
+                  ],
+                ),
               ),
-            )),
+            ),
           ],
         ),
       ),
@@ -55,8 +68,7 @@ class ChatListTile extends StatelessWidget {
   }
 
   bool isLastMessageSeen() {
-    if (chatWithUser.chat.lastMessage?.seen == false &&
-        isLastMessageMyText() == false) {
+    if (chatWithUser.chat.lastMessage?.seen == false && isLastMessageMyText() == false) {
       return false;
     }
     return true;
@@ -71,17 +83,16 @@ class ChatListTile extends StatelessWidget {
             chatWithUser.user.name,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 16),
+            style: const TextStyle(fontSize: 16),
           ),
         ),
-        Container(
-            child: Text(
-                chatWithUser.chat.lastMessage == null
-                    ? ''
-                    : convertEpochMsToDateTime(
-                        chatWithUser.chat.lastMessage!.epochTimeMs),
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12))),
+        Expanded(
+          child: Text(
+            chatWithUser.chat.lastMessage == null ? '' : convertEpochMsToDateTime(chatWithUser.chat.lastMessage!.epochTimeMs),
+            textAlign: TextAlign.end,
+            style: const TextStyle(fontSize: 12),
+          ),
+        ),
       ],
     );
   }
@@ -96,25 +107,20 @@ class ChatListTile extends StatelessWidget {
             child: Text(
               chatWithUser.chat.lastMessage == null
                   ? "Say Hello 👋"
-                  : ((isLastMessageMyText() ? "You: " : "") +
-                  ( chatWithUser.chat.lastMessage!.type == "text" ?
-                      chatWithUser.chat.lastMessage!.text :
-              chatWithUser.chat.lastMessage!.type)),
+                  : ((isLastMessageMyText() ? "You: " : "") + (chatWithUser.chat.lastMessage!.type == "text" ? chatWithUser.chat.lastMessage!.text : chatWithUser.chat.lastMessage!.type)),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 14),
+              style: const TextStyle(fontSize: 14),
             ),
           ),
         ),
         SizedBox(
             width: 40,
-            child: chatWithUser.chat.lastMessage == null ||
-                    isLastMessageSeen() == false
+            child: chatWithUser.chat.lastMessage == null || isLastMessageSeen() == false
                 ? Container(
                     width: 8,
                     height: 8,
-                    decoration: const BoxDecoration(
-                        color: Color(0xff00fff9), shape: BoxShape.circle),
+                    decoration: const BoxDecoration(color: Color(0xff00fff9), shape: BoxShape.circle),
                   )
                 : null)
       ],

@@ -24,6 +24,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
   // List pages = [const SignIn(), const SignUp()];
 
   FirebaseFirestore db = FirebaseFirestore.instance;
+
   Future<Response> registerUserFb() async {
     Response<dynamic> response = await signInWithFacebook();
     print('response haii');
@@ -34,13 +35,13 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString("myid", FirebaseAuth.instance.currentUser!.uid);
       return response;
-      }
-    if (response is Error){
+    }
+    if (response is Error) {
       print('error');
       print(response);
     }
-      // ScaffoldMessenger.of(context)
-      //     .showSnackBar(SnackBar(content: Text(response.message)));
+    // ScaffoldMessenger.of(context)
+    //     .showSnackBar(SnackBar(content: Text(response.message)));
     return response;
   }
 
@@ -55,7 +56,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
       prefs.setString("myid", FirebaseAuth.instance.currentUser!.uid);
       return response;
     }
-    if (response is Error){
+    if (response is Error) {
       print('error');
       print(response);
     }
@@ -64,118 +65,119 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
     return response;
   }
 
-
   @override
   Widget build(BuildContext context) {
+    var width = MediaQuery.of(context).size.width;
+    var height = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.onPrimary,
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: SizedBox(
-          height: MediaQuery.of(context).size.height,
-          child: SingleChildScrollView(
+          height: height,
+          child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 40),
-                const CustomImage(
-                  path: Kimages.mainLogo,
-                  height: 200,
-                  width: 200,
+                const SizedBox(height: 20),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20.0),
+                    child: const CustomImage(
+                      path: Kimages.mainLogo,
+                      height: 200,
+                      width: 200,
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
                 _buildHeader(),
-                // const SizedBox(height: 45),
-
-            Padding(
-              padding: const EdgeInsets.fromLTRB(30, 85, 30, 20),
-              child: SizedBox(
-                    width: 400,
-                    height: 70,
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(30, 80, 30, 20),
+                  child: SizedBox(
+                    width:  width * 0.7,
+                    height: 60,
                     child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Colors.red,
-                        ),
-                        onPressed: () {
-                          registerUserGoogle().then((response) async {
-                            if (response is Success<OAuthCredential>){
-                              try{
-                                await db
-                                    .collection("users")
-                                    .doc(FirebaseAuth.instance.currentUser!.uid)
-                                    .get()
-                                    .then((event) async {
-                                  SharedPreferences prefs = await SharedPreferences.getInstance();
-                                  prefs.setBool('isLogin', true);
-                                  Navigator.pushAndRemoveUntil(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (BuildContext context) => const MainPage(tab: 0,),
-                                    ),
-                                        (route) => false,
-                                  );
-                                });
-                              }catch(e){
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                      onPressed: () {
+                        registerUserGoogle().then((response) async {
+                          if (response is Success<OAuthCredential>) {
+                            try {
+                              await db.collection("users").doc(FirebaseAuth.instance.currentUser!.uid).get().then((event) async {
                                 SharedPreferences prefs = await SharedPreferences.getInstance();
                                 prefs.setBool('isLogin', true);
-                                nextScreen(); }
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (BuildContext context) => const MainPage(
+                                      tab: 0,
+                                    ),
+                                  ),
+                                  (route) => false,
+                                );
+                              });
+                            } catch (e) {
+                              SharedPreferences prefs = await SharedPreferences.getInstance();
+                              prefs.setBool('isLogin', true);
+                              nextScreen();
                             }
-                          });
-                        },
-                        child: Text(
-                          'Continue with Google',
-                          style: TextStyle(
-                              fontSize: 22,
-                              color: Theme.of(context).colorScheme.primary),
-                        )),),
-            ),
+                          }
+                        });
+                      },
+                      child: Text(
+                        'Continue with Google',
+                        style: TextStyle(fontSize: 20, color: Theme.of(context).colorScheme.primary),
+                      ),
+                    ),
+                  ),
+                ),
 
                 Padding(
-              padding: const EdgeInsets.fromLTRB(30, 25, 30, 20),
-              child: SizedBox(
-                    width: 400,
-                    height: 70,
+                  padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
+                  child: SizedBox(
+                    width: width * 0.7,
+                    height: 60,
                     child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Colors.blue,
+                          backgroundColor: Colors.blue,
                         ),
                         onPressed: () {
                           registerUserFb().then((response) async {
-                            if (response is Success<OAuthCredential>){
-                             try{
-                               await db
-                                   .collection("users")
-                                   .doc(FirebaseAuth.instance.currentUser!.uid)
-                                   .get()
-                                   .then((event) async {
-                                 SharedPreferences prefs = await SharedPreferences.getInstance();
-                                 prefs.setBool('isLogin', true);
-                                 homeScreen();
-                                 // Navigator.pushAndRemoveUntil(
-                                 //   context,
-                                 //   MaterialPageRoute(
-                                 //     builder: (BuildContext context) => const MainPage(tab: 0,),
-                                 //   ),
-                                 //       (route) => false,
-                                 // );
-                               });
-                             }catch(e){
-                               SharedPreferences prefs = await SharedPreferences.getInstance();
-                               prefs.setBool('isLogin', true);
-                               nextScreen(); }
+                            if (response is Success<OAuthCredential>) {
+                              try {
+                                await db.collection("users").doc(FirebaseAuth.instance.currentUser!.uid).get().then((event) async {
+                                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                                  prefs.setBool('isLogin', true);
+                                  homeScreen();
+                                  // Navigator.pushAndRemoveUntil(
+                                  //   context,
+                                  //   MaterialPageRoute(
+                                  //     builder: (BuildContext context) => const MainPage(tab: 0,),
+                                  //   ),
+                                  //       (route) => false,
+                                  // );
+                                });
+                              } catch (e) {
+                                SharedPreferences prefs = await SharedPreferences.getInstance();
+                                prefs.setBool('isLogin', true);
+                                nextScreen();
+                              }
                             }
                           });
                         },
                         child: Text(
                           'Continue with Facebook',
-                          style: TextStyle(
-                              fontSize: 22,
-                              color: Theme.of(context).colorScheme.primary),
-                        )),),
-            ),
+                          style: TextStyle(fontSize: 20, color: Theme.of(context).colorScheme.primary),
+                        )),
+                  ),
+                ),
               ],
             ),
           ),
@@ -185,13 +187,15 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
   }
 
   Widget _buildHeader() {
-    return AnimatedContainer(
-      padding: const EdgeInsets.symmetric(horizontal: 30),
-      alignment: Alignment.topCenter,
-      duration: kDuration,
-      child: Text(
-      '   Welcome to \nSmart Video Call',
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 33),
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.8,
+      child: const Center(
+        child: Text(
+          'Welcome to\nSmart Video Call',
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+        ),
       ),
     );
   }
@@ -242,23 +246,23 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
   //   );
 //   }
 
-nextScreen(){
-  Navigator.pushAndRemoveUntil(
-    context,
-    MaterialPageRoute(
-      builder: (BuildContext context) => const SignUp(),
-    ),
-        (route) => false,
-  );
-}
+  nextScreen() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (BuildContext context) => const SignUp(),
+      ),
+      (route) => false,
+    );
+  }
 
-  homeScreen(){
+  homeScreen() {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
         builder: (BuildContext context) => const MainPage(tab: 0),
       ),
-          (route) => false,
+      (route) => false,
     );
   }
 }

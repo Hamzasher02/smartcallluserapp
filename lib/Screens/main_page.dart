@@ -15,7 +15,8 @@ import '../db/entity/app_user.dart';
 
 class MainPage extends StatefulWidget {
   final int tab;
-  const MainPage({super.key,r, required this.tab});
+
+  const MainPage({super.key, r, required this.tab});
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -23,8 +24,8 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   late AppUser myuser;
-  String token1='007';
-  String myid='';
+  String token1 = '007';
+  String myid = '';
   List result = [];
   FirebaseFirestore db = FirebaseFirestore.instance;
   bool isLoading = false;
@@ -39,43 +40,38 @@ class _MainPageState extends State<MainPage> {
     super.initState();
   }
 
-  _initBannerAd(){
+  _initBannerAd() {
     _bannerAd = BannerAd(
         size: AdSize.banner,
         adUnitId: "ca-app-pub-3940256099942544/6300978111",
-        listener: BannerAdListener(
-          onAdLoaded: (ad){
-            print('load ho gai add');
-            setState(() {
-              _isAdLoaded =true;
-            });
-          },
-          onAdFailedToLoad: (ad,error){
-            print('$ad ka ye $error hai');
-          }
-        ),
-        request: AdRequest()
-    );
+        listener: BannerAdListener(onAdLoaded: (ad) {
+          print('load ho gai add');
+          setState(() {
+            _isAdLoaded = true;
+          });
+        }, onAdFailedToLoad: (ad, error) {
+          print('$ad ka ye $error hai');
+        }),
+        request: AdRequest());
     _bannerAd.load();
   }
 
-
-  void getToken() async{
+  void getToken() async {
     await FirebaseMessaging.instance.getToken().then((value) {
       print(value);
       print("gettokeh");
-      token1=value!;
+      token1 = value!;
       saveToken(token1);
     });
   }
+
   void saveToken(String token) async {
-    try{
+    try {
       print("save");
       await FirebaseFirestore.instance.collection('users').doc(myid).update({
         'token': token,
       });
-    }
-    catch(e){
+    } catch (e) {
       print(e.toString());
     }
   }
@@ -85,11 +81,7 @@ class _MainPageState extends State<MainPage> {
     myid = prefs.getString("myid")!;
     print(myid);
     getToken();
-    await db
-        .collection("users")
-        .doc(myid)
-        .get()
-        .then((event) async {
+    await db.collection("users").doc(myid).get().then((event) async {
       myuser = AppUser(
         id: event.data()!['id'],
         name: event.data()!['name'],
@@ -116,6 +108,7 @@ class _MainPageState extends State<MainPage> {
     });
     return myuser;
   }
+
   //
   // clean() async{
   //   SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -141,81 +134,88 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
-  getData(){
-
-  }
+  getData() {}
 
   @override
   Widget build(BuildContext context) {
-    return isLoading==true?
-      DefaultTabController(
-      initialIndex: widget.tab,
-      length: 4,
-      child: FutureBuilder(
-          future: getData(),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            return Scaffold(
-              appBar: PreferredSize(
-                preferredSize: const Size.fromHeight(60),
-                child: AppBar(
-                  elevation: 0,
-                  backgroundColor: Theme.of(context).colorScheme.onPrimary,
-                  bottom: TabBar(
-                    labelColor: Theme.of(context).colorScheme.primary,
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    indicator: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Color(0xff8097a2),
+    return isLoading == true
+        ? DefaultTabController(
+            initialIndex: widget.tab,
+            length: 4,
+            child: FutureBuilder(
+                future: getData(),
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  return Scaffold(
+                    appBar: PreferredSize(
+                      preferredSize: const Size.fromHeight(60),
+                      child: AppBar(
+                        elevation: 0,
+                        backgroundColor: Theme.of(context).colorScheme.onPrimary,
+                        bottom: TabBar(
+                          labelColor: Theme.of(context).colorScheme.primary,
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          indicator: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Color(0xff8097a2),
+                          ),
+                          indicatorPadding: const EdgeInsets.all(6),
+                          unselectedLabelColor: Theme.of(context).colorScheme.primary,
+                          indicatorColor: Colors.transparent,
+                          indicatorWeight: 1,
+                          dividerColor: Theme.of(context).colorScheme.onPrimary,
+                          labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                          tabs: const [
+                            Tab(
+                              // text: '',
+                              icon: Icon(Icons.cabin),
+                            ),
+                            Tab(
+                              // text: '',
+                              icon: Icon(Icons.add_chart),
+                            ),
+                            Tab(
+                              // text: '',
+                              icon: Icon(Icons.chat),
+                            ),
+                            Tab(
+                              // text: '',
+                              icon: Icon(Icons.person),
+                            )
+                          ],
+                        ),
+                      ),
                     ),
-                    unselectedLabelColor: Theme.of(context).colorScheme.primary,
-                    indicatorColor: Colors.transparent,
-                    indicatorWeight: 1,
-                    dividerColor: Theme.of(context).colorScheme.onPrimary,
-                    labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                    tabs: const [
-                      Tab(
-                        // text: '',
-                        icon: Icon(Icons.cabin),
-                      ),
-                      Tab(
-                        // text: '',
-                        icon: Icon(Icons.add_chart),
-                      ),
-                      Tab(
-                        // text: '',
-                        icon: Icon(Icons.chat),
-                      ),
-                      Tab(
-                        // text: '',
-                        icon: Icon(Icons.person),
-                      )
-                    ],
-                  ),
-                ),
+                    body: TabBarView(
+                      children: [
+                        HomeScreen(myuser: myuser),
+                        StatusScreen(
+                          myuser: myuser,
+                        ),
+                        ChatScreen(user: myuser),
+                        ProfileScreen(
+                          myuser: myuser,
+                        )
+                      ],
+                    ),
+                    bottomNavigationBar: _isAdLoaded
+                        ? Container(
+                            height: _bannerAd.size.height.toDouble(),
+                            width: _bannerAd.size.width.toDouble(),
+                            child: AdWidget(
+                              ad: _bannerAd,
+                            ),
+                          )
+                        : SizedBox(),
+                  );
+                }),
+          )
+        : const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(
+                color: Color(0xff607d8b),
               ),
-              body: TabBarView(
-                children: [
-                  HomeScreen(myuser: myuser),
-                  StatusScreen(myuser: myuser,),
-                  ChatScreen(user: myuser),
-                  ProfileScreen(myuser: myuser,)
-                ],
-              ),
-              bottomNavigationBar: _isAdLoaded ? Container(
-                height: _bannerAd.size.height.toDouble(),
-                width: _bannerAd.size.width.toDouble(),
-                child: AdWidget(
-                  ad: _bannerAd,
-                  
-                ),
-              ) : SizedBox(),
-            );
-          }),
-    ):const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(color: Color(0xff607d8b),),
-      ),
-    );
+            ),
+          );
 
     // Center(
     //     child: GridView.count(

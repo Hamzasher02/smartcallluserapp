@@ -12,63 +12,79 @@ class CustomCardTile extends StatelessWidget {
   final String country;
   final String profileImage;
 
-  CustomCardTile(
-      {required this.id,
-        required this.name,
-        required this.age,
-        required this.gender,
-        required this.country,
-        required this.profileImage,
-        });
-
+  CustomCardTile({
+    required this.id,
+    required this.name,
+    required this.age,
+    required this.gender,
+    required this.country,
+    required this.profileImage,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      borderOnForeground: true,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 0, 5, 0),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.135,
+        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.all(Radius.circular(10))),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(left: 5),
+            Expanded(
+              flex: 1,
               child: GestureDetector(
                 onTap: () {},
                 child: CircleAvatar(
-                  radius: 30,
+                  radius: 50,
                   backgroundImage: NetworkImage(profileImage),
                   backgroundColor: Theme.of(context).secondaryHeaderColor,
                 ),
               ),
             ),
-            SizedBox(
-                height: MediaQuery.of(context).size.height * .1,
-                width: MediaQuery.of(context).size.width * .3,
-                child: Center(
-                    child: Text(
-                  name,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ))),
-            Column(
-              children: [
-               Text(countryCodeToEmoji(country),style: const TextStyle(fontSize: 20),)
-              ],
+            Expanded(
+              flex: 1,
+              child: Text(
+                name.trim(),
+                textAlign: TextAlign.start,
+                maxLines: 2,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
             ),
-            Column(
-              children: [
-                CallWithTime(id: id, name: name, height: 75, width: 45, video: true,)
-                // ZegoSendCallInvitationButton(
-                // buttonSize: const Size(45,75),
-                // isVideoCall: true,
-                // resourceID: "hafeez_khan", //You need to use the resourceID that you created in the subsequent steps. Please continue reading this document.
-                // invitees: [
-                //   ZegoUIKitUser(
-                //     id: id,
-                //     name: name,
-                //   )])
-              ],
-            )
+            Expanded(
+              flex: 1,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Text(
+                        countryCodeToEmoji(country),
+                        style: const TextStyle(fontSize: 20),
+                      ),
+                      CallWithTime(
+                        id: id,
+                        name: name,
+                        height: 75,
+                        width: 45,
+                        video: true,
+                      ),
+                      // ZegoSendCallInvitationButton(
+                      // buttonSize: const Size(45,75),
+                      // isVideoCall: true,
+                      // resourceID: "hafeez_khan", //You need to use the resourceID that you created in the subsequent steps. Please continue reading this document.
+                      // invitees: [
+                      //   ZegoUIKitUser(
+                      //     id: id,
+                      //     name: name,
+                      //   )])
+                    ],
+                  )
+                ],
+              ),
+            ),
           ],
         ),
       ),
