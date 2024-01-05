@@ -3,6 +3,7 @@ import 'package:smart_call_app/db/entity/fvrt.dart';
 import '../entity/app_user.dart';
 import '../entity/chat.dart';
 import '../entity/message.dart';
+import '../entity/sentmessage.dart';
 import '../entity/story.dart';
 
 class FirebaseDatabaseSource {
@@ -54,6 +55,15 @@ class FirebaseDatabaseSource {
         .collection('favourites')
         .doc(addFavourites.id)
         .delete();
+  }
+
+  void addChatBuddy(String userId, SentMessage sentmessage) {
+    instance
+        .collection('users')
+        .doc(userId)
+        .collection('chatbuddy')
+        .doc(sentmessage.id)
+        .set(sentmessage.toMap());
   }
 
   //
@@ -211,7 +221,7 @@ class FirebaseDatabaseSource {
     return instance
         .collection('users')
         .doc(userId)
-        .collection('favourites')
+        .collection('chatbuddy')
         .get();
   }
 

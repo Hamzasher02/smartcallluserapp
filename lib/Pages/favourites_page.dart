@@ -15,6 +15,7 @@ import '../db/entity/app_user.dart';
 import '../db/entity/chat.dart';
 import '../db/entity/fvrt.dart';
 import '../db/entity/message.dart';
+import '../db/entity/sentmessage.dart';
 import '../db/entity/utils.dart';
 import '../db/remote/firebase_database_source.dart';
 
@@ -47,6 +48,15 @@ class _FavouritesPageState extends State<FavouritesPage> {
     setState(() {
       fvtList.removeAt(index);
     });
+  }
+
+  void chatBuddySent(String myid, String otherid, String sent) async {
+    _databaseSource.addChatBuddy(myid, SentMessage(otherid, sent));
+  }
+
+  void chatBuddyReceived(String otherid, String myid, String received) async {
+    //_databaseSource.addMessageRequestRecived(otherid, ReceivedRequest(myid, received));
+    _databaseSource.addChatBuddy(otherid, SentMessage(myid, received));
   }
 
   showUserView(BuildContext context, String id, img, name, like, country, date, age, gender, view, myid, myuser, otherId, index) {
@@ -219,6 +229,9 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                         "text",
                                       );
                                       _databaseSource.addChat(Chat(chatId, message));
+                                      chatBuddySent(myid,id, "Buddy Sent");
+                                      //messagerequestreceived(userid, myid, "received");
+                                      chatBuddyReceived(id, myid, "Buddy recived");
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
                                           builder: (context) => MessageScreen(
