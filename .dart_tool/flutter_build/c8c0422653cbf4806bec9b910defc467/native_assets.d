@@ -1,0 +1,1 @@
+ F:\\E\ Drive\\Projects\\yasir_project\\smart_app\\smart_call_app\\.dart_tool\\flutter_build\\c8c0422653cbf4806bec9b910defc467\\native_assets.yaml: 

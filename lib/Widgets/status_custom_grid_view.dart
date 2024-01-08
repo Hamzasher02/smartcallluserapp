@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:skeletons/skeletons.dart';
 import 'package:video_player/video_player.dart';
@@ -21,11 +22,11 @@ class StatusCustomGridView extends StatefulWidget {
 }
 
 class _StatusCustomGridViewState extends State<StatusCustomGridView> {
-  late VideoPlayerController _controller;
+  VideoPlayerController? _controller;
   String type = 'img';
 
   // VideoPlayerController _controller;
-  late Future<void> _initializeVideoPlayerFuture;
+  Future<void>? _initializeVideoPlayerFuture;
 
   @override
   void initState() {
@@ -42,7 +43,9 @@ class _StatusCustomGridViewState extends State<StatusCustomGridView> {
       //   //even before the play button has been pressed.
       //   setState(() {});
       // });
-      _initializeVideoPlayerFuture = _controller.initialize();
+      setState(() {
+        _initializeVideoPlayerFuture = _controller!.initialize();
+      });
     }
   }
 
@@ -58,19 +61,51 @@ class _StatusCustomGridViewState extends State<StatusCustomGridView> {
         ? Center(
             child: ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(10)),
-              child: CachedNetworkImage(
-                imageUrl: widget.img,
-                height: MediaQuery.of(context).size.height,
-                width: MediaQuery.of(context).size.width,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => const Skeleton(
-                    isLoading: true,
-                    skeleton: SkeletonAvatar(
-                      style: SkeletonAvatarStyle(
-                        shape: BoxShape.rectangle,
+              child: Stack(
+                children: [
+                  CachedNetworkImage(
+                    imageUrl: widget.img,
+                    height: MediaQuery.of(context).size.height,
+                    width: MediaQuery.of(context).size.width,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => const Skeleton(
+                        isLoading: true,
+                        skeleton: SkeletonAvatar(
+                          style: SkeletonAvatarStyle(
+                            shape: BoxShape.rectangle,
+                          ),
+                        ),
+                        child: Text("")),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Align(
+                      alignment: Alignment.bottomRight,
+                      child: Icon(
+                        Icons.image,
+                        color: Colors.white54,
                       ),
                     ),
-                    child: Text("")),
+                  ),
+                  // Padding(
+                  //   padding: const EdgeInsets.all(8.0),
+                  //   child: Align(
+                  //     alignment: Alignment.bottomRight,
+                  //     child: Row(
+                  //       children: [
+                  //         Text(countryCodeToEmoji(widget.countryFlag)),
+                  //         const SizedBox(
+                  //           width: 10,
+                  //         ),
+                  //         Text(
+                  //           Country.tryParse(widget.countryFlag)!.name,
+                  //           style: const TextStyle(fontSize: 20),
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
+                ],
               ),
             ),
           )
@@ -83,9 +118,9 @@ class _StatusCustomGridViewState extends State<StatusCustomGridView> {
                   // If the VideoPlayerController has finished initialization, use
                   // the data it provides to limit the aspect ratio of the video.
                   return AspectRatio(
-                    aspectRatio: _controller.value.aspectRatio,
+                    aspectRatio: _controller!.value.aspectRatio,
                     // Use the VideoPlayer widget to display the video.
-                    child: VideoPlayer(_controller),
+                    child: VideoPlayer(_controller!),
                   );
                 } else {
                   // If the VideoPlayerController is still initializing, show a

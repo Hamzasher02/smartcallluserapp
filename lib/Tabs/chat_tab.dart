@@ -20,8 +20,8 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   // Variables
-  late AnimationController _animationController;
-  late AnimationController controller2;
+  AnimationController? _animationController;
+  AnimationController? controller2;
 
   @override
   void initState() {

@@ -105,7 +105,7 @@ class _ForYouPageState extends State<ForYouPage> {
 
     print(widget.country);
     if (widget.country == "random") {
-      await db.collection("users").where('type', isEqualTo: 'live').get().then((event) async {
+      await db.collection("users").get().then((event) async {
         result = [];
         var count = 0;
         print(event.docs);
@@ -207,13 +207,13 @@ class _ForYouPageState extends State<ForYouPage> {
             return AlertDialog(
               contentPadding: EdgeInsets.zero,
               content: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.6,
+                height: MediaQuery.of(context).size.height * 0.8,
                 width: MediaQuery.of(context).size.width * 0.9,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      flex: 1,
+                      flex: 3,
                       child: ClipRRect(
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(20),
@@ -235,45 +235,51 @@ class _ForYouPageState extends State<ForYouPage> {
                           children: [
                             /// name and fvrt
                             Expanded(
-                              flex: 1,
+                              flex: 2,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    name,
-                                    style: const TextStyle(
-                                      fontSize: 26,
-                                      fontWeight: FontWeight.w700,
+                                  Expanded(
+                                    flex: 2,
+                                    child: Text(
+                                      name,
+                                      style: const TextStyle(
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      GestureDetector(
-                                        onTap: fvtVisible
-                                            ? null
-                                            : () {
-                                                addF(myid, otherId, "addF", index);
-                                                int likes;
-                                                likes = like + 1;
-                                                _databaseSource.addFav(id, likes);
-                                                player.play();
-                                                setState(() {
-                                                  fvtVisible = !fvtVisible;
-                                                });
-                                              },
-                                        child: Icon(
-                                          fvtVisible ? Icons.favorite : Icons.favorite_border,
-                                          color: fvtVisible ? Colors.redAccent : Colors.black,
-                                          size: 20,
+                                  Expanded(
+                                    flex: 1,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                      children: [
+                                        GestureDetector(
+                                          onTap: fvtVisible
+                                              ? null
+                                              : () {
+                                                  addF(myid, otherId, "addF", index);
+                                                  int likes;
+                                                  likes = like + 1;
+                                                  _databaseSource.addFav(id, likes);
+                                                  player.play();
+                                                  setState(() {
+                                                    fvtVisible = !fvtVisible;
+                                                  });
+                                                },
+                                          child: Icon(
+                                            fvtVisible ? Icons.favorite : Icons.favorite_border,
+                                            color: fvtVisible ? Colors.redAccent : Colors.black,
+                                            size: 20,
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        like.toString(),
-                                        style: const TextStyle(fontSize: 18),
-                                      ),
-                                    ],
+                                        Text(
+                                          like.toString(),
+                                          style: const TextStyle(fontSize: 18),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
@@ -464,7 +470,7 @@ class _ForYouPageState extends State<ForYouPage> {
                               result[itemIndex].profilePhotoPath,
                               result[itemIndex].name,
                               result[itemIndex].country,
-                              "${dateFormat.format(DateTime.now())}",
+                              dateFormat.format(DateTime.now()),
                               result[itemIndex].age,
                               result[itemIndex].gender,
                               result[itemIndex].views,
@@ -482,6 +488,24 @@ class _ForYouPageState extends State<ForYouPage> {
                             gender: result[itemIndex].gender,
                             country: result[itemIndex].country,
                             profileImage: result[itemIndex].profilePhotoPath,
+                            onTapImage: (){
+                              showUserView(
+                                context,
+                                result[itemIndex].id,
+                                result[itemIndex].profilePhotoPath,
+                                result[itemIndex].name,
+                                result[itemIndex].country,
+                                dateFormat.format(DateTime.now()),
+                                result[itemIndex].age,
+                                result[itemIndex].gender,
+                                result[itemIndex].views,
+                                result[itemIndex].likes,
+                                myid,
+                                widget.myuser,
+                                result[itemIndex].id,
+                                itemIndex,
+                              );
+                            },
                           ),
                         );
                       }

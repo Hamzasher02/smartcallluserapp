@@ -449,16 +449,16 @@ class _MessageScreenState extends State<MessageScreen> {
 
   Widget getBottomContainer(BuildContext context, String myUserId) {
     return Container(
-      height: 80,
+      height: 50,
       color: Theme.of(context).colorScheme.onPrimary,
       child: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20),
+        padding: const EdgeInsets.only(right: 20),
         child: ColoredBox(
           color: Colors.transparent,
           child: Row(
             children: [
               Expanded(
-                flex: 1,
+                flex: 7,
                 child: TextField(
                   controller: messageTextController,
                   textCapitalization: TextCapitalization.sentences,
@@ -479,11 +479,17 @@ class _MessageScreenState extends State<MessageScreen> {
                     fillColor: Theme.of(context).primaryColor,
                     filled: true,
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20.0),
+                      borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(12),
+                        bottomRight: Radius.circular(12),
+                      ),
                       borderSide: BorderSide(color: Theme.of(context).secondaryHeaderColor),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20.0),
+                      borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(12),
+                        bottomRight: Radius.circular(12),
+                      ),
                       borderSide: BorderSide(color: Theme.of(context).secondaryHeaderColor),
                     ),
                   ),
@@ -538,36 +544,43 @@ class _MessageScreenState extends State<MessageScreen> {
               //     onTap: () {},
               //   ),
               // ),
-              const SizedBox(width: 5),
-              SizedBox(
-                width: 50,
-                height: 80,
-                // padding: const EdgeInsets.all(15.0),
-                // decoration: BoxDecoration(
-                //     color: Theme.of(context).primaryColor,
-                //     shape: BoxShape.circle),
-                child: InkWell(
-                  child: const Icon(
-                    Icons.send,
-                    color: Colors.white,
-                  ),
-                  onTap: () {
-                    if (messageTextController.text.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Message cannot be empty',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
-                          backgroundColor: Colors.redAccent,
-                          behavior: SnackBarBehavior.floating,
+              Expanded(
+                flex: 1,
+                child: SizedBox(
+                  height: 80,
+                  // padding: const EdgeInsets.all(15.0),
+                  // decoration: BoxDecoration(
+                  //     color: Theme.of(context).primaryColor,
+                  //     shape: BoxShape.circle),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: InkWell(
+                        child: const Icon(
+                          Icons.send,
+                          color: Colors.white,
                         ),
-                      );
-                    } else {
-                      sendMessage(myUserId, messageTextController.text, 'text');
-                    }
-                  },
+                        onTap: () {
+                          if (messageTextController.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Message cannot be empty',
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                  textAlign: TextAlign.center,
+                                ),
+                                backgroundColor: Colors.redAccent,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          } else {
+                            sendMessage(myUserId, messageTextController.text, 'text');
+                          }
+                        },
+                      ),
+                    ),
+                  ),
                 ),
               )
             ],

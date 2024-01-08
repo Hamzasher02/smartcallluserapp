@@ -11,6 +11,7 @@ class CustomCardTile extends StatelessWidget {
   final String gender;
   final String country;
   final String profileImage;
+  final VoidCallback? onTapImage;
 
   CustomCardTile({
     required this.id,
@@ -19,6 +20,7 @@ class CustomCardTile extends StatelessWidget {
     required this.gender,
     required this.country,
     required this.profileImage,
+    this.onTapImage,
   });
 
   @override
@@ -34,7 +36,9 @@ class CustomCardTile extends StatelessWidget {
             Expanded(
               flex: 1,
               child: GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  onTapImage!.call();
+                },
                 child: CircleAvatar(
                   radius: 50,
                   backgroundImage: NetworkImage(profileImage),

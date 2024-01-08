@@ -36,7 +36,7 @@ class _StatusScreenState extends State<StatusScreen> {
 
   @override
   void initState() {
-    // stoData();
+    stoData();
     getFakeUser();
     // TODO: implement initState
 
@@ -115,17 +115,81 @@ class _StatusScreenState extends State<StatusScreen> {
     );
   }
 
+  List result = [];
+  bool tempcheck = false;
+
+  getFakeUser() async {
+    await db.collection("users").where("type", isEqualTo: "fake").get().then((event) async {
+      result = [];
+      var count = 0;
+      print(event.docs);
+      for (var doc in event.docs) {
+        result.add(AppUser(
+          id: doc.data()['id'],
+          name: doc.data()['name'],
+          gender: doc.data()['gender'],
+          age: doc.data()['age'],
+          country: doc.data()['country'],
+          profilePhotoPath: doc.data()['profile_photo_path'],
+          token: doc.data()['token'],
+          temp1: doc.data()['temp1'],
+          temp2: doc.data()['temp2'],
+          temp3: doc.data()['temp3'],
+          temp4: doc.data()['temp4'],
+          temp5: doc.data()['temp5'],
+          status: doc.data()['status'],
+          likes: doc.data()['likes'],
+          type: doc.data()['type'],
+          views: doc.data()['views'],
+        ));
+        count++;
+        if (count == event.docs.length) break;
+      }
+    });
+    tempcheck = tempcheck;
+    if (tempcheck == true) {
+      Future.delayed(const Duration(seconds: 20), () {
+        return result;
+      });
+    }
+  }
+
+  Future _refresh() async {
+    sto = [];
+    print("in function");
+    try {
+      await db.collection("stories").get().then((event) async {
+        print(event.docs.length);
+        temp = event.docs.length;
+        sto = [];
+        for (var doc in event.docs) {
+          count = count + 1;
+          print(count);
+          print("count");
+          sto.add(Story(userId: doc.data()['userId'], imageUrl: doc.data()['imageUrl'], timestamp: doc.data()['timestamp'].toDate(), likes: doc.data()['likes'], type: doc.data()['type']));
+          setState(() {
+            sto.shuffle();
+          });
+          if (count == temp) break;
+        }
+      });
+    } catch (e) {
+      print(e.toString());
+    }
+    return sto;
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: getFakeUser(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
-        return Scaffold(
-          body: SafeArea(
-            child: RefreshIndicator(
-              triggerMode: RefreshIndicatorTriggerMode.onEdge,
-              color: Theme.of(context).colorScheme.onPrimary,
-              onRefresh: _refresh,
+        return RefreshIndicator(
+          triggerMode: RefreshIndicatorTriggerMode.onEdge,
+          color: Theme.of(context).colorScheme.onPrimary,
+          onRefresh: _refresh,
+          child: Scaffold(
+            body: SafeArea(
               child: Column(
                 children: [
                   const Padding(
@@ -250,51 +314,5 @@ class _StatusScreenState extends State<StatusScreen> {
     // fvtList.retainWhere((x) => ids.remove(x.id));
     // print(fvtList.length);
     return sto;
-  }
-
-  List result = [];
-  bool tempcheck = false;
-
-  getFakeUser() async {
-    await db.collection("users").where("type", isEqualTo: "fake").get().then((event) async {
-      result = [];
-      var count = 0;
-      print(event.docs);
-      for (var doc in event.docs) {
-        result.add(AppUser(
-          id: doc.data()['id'],
-          name: doc.data()['name'],
-          gender: doc.data()['gender'],
-          age: doc.data()['age'],
-          country: doc.data()['country'],
-          profilePhotoPath: doc.data()['profile_photo_path'],
-          token: doc.data()['token'],
-          temp1: doc.data()['temp1'],
-          temp2: doc.data()['temp2'],
-          temp3: doc.data()['temp3'],
-          temp4: doc.data()['temp4'],
-          temp5: doc.data()['temp5'],
-          status: doc.data()['status'],
-          likes: doc.data()['likes'],
-          type: doc.data()['type'],
-          views: doc.data()['views'],
-        ));
-        count++;
-        if (count == event.docs.length) break;
-      }
-    });
-    tempcheck = tempcheck;
-    await stoData();
-    if (tempcheck == true) {
-      Future.delayed(Duration(seconds: 20), () {
-        return result;
-      });
-    }
-  }
-
-  Future _refresh() async {
-    setState(() {
-      result.shuffle();
-    });
   }
 }

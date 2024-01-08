@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,13 +24,13 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  late AppUser myuser;
+  AppUser? myuser;
   String token1 = '007';
   String myid = '';
   List result = [];
   FirebaseFirestore db = FirebaseFirestore.instance;
   bool isLoading = false;
-  late BannerAd _bannerAd;
+  BannerAd? _bannerAd;
   bool _isAdLoaded = false;
 
   @override
@@ -50,10 +51,12 @@ class _MainPageState extends State<MainPage> {
             _isAdLoaded = true;
           });
         }, onAdFailedToLoad: (ad, error) {
-          print('$ad ka ye $error hai');
+          if (kDebugMode) {
+            print('$ad ka ye $error hai');
+          }
         }),
-        request: AdRequest());
-    _bannerAd.load();
+        request: const AdRequest());
+    _bannerAd!.load();
   }
 
   void getToken() async {
@@ -125,12 +128,14 @@ class _MainPageState extends State<MainPage> {
       ZegoUIKitPrebuiltCallInvitationService().init(
         appID: MyConst.appId /*input your AppID*/,
         appSign: MyConst.appSignId /*input your AppSign*/,
-        userID: myuser.id,
-        userName: myuser.name,
+        userID: myuser!.id,
+        userName: myuser!.name,
         plugins: [ZegoUIKitSignalingPlugin()],
       );
     } catch (e) {
-      print(e.toString());
+      if (kDebugMode) {
+        print(e.toString());
+      }
     }
   }
 
@@ -138,76 +143,142 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+    // return DefaultTabController(
+    //   initialIndex: widget.tab,
+    //   length: 4,
+    //   child: FutureBuilder(
+    //       future: getData(),
+    //       builder: (BuildContext context, AsyncSnapshot snapshot) {
+    //         return Scaffold(
+    //           appBar: PreferredSize(
+    //             preferredSize: const Size.fromHeight(60),
+    //             child: AppBar(
+    //               elevation: 0,
+    //               backgroundColor: Theme.of(context).colorScheme.onPrimary,
+    //               bottom: TabBar(
+    //                 labelColor: Theme.of(context).colorScheme.primary,
+    //                 indicatorSize: TabBarIndicatorSize.tab,
+    //                 indicator: BoxDecoration(
+    //                   borderRadius: BorderRadius.circular(20),
+    //                   color: const Color(0xff8097a2),
+    //                 ),
+    //                 indicatorPadding: const EdgeInsets.all(6),
+    //                 unselectedLabelColor: Theme.of(context).colorScheme.primary,
+    //                 indicatorColor: Colors.transparent,
+    //                 indicatorWeight: 1,
+    //                 dividerColor: Theme.of(context).colorScheme.onPrimary,
+    //                 labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+    //                 tabs: const [
+    //                   Tab(
+    //                     // text: '',
+    //                     icon: Icon(Icons.cabin),
+    //                   ),
+    //                   Tab(
+    //                     // text: '',
+    //                     icon: Icon(Icons.add_chart),
+    //                   ),
+    //                   Tab(
+    //                     // text: '',
+    //                     icon: Icon(Icons.chat),
+    //                   ),
+    //                   Tab(
+    //                     // text: '',
+    //                     icon: Icon(Icons.person),
+    //                   )
+    //                 ],
+    //               ),
+    //             ),
+    //           ),
+    //           body: TabBarView(
+    //             children: [
+    //               HomeScreen(myuser: myuser),
+    //               StatusScreen(
+    //                 myuser: myuser,
+    //               ),
+    //               ChatScreen(user: myuser),
+    //               ProfileScreen(
+    //                 myuser: myuser,
+    //               )
+    //             ],
+    //           ),
+    //           bottomNavigationBar: _isAdLoaded
+    //               ? Container(
+    //                   height: _bannerAd.size.height.toDouble(),
+    //                   width: _bannerAd.size.width.toDouble(),
+    //                   child: AdWidget(
+    //                     ad: _bannerAd,
+    //                   ),
+    //                 )
+    //               : SizedBox(),
+    //         );
+    //       }),
+    // );
     return isLoading == true
         ? DefaultTabController(
             initialIndex: widget.tab,
             length: 4,
-            child: FutureBuilder(
-                future: getData(),
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  return Scaffold(
-                    appBar: PreferredSize(
-                      preferredSize: const Size.fromHeight(60),
-                      child: AppBar(
-                        elevation: 0,
-                        backgroundColor: Theme.of(context).colorScheme.onPrimary,
-                        bottom: TabBar(
-                          labelColor: Theme.of(context).colorScheme.primary,
-                          indicatorSize: TabBarIndicatorSize.tab,
-                          indicator: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: Color(0xff8097a2),
-                          ),
-                          indicatorPadding: const EdgeInsets.all(6),
-                          unselectedLabelColor: Theme.of(context).colorScheme.primary,
-                          indicatorColor: Colors.transparent,
-                          indicatorWeight: 1,
-                          dividerColor: Theme.of(context).colorScheme.onPrimary,
-                          labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                          tabs: const [
-                            Tab(
-                              // text: '',
-                              icon: Icon(Icons.cabin),
-                            ),
-                            Tab(
-                              // text: '',
-                              icon: Icon(Icons.add_chart),
-                            ),
-                            Tab(
-                              // text: '',
-                              icon: Icon(Icons.chat),
-                            ),
-                            Tab(
-                              // text: '',
-                              icon: Icon(Icons.person),
-                            )
-                          ],
-                        ),
+            child: Scaffold(
+              appBar: PreferredSize(
+                preferredSize: const Size.fromHeight(60),
+                child: AppBar(
+                  elevation: 0,
+                  backgroundColor: Theme.of(context).colorScheme.onPrimary,
+                  bottom: TabBar(
+                    labelColor: Theme.of(context).colorScheme.primary,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicator: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: const Color(0xff8097a2),
+                    ),
+                    indicatorPadding: const EdgeInsets.all(6),
+                    unselectedLabelColor: Theme.of(context).colorScheme.primary,
+                    indicatorColor: Colors.transparent,
+                    indicatorWeight: 1,
+                    dividerColor: Theme.of(context).colorScheme.onPrimary,
+                    labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    tabs: const [
+                      Tab(
+                        // text: '',
+                        icon: Icon(Icons.cabin),
                       ),
-                    ),
-                    body: TabBarView(
-                      children: [
-                        HomeScreen(myuser: myuser),
-                        StatusScreen(
-                          myuser: myuser,
-                        ),
-                        ChatScreen(user: myuser),
-                        ProfileScreen(
-                          myuser: myuser,
-                        )
-                      ],
-                    ),
-                    bottomNavigationBar: _isAdLoaded
-                        ? Container(
-                            height: _bannerAd.size.height.toDouble(),
-                            width: _bannerAd.size.width.toDouble(),
-                            child: AdWidget(
-                              ad: _bannerAd,
-                            ),
-                          )
-                        : SizedBox(),
-                  );
-                }),
+                      Tab(
+                        // text: '',
+                        icon: Icon(Icons.add_chart),
+                      ),
+                      Tab(
+                        // text: '',
+                        icon: Icon(Icons.chat),
+                      ),
+                      Tab(
+                        // text: '',
+                        icon: Icon(Icons.person),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              body: TabBarView(
+                children: [
+                  HomeScreen(myuser: myuser!),
+                  StatusScreen(
+                    myuser: myuser!,
+                  ),
+                  ChatScreen(user: myuser!),
+                  ProfileScreen(
+                    myuser: myuser!,
+                  )
+                ],
+              ),
+              bottomNavigationBar: _isAdLoaded
+                  ? SizedBox(
+                      height: _bannerAd!.size.height.toDouble(),
+                      width: _bannerAd!.size.width.toDouble(),
+                      child: AdWidget(
+                        ad: _bannerAd!,
+                      ),
+                    )
+                  : const SizedBox(),
+            ),
           )
         : const Scaffold(
             body: Center(

@@ -88,7 +88,7 @@ showStatusImage(context, String path, likes, userId, AppUser myuser) async {
             fit: BoxFit.cover,
           ),
         ),
-        height: getHeight(context) * 0.8,
+        height: getHeight(context),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(30, 0, 20, 20),
           child: Column(
@@ -172,21 +172,22 @@ showStatusImage(context, String path, likes, userId, AppUser myuser) async {
                 height: 10,
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.red,
+                    radius: 30,
+                    backgroundImage: NetworkImage(otherUser!.profilePhotoPath),
+                  ),
                   Text(
-                    " ${countryCodeToEmoji(otherUser!.country)}\t\t${otherUser!.name}",
+                    "\t\t${otherUser!.name}\t${countryCodeToEmoji(otherUser!.country)}",
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 22,
                     ),
                   ),
-                  CircleAvatar(
-                    backgroundColor: Colors.red,
-                    radius: 30,
-                    backgroundImage: NetworkImage(otherUser!.profilePhotoPath),
-                  ),
+
                 ],
               )
             ],

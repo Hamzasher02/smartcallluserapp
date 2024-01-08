@@ -6,6 +6,7 @@ import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:skeletons/skeletons.dart';
+import 'package:smart_call_app/Widgets/call_with_timer.dart';
 import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 
 import '../Screens/chat/chat_screen.dart';
@@ -60,7 +61,7 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                     widget.fakeUser[index].profilePhotoPath,
                     widget.fakeUser[index].name,
                     widget.fakeUser[index].country,
-                    "${dateFormat.format(DateTime.now())}",
+                    dateFormat.format(DateTime.now()),
                     widget.fakeUser[index].age,
                     widget.fakeUser[index].gender,
                     widget.fakeUser[index].views,
@@ -165,13 +166,13 @@ class _StatusBarListViewState extends State<StatusBarListView> {
             return AlertDialog(
               contentPadding: EdgeInsets.zero,
               content: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.6,
+                height: MediaQuery.of(context).size.height * 0.85,
                 width: MediaQuery.of(context).size.width * 0.9,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      flex: 1,
+                      flex: 3,
                       child: ClipRRect(
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(20),
@@ -193,45 +194,51 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                           children: [
                             /// name and fvrt
                             Expanded(
-                              flex: 1,
+                              flex: 2,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    name,
-                                    style: const TextStyle(
-                                      fontSize: 26,
-                                      fontWeight: FontWeight.w700,
+                                  Expanded(
+                                    flex: 2,
+                                    child: Text(
+                                      name,
+                                      style: const TextStyle(
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      GestureDetector(
-                                        onTap: fvtVisible
-                                            ? null
-                                            : () {
-                                                addF(myid, otherId, "addF", index);
-                                                int likes;
-                                                likes = like + 1;
-                                                _databaseSource.addFav(id, likes);
-                                                player.play();
-                                                setState(() {
-                                                  fvtVisible = !fvtVisible;
-                                                });
-                                              },
-                                        child: Icon(
-                                          fvtVisible ? Icons.favorite : Icons.favorite_border,
-                                          color: fvtVisible ? Colors.redAccent : Colors.black,
-                                          size: 20,
+                                  Expanded(
+                                    flex: 1,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        GestureDetector(
+                                          onTap: fvtVisible
+                                              ? null
+                                              : () {
+                                                  addF(myid, otherId, "addF", index);
+                                                  int likes;
+                                                  likes = like + 1;
+                                                  _databaseSource.addFav(id, likes);
+                                                  player.play();
+                                                  setState(() {
+                                                    fvtVisible = !fvtVisible;
+                                                  });
+                                                },
+                                          child: Icon(
+                                            fvtVisible ? Icons.favorite : Icons.favorite_border,
+                                            color: fvtVisible ? Colors.redAccent : Colors.black,
+                                            size: 20,
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        like.toString(),
-                                        style: const TextStyle(fontSize: 18),
-                                      ),
-                                    ],
+                                        Text(
+                                          like.toString(),
+                                          style: const TextStyle(fontSize: 18),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
@@ -347,16 +354,12 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                                       ),
                                     ),
                                   ),
-                                  ZegoSendCallInvitationButton(
-                                    isVideoCall: true,
-                                    resourceID: "hafeez_khan",
-                                    //You need to use the resourceID that you created in the subsequent steps. Please continue reading this document.
-                                    invitees: [
-                                      ZegoUIKitUser(
-                                        id: id,
-                                        name: name,
-                                      )
-                                    ],
+                                  CallWithTime(
+                                    id: id,
+                                    name: name,
+                                    height: 60,
+                                    width: 60,
+                                    video: true,
                                   )
                                 ],
                               ),

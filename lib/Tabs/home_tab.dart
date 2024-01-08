@@ -23,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentPage = 0;
 
   final FirebaseDatabaseSource _databaseSource = FirebaseDatabaseSource();
-  bool _onlineVisible = false;
+  bool _onlineVisible = true;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return <Widget>[
           SliverAppBar(
             automaticallyImplyLeading: false,
-            pinned: true,
+            pinned: false,
             backgroundColor: Theme.of(context).colorScheme.onPrimary,
             floating: true,
             forceElevated: innerBoxIsScrolled,
