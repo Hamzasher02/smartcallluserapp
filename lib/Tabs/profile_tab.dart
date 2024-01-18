@@ -38,58 +38,97 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 20),
-                    child: CircleAvatar(
-                      radius: 60,
-                      backgroundImage: NetworkImage(widget.myuser.profilePhotoPath),
+                  Expanded(
+                    flex: 3,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 20),
+                      child: CircleAvatar(
+                        radius: 60,
+                        backgroundImage: NetworkImage(widget.myuser.profilePhotoPath),
+                      ),
                     ),
                   ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.myuser.name,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.myuser.name,
+                          maxLines: 2,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      Row(
-                        children: [
-                          Text(
-                            countryCodeToEmoji(widget.myuser.country),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: Text(
+                                countryCodeToEmoji(widget.myuser.country),
+                                maxLines: 2,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
+                            Expanded(
+                              flex: 3,
+                              child: Text(
+                                Country.tryParse(widget.myuser.country)!.name,
+                                maxLines: 2,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 20),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.visibility,
+                            size: 30,
+                            color: Colors.white,
                           ),
                           const SizedBox(
-                            width: 5,
+                            height: 10,
                           ),
                           Text(
-                            Country.tryParse(widget.myuser.country)!.name,
+                            widget.myuser.views.toString(),
                             style: const TextStyle(
-                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
                           ),
                         ],
-                      )
-                    ],
+                      ),
+                    ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 20),
+                  Expanded(
+                    flex: 1,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const Icon(
-                          Icons.visibility,
+                          Icons.favorite,
                           size: 30,
                           color: Colors.white,
                         ),
@@ -97,7 +136,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           height: 10,
                         ),
                         Text(
-                          widget.myuser.views.toString(),
+                          widget.myuser.likes.toString(),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -105,27 +144,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ],
                     ),
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.favorite,
-                        size: 30,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        widget.myuser.likes.toString(),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),

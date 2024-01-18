@@ -277,9 +277,12 @@ class _EditProfileState extends State<EditProfile> {
                 TextFormField(
                   controller: _nameController,
                   onTap: () {
-                    setState(() {});
+                    setState(() {
+                    });
                   },
-                  // controller: _userPhoneController,
+                  onFieldSubmitted: (val){
+                    _nameController.text = val;
+                  },
                   keyboardType: TextInputType.name,
                   decoration: const InputDecoration(
                     hintText: 'User Name',
@@ -494,10 +497,10 @@ class _EditProfileState extends State<EditProfile> {
                             print(country);
                             print(exam);
                             print(_nameController.text);
-                            _userRegistration.name = _nameController.text;
-                            _userRegistration.age = exam;
-                            _userRegistration.country = country;
-                            _userRegistration.gender = gender;
+                            // _userRegistration.name = _nameController.text;
+                            // _userRegistration.age = exam;
+                            // _userRegistration.country = country;
+                            // _userRegistration.gender = gender;
                             if (_nameController.text.isEmpty) {
                               setState(() {
                                 isLoading = false;
@@ -526,7 +529,7 @@ class _EditProfileState extends State<EditProfile> {
                               widget.myuser.gender = gender;
                               widget.myuser.age = exam;
                               instance.collection('users').doc(widget.myuser.id).update(widget.myuser.toMap());
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Update Successful')));
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Update Successful')));
                               Navigator.push(context, MaterialPageRoute(builder: (context) => const MainPage(tab: 0)));
                             }
                           },

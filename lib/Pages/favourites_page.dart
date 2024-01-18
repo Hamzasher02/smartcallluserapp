@@ -73,13 +73,13 @@ class _FavouritesPageState extends State<FavouritesPage> {
             return AlertDialog(
               contentPadding: EdgeInsets.zero,
               content: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.6,
+                height: MediaQuery.of(context).size.height * 0.8,
                 width: MediaQuery.of(context).size.width * 0.9,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      flex: 1,
+                      flex: 3,
                       child: ClipRRect(
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(20),
@@ -101,44 +101,50 @@ class _FavouritesPageState extends State<FavouritesPage> {
                           children: [
                             /// name and fvrt
                             Expanded(
-                              flex: 1,
+                              flex: 2,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    name,
-                                    style: const TextStyle(
-                                      fontSize: 26,
-                                      fontWeight: FontWeight.w700,
+                                  Expanded(
+                                    flex: 2,
+                                    child: Text(
+                                      name,
+                                      style: const TextStyle(
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      GestureDetector(
-                                        onTap: fvtVisible
-                                            ? null
-                                            : () {
-                                                removeF(myid, otherId, "", index);
-                                                int likes;
-                                                likes = like - 1;
-                                                _databaseSource.addFav(id, likes);
-                                                setState(() {
-                                                  fvtVisible = !fvtVisible;
-                                                });
-                                              },
-                                        child: Icon(
-                                          fvtVisible ? Icons.favorite : Icons.favorite_border,
-                                          color: fvtVisible ? Colors.redAccent : Colors.black,
-                                          size: 20,
+                                  Expanded(
+                                    flex: 1,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                      children: [
+                                        GestureDetector(
+                                          onTap: fvtVisible
+                                              ? null
+                                              : () {
+                                                  removeF(myid, otherId, "", index);
+                                                  int likes;
+                                                  likes = like - 1;
+                                                  _databaseSource.addFav(id, likes);
+                                                  setState(() {
+                                                    fvtVisible = !fvtVisible;
+                                                  });
+                                                },
+                                          child: Icon(
+                                            fvtVisible ? Icons.favorite : Icons.favorite_border,
+                                            color: fvtVisible ? Colors.redAccent : Colors.black,
+                                            size: 20,
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        like.toString(),
-                                        style: const TextStyle(fontSize: 18),
-                                      ),
-                                    ],
+                                        Text(
+                                          like.toString(),
+                                          style: const TextStyle(fontSize: 18),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
@@ -354,46 +360,42 @@ class _FavouritesPageState extends State<FavouritesPage> {
     return FutureBuilder(
         future: fvtData(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
-          return RefreshIndicator(
-              color: Theme.of(context).colorScheme.onPrimary,
-              triggerMode: RefreshIndicatorTriggerMode.onEdge,
-              onRefresh: _refresh,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                child: GridView.count(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 20.0,
-                    mainAxisSpacing: 20.0,
-                    children: List.generate(fvtList.length, (index) {
-                      return GestureDetector(
-                          onTap: () {
-                            showUserView(
-                              context,
-                              fvtList[index].id,
-                              fvtList[index].profilePhotoPath,
-                              fvtList[index].name,
-                              fvtList[index].likes,
-                              fvtList[index].country,
-                              "${dateFormat.format(DateTime.now())}",
-                              fvtList[index].age,
-                              fvtList[index].gender,
-                              fvtList[index].views,
-                              myid,
-                              widget.myuser,
-                              fvtList[index].id,
-                              index,
-                            );
-                          },
-                          child: CustomGridView(
-                            id: fvtList[index].id,
-                            name: fvtList[index].name,
-                            age: fvtList[index].age,
-                            gender: fvtList[index].gender,
-                            country: fvtList[index].country,
-                            profileImage: fvtList[index].profilePhotoPath,
-                          ));
-                    })),
-              ));
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+            child: GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 20.0,
+                mainAxisSpacing: 20.0,
+                children: List.generate(fvtList.length, (index) {
+                  return GestureDetector(
+                      onTap: () {
+                        showUserView(
+                          context,
+                          fvtList[index].id,
+                          fvtList[index].profilePhotoPath,
+                          fvtList[index].name,
+                          fvtList[index].likes,
+                          fvtList[index].country,
+                          "${dateFormat.format(DateTime.now())}",
+                          fvtList[index].age,
+                          fvtList[index].gender,
+                          fvtList[index].views,
+                          myid,
+                          widget.myuser,
+                          fvtList[index].id,
+                          index,
+                        );
+                      },
+                      child: CustomGridView(
+                        id: fvtList[index].id,
+                        name: fvtList[index].name,
+                        age: fvtList[index].age,
+                        gender: fvtList[index].gender,
+                        country: fvtList[index].country,
+                        profileImage: fvtList[index].profilePhotoPath,
+                      ));
+                })),
+          );
         });
   }
 }

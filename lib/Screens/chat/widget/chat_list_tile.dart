@@ -17,17 +17,17 @@ class ChatListTile extends StatelessWidget {
       onLongPress: () {},
       child: Container(
         height: MediaQuery.of(context).size.height * 0.085,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: const [
-            BoxShadow(
-              offset: Offset(-0.5, 0.5),
-              color: Colors.black87,
-              spreadRadius: 0.2
-            ),
-          ],
-        ),
+        // decoration: BoxDecoration(
+        //   color: Colors.white,
+        //   borderRadius: BorderRadius.circular(10),
+        //   boxShadow: const [
+        //     BoxShadow(
+        //       offset: Offset(-0.5, 0.5),
+        //       color: Colors.black87,
+        //       spreadRadius: 0.2
+        //     ),
+        //   ],
+        // ),
         child: Row(
           children: [
             Expanded(

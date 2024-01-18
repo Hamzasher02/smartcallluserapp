@@ -434,7 +434,6 @@ class _SignUpState extends State<SignUp> {
                             country = cou.countryCode;
                             setState(() {});
                           }
-
                           // print('Select country: ${country.displayName}'),
                           );
                     },
