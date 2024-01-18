@@ -48,7 +48,7 @@ class CustomCardTile extends StatelessWidget {
                 name.trim(),
                 textAlign: TextAlign.start,
                 maxLines: 2,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.black),
               ),
             ),
             Expanded(

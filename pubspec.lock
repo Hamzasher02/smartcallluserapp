@@ -1253,6 +1253,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.1"
+  tiktoklikescroller:
+    dependency: "direct main"
+    description:
+      name: tiktoklikescroller
+      sha256: "70c38d3f7d0adc8469ad7afe4fd0eb66cf4da6711a4bea75d63af60609e3acb2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.6"
   typed_data:
     dependency: transitive
     description:

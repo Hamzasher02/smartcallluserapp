@@ -9,12 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_call_app/Widgets/call_with_timer.dart';
 import 'package:smart_call_app/Widgets/custom_card_tile.dart';
 import 'package:smart_call_app/db/entity/fvrt.dart';
-import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
-
 import '../Screens/chat/chat_screen.dart';
-import '../Util/constants.dart';
 import '../Widgets/country_to_flag.dart';
-import '../Widgets/view_user.dart';
 import '../db/entity/app_user.dart';
 import '../db/entity/chat.dart';
 import '../db/entity/message.dart';
@@ -192,6 +188,8 @@ class _ForYouPageState extends State<ForYouPage> {
   }
 
   showUserView(BuildContext context, String id, img, name, country, date, age, gender, view, like, myid, myuser, otherId, index) {
+    loadAd();
+    _interstitialAd?.show();
     int views;
     print(view);
     bool fvtVisible = false;
@@ -252,12 +250,21 @@ class _ForYouPageState extends State<ForYouPage> {
                                     children: [
                                       GestureDetector(
                                         onTap: fvtVisible
-                                            ? null
+                                            ? (){
+                                          addF(myid, otherId, "addF", index);
+                                          like = like - 1;
+                                          _databaseSource.addFav(id, like);
+                                          result[index].likes = like;
+                                          //player.play();
+                                          setState(() {
+                                            fvtVisible = !fvtVisible;
+                                          });
+                                        }
                                             : () {
                                                 addF(myid, otherId, "addF", index);
-                                                int likes;
-                                                likes = like + 1;
-                                                _databaseSource.addFav(id, likes);
+                                                like = like + 1;
+                                                result[index].likes = like;
+                                                _databaseSource.addFav(id, like);
                                                 player.play();
                                                 setState(() {
                                                   fvtVisible = !fvtVisible;
@@ -513,4 +520,43 @@ class _ForYouPageState extends State<ForYouPage> {
       ),
     );
   }
+  InterstitialAd? _interstitialAd;
+
+  void loadAd() {
+    InterstitialAd.load(
+        adUnitId: "ca-app-pub-3940256099942544/6300978111",
+        request: const AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          // Called when an ad is successfully received.
+          onAdLoaded: (ad) {
+            ad.fullScreenContentCallback = FullScreenContentCallback(
+              // Called when the ad showed the full screen content.
+                onAdShowedFullScreenContent: (ad) {},
+                // Called when an impression occurs on the ad.
+                onAdImpression: (ad) {},
+                // Called when the ad failed to show full screen content.
+                onAdFailedToShowFullScreenContent: (ad, err) {
+                  // Dispose the ad here to free resources.
+                  ad.dispose();
+                },
+                // Called when the ad dismissed full screen content.
+                onAdDismissedFullScreenContent: (ad) {
+                  // Dispose the ad here to free resources.
+                  ad.dispose();
+                },
+                // Called when a click is recorded for an ad.
+                onAdClicked: (ad) {});
+
+            debugPrint('$ad loaded.');
+            // Keep a reference to the ad so you can show it later.
+            _interstitialAd = ad;
+          },
+          // Called when an ad request failed.
+          onAdFailedToLoad: (LoadAdError error) {
+            debugPrint('InterstitialAd failed to load: $error');
+          },
+        ));
+  }
+
 }
+

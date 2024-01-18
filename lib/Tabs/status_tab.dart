@@ -15,7 +15,6 @@ import 'package:uuid/uuid.dart';
 import '../Util/k_images.dart';
 import '../Widgets/status_bar_list_view.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-
 import '../db/entity/app_user.dart';
 import '../db/entity/story.dart';
 import '../db/remote/firebase_database_source.dart';
@@ -39,7 +38,6 @@ class _StatusScreenState extends State<StatusScreen> {
     // stoData();
     getFakeUser();
     // TODO: implement initState
-
     super.initState();
   }
 
@@ -173,6 +171,7 @@ class _StatusScreenState extends State<StatusScreen> {
                                         sto[index].likes,
                                         sto[index].userId,
                                         widget.myuser,
+                                  img
                                       )
                                     : showStatusVideo(
                                         context,
@@ -209,9 +208,10 @@ class _StatusScreenState extends State<StatusScreen> {
 
   int count = 0;
   int temp = 0;
-
+  List img = [];
   Future stoData() async {
     sto = [];
+    img = [];
     print("in function");
     try {
       await db.collection("stories").get().then((event) async {
@@ -223,6 +223,9 @@ class _StatusScreenState extends State<StatusScreen> {
           print(count);
           print("count");
           sto.add(Story(userId: doc.data()['userId'], imageUrl: doc.data()['imageUrl'], timestamp: doc.data()['timestamp'].toDate(), likes: doc.data()['likes'], type: doc.data()['type']));
+          if(doc.data()['type'] == 'img'){
+            img.add(Story(userId: doc.data()['userId'], imageUrl: doc.data()['imageUrl'], timestamp: doc.data()['timestamp'].toDate(), likes: doc.data()['likes'], type: doc.data()['type']));
+          }
           if (count == temp) break;
         }
       });

@@ -183,7 +183,7 @@ class MessageBubble extends StatelessWidget {
                             bottomRight: Radius.circular(20.0),
                           ),
                     elevation: 5.0,
-                    color: isSenderMyUser ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
+                    color: isSenderMyUser ? Theme.of(context).primaryColorLight : Theme.of(context).colorScheme.secondary,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
                       child: Stack(
