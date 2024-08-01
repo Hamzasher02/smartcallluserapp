@@ -197,7 +197,7 @@ class MessageBubble extends StatelessWidget {
                             ),
                             child: Text(
                               text,
-                              style: Theme.of(context).textTheme.bodyText1?.copyWith(color: isSenderMyUser ? Colors.white : Colors.black, fontWeight: FontWeight.normal),
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal),
                             ),
                           ),
                           isSenderMyUser
@@ -209,7 +209,7 @@ class MessageBubble extends StatelessWidget {
                                     children: [
                                       Text(
                                         convertEpochMsToDateTime(epochTimeMs),
-                                        style: Theme.of(context).textTheme.bodyText1?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
+                                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
                                       ),
                                       Icon(
                                         Icons.done_all,
@@ -231,7 +231,7 @@ class MessageBubble extends StatelessWidget {
                                     children: [
                                       Text(
                                         convertEpochMsToDateTime(epochTimeMs),
-                                        style: Theme.of(context).textTheme.bodyText1?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
+                                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
                                       ),
                                       // SizedBox(
                                       //   width: 5,
@@ -443,7 +443,7 @@ class MessageBubble extends StatelessWidget {
                                         children: [
                                           Text(
                                             convertEpochMsToDateTime(epochTimeMs),
-                                            style: Theme.of(context).textTheme.bodyText1?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
+                                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
                                           ),
                                           Icon(
                                             Icons.done_all,
@@ -461,7 +461,7 @@ class MessageBubble extends StatelessWidget {
                                         children: [
                                           Text(
                                             convertEpochMsToDateTime(epochTimeMs),
-                                            style: Theme.of(context).textTheme.bodyText1?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
+                                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
                                           ),
                                         ],
                                       ),

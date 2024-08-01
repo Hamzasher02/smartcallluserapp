@@ -22,7 +22,7 @@ class StatusCustomGridView extends StatefulWidget {
 }
 
 class _StatusCustomGridViewState extends State<StatusCustomGridView> {
-  VideoPlayerController? _controller;
+  //VideoPlayerController? _controller;
   String type = 'img';
 
   // VideoPlayerController _controller;
@@ -35,18 +35,18 @@ class _StatusCustomGridViewState extends State<StatusCustomGridView> {
 
     super.initState();
 
-    if (widget.type == 'vid') {
-      //VideoPlayerController _controller = VideoPlayerController.network(widget.img);
-      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.img));
-      // ..initialize().then((_) {
-      //   // Ensure the first frame is shown after the video is initialized,
-      //   //even before the play button has been pressed.
-      //   setState(() {});
-      // });
-      setState(() {
-        _initializeVideoPlayerFuture = _controller!.initialize();
-      });
-    }
+    // if (widget.type == 'vid') {
+    //   //VideoPlayerController _controller = VideoPlayerController.network(widget.img);
+    //   _controller = VideoPlayerController.networkUrl(Uri.parse(widget.img));
+    //   // ..initialize().then((_) {
+    //   //   // Ensure the first frame is shown after the video is initialized,
+    //   //   //even before the play button has been pressed.
+    //   //   setState(() {});
+    //   // });
+    //   setState(() {
+    //     _initializeVideoPlayerFuture = _controller!.initialize();
+    //   });
+    // }
   }
 
   // @override
@@ -57,83 +57,54 @@ class _StatusCustomGridViewState extends State<StatusCustomGridView> {
 
   @override
   Widget build(BuildContext context) {
-    return type == widget.type
-        ? Center(
-            child: ClipRRect(
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-              child: Stack(
-                children: [
-                  CachedNetworkImage(
-                    imageUrl: widget.img,
-                    height: MediaQuery.of(context).size.height,
-                    width: MediaQuery.of(context).size.width,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => const Skeleton(
-                        isLoading: true,
-                        skeleton: SkeletonAvatar(
-                          style: SkeletonAvatarStyle(
-                            shape: BoxShape.rectangle,
-                          ),
-                        ),
-                        child: Text("")),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Align(
-                      alignment: Alignment.bottomRight,
-                      child: Icon(
-                        Icons.image,
-                        color: Colors.white54,
-                      ),
+    return Center(
+      child: ClipRRect(
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
+        child: Stack(
+          children: [
+            CachedNetworkImage(
+              imageUrl: widget.img,
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => const Skeleton(
+                  isLoading: true,
+                  skeleton: SkeletonAvatar(
+                    style: SkeletonAvatarStyle(
+                      shape: BoxShape.rectangle,
                     ),
                   ),
-                  // Padding(
-                  //   padding: const EdgeInsets.all(8.0),
-                  //   child: Align(
-                  //     alignment: Alignment.bottomRight,
-                  //     child: Row(
-                  //       children: [
-                  //         Text(countryCodeToEmoji(widget.countryFlag)),
-                  //         const SizedBox(
-                  //           width: 10,
-                  //         ),
-                  //         Text(
-                  //           Country.tryParse(widget.countryFlag)!.name,
-                  //           style: const TextStyle(fontSize: 20),
-                  //         ),
-                  //       ],
-                  //     ),
-                  //   ),
-                  // ),
-                ],
-              ),
+                  child: Text("")),
             ),
-          )
-        : ClipRRect(
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-            child: FutureBuilder(
-              future: _initializeVideoPlayerFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  // If the VideoPlayerController has finished initialization, use
-                  // the data it provides to limit the aspect ratio of the video.
-                  return AspectRatio(
-                    aspectRatio: _controller!.value.aspectRatio,
-                    // Use the VideoPlayer widget to display the video.
-                    child: VideoPlayer(_controller!),
-                  );
-                } else {
-                  // If the VideoPlayerController is still initializing, show a
-                  // loading spinner.
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xff607d8b),
-                    ),
-                  );
-                }
-              },
-            ),
-          );
+          ],
+        ),
+      ),
+    );
+    // : ClipRRect(
+    //     borderRadius: const BorderRadius.all(Radius.circular(10)),
+    //     child: FutureBuilder(
+    //       future: _initializeVideoPlayerFuture,
+    //       builder: (context, snapshot) {
+    //         if (snapshot.connectionState == ConnectionState.done) {
+    //           // If the VideoPlayerController has finished initialization, use
+    //           // the data it provides to limit the aspect ratio of the video.
+    //           return AspectRatio(
+    //             aspectRatio: _controller!.value.aspectRatio,
+    //             // Use the VideoPlayer widget to display the video.
+    //             child: VideoPlayer(_controller!),
+    //           );
+    //         } else {
+    //           // If the VideoPlayerController is still initializing, show a
+    //           // loading spinner.
+    //           return const Center(
+    //             child: CircularProgressIndicator(
+    //               color: Color(0xff607d8b),
+    //             ),
+    //           );
+    //         }
+    //       },
+    //     ),
+    //   );
 
     // return Center(
     //     child: Container(

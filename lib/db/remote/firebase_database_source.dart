@@ -23,11 +23,7 @@ class FirebaseDatabaseSource {
   }
 
   void addMessage(String chatId, Message message) {
-    instance
-        .collection('chats')
-        .doc(chatId)
-        .collection('messages')
-        .add(message.toMap());
+    instance.collection('chats').doc(chatId).collection('messages').add(message.toMap());
   }
 
   // void addInterests(String userId, Interests interests) {
@@ -40,30 +36,15 @@ class FirebaseDatabaseSource {
   // }
   //
   void addFavourites(String userId, AddFavourites addFavourites) {
-    instance
-        .collection('users')
-        .doc(userId)
-        .collection('favourites')
-        .doc(addFavourites.id)
-        .set(addFavourites.toMap());
+    instance.collection('users').doc(userId).collection('favourites').doc(addFavourites.id).set(addFavourites.toMap());
   }
 
   void removeFavourites(String userId, AddFavourites addFavourites) {
-    instance
-        .collection('users')
-        .doc(userId)
-        .collection('favourites')
-        .doc(addFavourites.id)
-        .delete();
+    instance.collection('users').doc(userId).collection('favourites').doc(addFavourites.id).delete();
   }
 
   void addChatBuddy(String userId, SentMessage sentmessage) {
-    instance
-        .collection('users')
-        .doc(userId)
-        .collection('chatbuddy')
-        .doc(sentmessage.id)
-        .set(sentmessage.toMap());
+    instance.collection('users').doc(userId).collection('chatbuddy').doc(sentmessage.id).set(sentmessage.toMap());
   }
 
   //
@@ -145,22 +126,33 @@ class FirebaseDatabaseSource {
   // }
   //
 
-  void addView(id,view) async {
+  void addView(id, view) async {
     instance.collection('users').doc(id).update({
       "views": view,
     });
   }
 
-  void addFav(id,fav) async {
+  void addFav(id, fav) async {
     instance.collection('users').doc(id).update({
       "likes": fav,
     });
   }
 
-  void updateStatus(id,status) async {
+  void addFav2(id, fav) async {
     instance.collection('users').doc(id).update({
-      "status": status,
+      "temp1": fav,
     });
+  }
+
+  Future<bool> updateStatus(id, status) async {
+    try {
+      await instance.collection('users').doc(id).update({
+        "status": status,
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   void updateChat(Chat chat) {
@@ -168,12 +160,7 @@ class FirebaseDatabaseSource {
   }
 
   void updateMessage(String chatId, String messageId, Message message) {
-    instance
-        .collection('chats')
-        .doc(chatId)
-        .collection('messages')
-        .doc(messageId)
-        .update(message.toMap());
+    instance.collection('chats').doc(chatId).collection('messages').doc(messageId).update(message.toMap());
   }
 
   Future<DocumentSnapshot> getUser(String userId) {
@@ -218,11 +205,7 @@ class FirebaseDatabaseSource {
   //
 
   Future<QuerySnapshot> getChatBuddy(String userId) {
-    return instance
-        .collection('users')
-        .doc(userId)
-        .collection('chatbuddy')
-        .get();
+    return instance.collection('users').doc(userId).collection('chatbuddy').get();
   }
 
   Stream<DocumentSnapshot> observeUser(String userId) {
@@ -230,29 +213,22 @@ class FirebaseDatabaseSource {
   }
 
   Stream<QuerySnapshot> observeMessages(String chatId) {
-    return instance
-        .collection('chats')
-        .doc(chatId)
-        .collection('messages')
-        .orderBy('epoch_time_ms', descending: true)
-        .snapshots();
+    return instance.collection('chats').doc(chatId).collection('messages').orderBy('epoch_time_ms', descending: true).snapshots();
   }
 
   Stream<DocumentSnapshot> observeChat(String chatId) {
     return instance.collection('chats').doc(chatId).snapshots();
   }
 
-
-
-  void addStory(Story story) async {
-    await FirebaseFirestore.instance.collection('stories').doc(story.userId).collection('story').add({
-      'userId': story.userId,
-      'imageUrl': story.imageUrl,
-      'timestamp': FieldValue.serverTimestamp(),
-      'likes': story.likes,
-      'type': story.type
-    });
+  Stream<QuerySnapshot> observeMessages2(String chatId) {
+    return instance.collection('chats').doc(chatId).collection('messages').orderBy('epoch_time_ms', descending: false).snapshots();
   }
 
-
+  void addStory(Story story) async {
+    await FirebaseFirestore.instance
+        .collection('stories')
+        .doc(story.userId)
+        .collection('story')
+        .add({'userId': story.userId, 'imageUrl': story.imageUrl, 'timestamp': FieldValue.serverTimestamp(), 'likes': story.likes, 'type': story.type});
+  }
 }

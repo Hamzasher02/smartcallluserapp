@@ -3,11 +3,15 @@ import 'package:country_picker/country_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:skeletons/skeletons.dart';
+import 'package:smart_call_app/Screens/bottomBar/main_page.dart';
+import 'package:smart_call_app/Screens/call/agora/screen_video_call.dart';
+import 'package:smart_call_app/Util/app_url.dart';
 import 'package:smart_call_app/Widgets/call_with_timer.dart';
-import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
+// import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 
 import '../Screens/chat/chat_screen.dart';
 import '../Util/constants.dart';
@@ -34,13 +38,35 @@ class _StatusBarListViewState extends State<StatusBarListView> {
   @override
   void initState() {
     player = AudioPlayer();
-    player.setAsset('assets/audio/ting.mp3');
+    //player.setAsset('assets/audio/ting.mp3');
     super.initState();
   }
 
   final FirebaseDatabaseSource _databaseSource = FirebaseDatabaseSource();
   late AudioPlayer player;
   final dateFormat = DateFormat('yyyy-MM-dd hh:mm');
+
+  InterstitialAd? _interstitialAd;
+  bool _isAdLoaded = false;
+
+  initAd() {
+    InterstitialAd.load(
+      adUnitId: AppUrls.interstitialAdID,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: onAdLoaded,
+        onAdFailedToLoad: (LoadAdError error) {
+          debugPrint('InterstitialAd failed to load: $error');
+        },
+      ),
+    );
+    _interstitialAd!.show();
+  }
+
+  void onAdLoaded(InterstitialAd ad) {
+    _interstitialAd = ad;
+    _isAdLoaded = true;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,21 +81,24 @@ class _StatusBarListViewState extends State<StatusBarListView> {
             padding: const EdgeInsets.only(left: 10),
             child: GestureDetector(
               onTap: () {
+                initAd();
                 showUserView(
-                    context,
-                    widget.fakeUser[index].id,
-                    widget.fakeUser[index].profilePhotoPath,
-                    widget.fakeUser[index].name,
-                    widget.fakeUser[index].country,
-                    dateFormat.format(DateTime.now()),
-                    widget.fakeUser[index].age,
-                    widget.fakeUser[index].gender,
-                    widget.fakeUser[index].views,
-                    widget.fakeUser[index].likes,
-                    widget.myuser.id,
-                    widget.myuser,
-                    widget.fakeUser[index].id,
-                    index);
+                  context,
+                  widget.fakeUser[index].id,
+                  widget.fakeUser[index].profilePhotoPath,
+                  widget.fakeUser[index].name,
+                  widget.fakeUser[index].country,
+                  dateFormat.format(DateTime.now()),
+                  widget.fakeUser[index].age,
+                  widget.fakeUser[index].gender,
+                  widget.fakeUser[index].views,
+                  widget.fakeUser[index].likes,
+                  widget.myuser.id,
+                  widget.myuser,
+                  widget.fakeUser[index].id,
+                  index,
+                  widget.fakeUser[index].temp1,
+                );
               },
               child: SizedBox(
                 height: 70,
@@ -100,10 +129,10 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                       child: Text(
                         widget.fakeUser[index].name,
                         maxLines: 2,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
+                        style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                              fontWeight: FontWeight.w700,
+                              height: 1.2,
+                            ),
                       ),
                     ),
                   ],
@@ -150,7 +179,15 @@ class _StatusBarListViewState extends State<StatusBarListView> {
     _databaseSource.addChatBuddy(otherid, SentMessage(myid, received));
   }
 
-  showUserView(BuildContext context, String id, img, name, country, date, age, gender, view, like, myid, myuser, otherId, index) {
+  int showZeroIfNegative(int number) {
+    if (number >= 0) {
+      return number;
+    } else {
+      return 0;
+    }
+  }
+
+  showUserView(BuildContext context, String id, img, name, country, date, age, gender, view, like, myid, myuser, otherId, index, temp1) {
     int views;
     print(view);
     bool fvtVisible = false;
@@ -165,9 +202,18 @@ class _StatusBarListViewState extends State<StatusBarListView> {
           builder: (context, setState) {
             return AlertDialog(
               contentPadding: EdgeInsets.zero,
-              content: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.85,
+              content: Container(
+                height: MediaQuery.of(context).size.height * 0.8,
                 width: MediaQuery.of(context).size.width * 0.9,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.background,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -197,22 +243,20 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                               flex: 2,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Expanded(
                                     flex: 2,
                                     child: Text(
                                       name,
-                                      style: const TextStyle(
-                                        fontSize: 26,
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                     ),
                                   ),
                                   Expanded(
                                     flex: 1,
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                       children: [
                                         GestureDetector(
                                           onTap: fvtVisible
@@ -221,20 +265,22 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                                                   addF(myid, otherId, "addF", index);
                                                   int likes;
                                                   likes = like + 1;
-                                                  _databaseSource.addFav(id, likes);
+                                                  player.setAsset('assets/audio/ting.mp3');
                                                   player.play();
                                                   setState(() {
                                                     fvtVisible = !fvtVisible;
                                                   });
+                                                  _databaseSource.addFav(id, likes);
+                                                  _databaseSource.addFav2(id, fvtVisible.toString());
                                                 },
                                           child: Icon(
-                                            fvtVisible ? Icons.favorite : Icons.favorite_border,
-                                            color: fvtVisible ? Colors.redAccent : Colors.black,
+                                            temp1 != "" || fvtVisible ? Icons.favorite : Icons.favorite_border,
+                                            color: temp1 != "" || fvtVisible ? Colors.redAccent : Colors.redAccent,
                                             size: 20,
                                           ),
                                         ),
                                         Text(
-                                          like.toString(),
+                                          showZeroIfNegative(like).toString(),
                                           style: const TextStyle(fontSize: 18),
                                         ),
                                       ],
@@ -255,7 +301,7 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                                   ),
                                   Text(
                                     Country.tryParse(country)!.name,
-                                    style: const TextStyle(fontSize: 20),
+                                    style: Theme.of(context).textTheme.titleMedium!.copyWith(),
                                   ),
                                 ],
                               ),
@@ -268,7 +314,7 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                                 children: [
                                   Text(
                                     date,
-                                    style: const TextStyle(fontSize: 18),
+                                    style: Theme.of(context).textTheme.titleMedium!.copyWith(),
                                   ),
                                 ],
                               ),
@@ -279,13 +325,13 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                               flex: 1,
                               child: Row(
                                 children: [
-                                  const Text(
+                                  Text(
                                     "Age: ",
-                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                    style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
                                   ),
                                   Text(
                                     "$age",
-                                    style: const TextStyle(fontSize: 20),
+                                    style: Theme.of(context).textTheme.titleMedium!.copyWith(),
                                   ),
                                 ],
                               ),
@@ -296,13 +342,13 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                               flex: 1,
                               child: Row(
                                 children: [
-                                  const Text(
+                                  Text(
                                     "Gender: ",
-                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                    style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
                                   ),
                                   Text(
                                     "$gender",
-                                    style: const TextStyle(fontSize: 20),
+                                    style: Theme.of(context).textTheme.titleMedium!.copyWith(),
                                   ),
                                 ],
                               ),
@@ -329,7 +375,7 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                                         "text",
                                       );
                                       _databaseSource.addChat(Chat(chatId, message));
-                                      chatBuddySent(myid,id, "Buddy Sent");
+                                      chatBuddySent(myid, id, "Buddy Sent");
                                       //messagerequestreceived(userid, myid, "received");
                                       chatBuddyReceived(id, myid, "Buddy recived");
                                       Navigator.of(context).push(
@@ -354,13 +400,27 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                                       ),
                                     ),
                                   ),
-                                  CallWithTime(
-                                    id: id,
-                                    name: name,
-                                    height: 60,
-                                    width: 60,
-                                    video: true,
-                                  )
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (context) => VideoCallScreen(
+                                            remoteUid: int.tryParse(id),
+                                            username: name,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: CircleAvatar(
+                                      backgroundColor: Colors.lightBlueAccent.withOpacity(0.7),
+                                      radius: 30,
+                                      child: const Icon(
+                                        Icons.videocam_rounded,
+                                        size: 30,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -383,5 +443,11 @@ class _StatusBarListViewState extends State<StatusBarListView> {
 
   addF(String myId, String otherId, String added, index) {
     _databaseSource.addFavourites(myId, AddFavourites(otherId, added));
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _interstitialAd!.dispose();
   }
 }

@@ -3,15 +3,18 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:smart_call_app/Screens/bottomBar/main_page.dart';
+import 'package:smart_call_app/Screens/call/agora/screen_video_call.dart';
 import 'package:smart_call_app/Screens/chat/widget/chat_top_bar.dart';
 import 'package:smart_call_app/Screens/chat/widget/message_bubble.dart';
 import 'package:uuid/uuid.dart';
-import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
+// import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 
 import '../../Widgets/call_with_timer.dart';
 import '../../db/entity/app_user.dart';
@@ -246,18 +249,18 @@ class _MessageScreenState extends State<MessageScreen> {
         title: StreamBuilder<DocumentSnapshot>(
             stream: _databaseSource.observeUser(widget.otherUserId),
             builder: (context, snapshot) {
-              if (!snapshot.hasData) return Container();
+              if (!snapshot.hasData) {
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                );
+              }
               return ChatTopBar(user: AppUser.fromSnapshot(snapshot.data!));
             }),
-        actions: [
+        actions: const [
           // CallWithTime(id: widget.otherUserId, name: widget.otherUserName, height: 40, width:50, video: false,),
-          CallWithTime(
-            id: widget.otherUserId,
-            name: widget.otherUserName,
-            height: 40,
-            width: 50,
-            video: true,
-          ),
+          ThreeDotMenu(),
           // ZegoSendCallInvitationButton(
           //      iconSize: const Size(50, 40),
           //     // buttonSize: Size(20, 20),
@@ -318,7 +321,7 @@ class _MessageScreenState extends State<MessageScreen> {
         ],
         leading: IconButton(
           onPressed: () {
-            Navigator.of(context).pop();
+            Navigator.of(context).push(MaterialPageRoute(builder: (context) => const MainPage(tab: 2)));
           },
           icon: const Icon(
             Icons.arrow_back_ios_new,
@@ -337,7 +340,7 @@ class _MessageScreenState extends State<MessageScreen> {
                 snapshot.data?.docs.forEach((element) {
                   messages.add(Message.fromSnapshot(element));
                 });
-                if (snapshot.data != null && snapshot.data!.docs.length > 0) {
+                if (snapshot.data != null && snapshot.data!.docs.isNotEmpty) {
                   checkAndUpdateLastMessageSeen(messages.first, snapshot.data!.docs[0].id, widget.myUserId);
                   // print('hoo');
                   //  print(messages.first.seen);
@@ -452,11 +455,39 @@ class _MessageScreenState extends State<MessageScreen> {
       height: 50,
       color: Theme.of(context).colorScheme.onPrimary,
       child: Padding(
-        padding: const EdgeInsets.only(right: 20),
+        padding: const EdgeInsets.only(right: 10, left: 10),
         child: ColoredBox(
           color: Colors.transparent,
           child: Row(
             children: [
+              Expanded(
+                flex: 1,
+                child: SizedBox(
+                  height: 80,
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: InkWell(
+                        child: const Icon(
+                          Icons.videocam_rounded,
+                          color: Colors.white,
+                        ),
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => VideoCallScreen(
+                                remoteUid: int.tryParse(widget.user.id),
+                                username: widget.user.name,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
               Expanded(
                 flex: 7,
                 child: TextField(
@@ -482,6 +513,8 @@ class _MessageScreenState extends State<MessageScreen> {
                       borderRadius: const BorderRadius.only(
                         topRight: Radius.circular(12),
                         bottomRight: Radius.circular(12),
+                        topLeft: Radius.circular(12),
+                        bottomLeft: Radius.circular(12),
                       ),
                       borderSide: BorderSide(color: Theme.of(context).secondaryHeaderColor),
                     ),
@@ -489,61 +522,14 @@ class _MessageScreenState extends State<MessageScreen> {
                       borderRadius: const BorderRadius.only(
                         topRight: Radius.circular(12),
                         bottomRight: Radius.circular(12),
+                        topLeft: Radius.circular(12),
+                        bottomLeft: Radius.circular(12),
                       ),
                       borderSide: BorderSide(color: Theme.of(context).secondaryHeaderColor),
                     ),
                   ),
                 ),
               ),
-              // Expanded(
-              //   child: Container(
-              //     decoration: BoxDecoration(
-              //       color: Colors.white,
-              //       borderRadius: BorderRadius.circular(35.0),
-              //       boxShadow: [
-              //         // BoxShadow(
-              //         //     offset: Offset(0, 3),
-              //         //     blurRadius: 5,
-              //         // )
-              //       ],
-              //     ),
-              //     child: Row(
-              //       children: [
-              //         SizedBox(width: 15,),
-              //         Expanded(
-              //           child: TextField(
-              //             controller: messageTextController,
-              //             textCapitalization: TextCapitalization.sentences,
-              //             cursorColor: Theme.of(context).primaryColor,
-              //             maxLines: null,
-              //             decoration: InputDecoration(
-              //                 hintText: "Type Something...",
-              //                 hintStyle: TextStyle( color: Theme.of(context).primaryColor),
-              //                 fillColor: Theme.of(context).secondaryHeaderColor,
-              //                 filled: true,
-              //                 border: InputBorder.none),
-              //           ),
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-              // ),
-              // SizedBox(width: 5,),
-              // Container(
-              //   width: 30,
-              //   height: 80,
-              //   // padding: const EdgeInsets.all(15.0),
-              //   // decoration: BoxDecoration(
-              //   //     color: Theme.of(context).primaryColor,
-              //   //     shape: BoxShape.circle),
-              //   child: InkWell(
-              //     child: Icon(
-              //       Icons.image,
-              //       color: Colors.black,
-              //     ),
-              //     onTap: () {},
-              //   ),
-              // ),
               Expanded(
                 flex: 1,
                 child: SizedBox(
@@ -587,6 +573,65 @@ class _MessageScreenState extends State<MessageScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class ThreeDotMenu extends StatelessWidget {
+  const ThreeDotMenu({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton(
+      surfaceTintColor: Theme.of(context).colorScheme.background,
+      itemBuilder: (BuildContext context) => <PopupMenuEntry>[
+        const PopupMenuItem(
+          value: 'Clear',
+          child: ListTile(
+            leading: Icon(
+              Icons.delete,
+              color: Colors.red,
+            ),
+            title: Text('Clear'),
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'Video Call',
+          child: ListTile(
+            leading: Icon(
+              Icons.videocam_rounded,
+              color: Colors.green,
+            ),
+            title: Text('Video Call'),
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'Exit',
+          child: ListTile(
+            leading: Icon(
+              Icons.exit_to_app,
+              color: Colors.redAccent,
+            ),
+            title: Text('Exit'),
+          ),
+        ),
+      ],
+      icon: const Icon(
+        Icons.more_vert,
+        color: Colors.white,
+      ),
+      onSelected: (value) {
+        // Handle menu item selection here
+        if (value == "Exit") {
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) => const MainPage(tab: 2)));
+        } else if (value == "Video Call") {
+          print("video call");
+        } else if (value == "Clear") {
+          print("Clear");
+        } else {
+          print("Error");
+        }
+      },
     );
   }
 }

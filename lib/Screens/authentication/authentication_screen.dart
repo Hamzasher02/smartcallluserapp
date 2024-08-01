@@ -1,16 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:smart_call_app/Screens/authentication/widgets/sign_in.dart';
 import 'package:smart_call_app/Screens/authentication/widgets/sign_up.dart';
-import '../../Util/constants.dart';
 import '../../Util/k_images.dart';
 import '../../Widgets/custom_image.dart';
-import '../main_page.dart';
+import '../bottomBar/main_page.dart';
 import 'controller/auth.dart';
 import 'controller/response.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 class AuthenticationScreen extends StatefulWidget {
   const AuthenticationScreen({Key? key}) : super(key: key);
 
@@ -45,8 +42,8 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
     return response;
   }
 
-  Future<Response> registerUserGoogle() async {
-    Response<dynamic> response = await signInWithGoogle();
+  Future<Response> registerUserGoogle(BuildContext context) async {
+    Response<dynamic> response = await signInWithGoogle(context);
     print('response haii');
     print(response);
     if (response is Success<OAuthCredential>) {
@@ -100,29 +97,31 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(30, 80, 30, 20),
                   child: SizedBox(
-                    width:  width * 0.7,
+                    width: width * 0.7,
                     height: 60,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                       ),
                       onPressed: () {
-                        registerUserGoogle().then((response) async {
+                        registerUserGoogle(context).then((response) async {
                           if (response is Success<OAuthCredential>) {
                             try {
-                              await db.collection("users").doc(FirebaseAuth.instance.currentUser!.uid).get().then((event) async {
-                                SharedPreferences prefs = await SharedPreferences.getInstance();
-                                prefs.setBool('isLogin', true);
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (BuildContext context) => const MainPage(
-                                      tab: 0,
+                              await db.collection("users").doc(FirebaseAuth.instance.currentUser!.uid).get().then(
+                                (event) async {
+                                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                                  prefs.setBool('isLogin', true);
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (BuildContext context) => const MainPage(
+                                        tab: 0,
+                                      ),
                                     ),
-                                  ),
-                                  (route) => false,
-                                );
-                              });
+                                    (route) => false,
+                                  );
+                                },
+                              );
                             } catch (e) {
                               SharedPreferences prefs = await SharedPreferences.getInstance();
                               prefs.setBool('isLogin', true);
@@ -138,7 +137,6 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                     ),
                   ),
                 ),
-
                 Padding(
                   padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
                   child: SizedBox(

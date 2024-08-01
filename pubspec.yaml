@@ -53,11 +53,11 @@ dependencies:
   #firebase
   firebase_core: ^2.22.0
   #google sign_in
-  google_sign_in: ^6.1.4
+  google_sign_in: ^6.2.1
   #facebook sign_in
   flutter_facebook_auth: ^5.0.11
   #firebase auth
-  firebase_auth: ^4.12.1
+  firebase_auth: ^4.16.0
   #shared preferences
   shared_preferences: ^2.2.1
   #cloud store
@@ -87,9 +87,7 @@ dependencies:
   # provider
   provider: ^6.1.1
   # video call
-  zego_uikit_prebuilt_call: ^3.10.0
   # video call
-  zego_uikit_signaling_plugin: ^2.6.6
   # audio
   just_audio: ^0.9.31
   # share
@@ -103,6 +101,10 @@ dependencies:
   # loading
   skeletons: ^0.0.3
   tiktoklikescroller: ^0.2.6
+  agora_uikit: ^1.3.8
+  http: ^0.13.6
+  agora_rtc_engine: ^6.3.0
+  badges: ^3.1.2
 
 
 dev_dependencies:

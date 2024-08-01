@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
-import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
+// import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 
 import '../Screens/chat/chat_screen.dart';
 import '../Util/constants.dart';
@@ -205,21 +205,21 @@ showStatusVideo(context, String path, likes, userId, AppUser myuser) async {
                     const SizedBox(
                       height: 10,
                     ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: ZegoSendCallInvitationButton(
-                        buttonSize: const Size(60, 80),
-                        isVideoCall: true,
-                        resourceID: "hafeez_khan",
-                        //You need to use the resourceID that you created in the subsequent steps. Please continue reading this document.
-                        invitees: [
-                          ZegoUIKitUser(
-                            id: userId,
-                            name: "User",
-                          )
-                        ],
-                      ),
-                    ),
+                    // Align(
+                    //   alignment: Alignment.centerRight,
+                    //   child: ZegoSendCallInvitationButton(
+                    //     buttonSize: const Size(60, 80),
+                    //     isVideoCall: true,
+                    //     resourceID: "hafeez_khan",
+                    //     //You need to use the resourceID that you created in the subsequent steps. Please continue reading this document.
+                    //     invitees: [
+                    //       ZegoUIKitUser(
+                    //         id: userId,
+                    //         name: "User",
+                    //       )
+                    //     ],
+                    //   ),
+                    // ),
                     const SizedBox(
                       height: 10,
                     ),

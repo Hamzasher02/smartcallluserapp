@@ -6,15 +6,16 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_call_app/Screens/authentication/authentication_screen.dart';
-import 'package:smart_call_app/Screens/main_page.dart';
-import 'package:smart_call_app/Theme/dark_theme.dart';
-import 'package:smart_call_app/Theme/light_theme.dart';
+import 'package:smart_call_app/Screens/bottomBar/main_page.dart';
+import 'package:smart_call_app/Util/Theme/dark_theme.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:smart_call_app/Util/Theme/light_theme.dart';
 import 'Util/k_images.dart';
 import 'Widgets/custom_image.dart';
 import 'db/provider/user_provider.dart';
-import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
-import 'package:zego_uikit_signaling_plugin/zego_uikit_signaling_plugin.dart';
+
+// import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
+// import 'package:zego_uikit_signaling_plugin/zego_uikit_signaling_plugin.dart';
 
 import 'firebase_options.dart';
 
@@ -64,15 +65,17 @@ void main() async {
       print('Message also contained a notification: ${message.notification}');
     }
   });
-  ZegoUIKitPrebuiltCallInvitationService().setNavigatorKey(navigatorKey);
-
-  ZegoUIKit().initLog().then((value) {
-    ZegoUIKitPrebuiltCallInvitationService().useSystemCallingUI(
-      [ZegoUIKitSignalingPlugin()],
-    );
-
-    runApp(MyApp(navigatorKey: navigatorKey));
-  });
+  // ZegoUIKitPrebuiltCallInvitationService().setNavigatorKey(navigatorKey);
+  //
+  // ZegoUIKit().initLog().then((value) {
+  //   ZegoUIKitPrebuiltCallInvitationService().useSystemCallingUI(
+  //     [ZegoUIKitSignalingPlugin()],
+  //   );
+  //
+  // }
+  //
+  // );
+  runApp(MyApp(navigatorKey: navigatorKey));
 }
 
 void requestPermissions() async {
@@ -105,13 +108,17 @@ class MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (context) => UserProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (context) => UserProvider()),
+      ],
       child: MaterialApp(
         navigatorKey: widget.navigatorKey,
         title: 'Flutter Demo',
         debugShowCheckedModeBanner: false,
+        //theme: lightTheme,
         theme: lightTheme,
         darkTheme: darkTheme,
+        themeMode: ThemeMode.system,
         supportedLocales: const [
           Locale('en'),
           Locale('el'),

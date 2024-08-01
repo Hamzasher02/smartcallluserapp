@@ -1,7 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
-
-import 'call_with_timer.dart';
+import 'package:smart_call_app/Screens/call/agora/screen_video_call.dart';
 import 'country_to_flag.dart';
 
 class CustomCardTile extends StatelessWidget {
@@ -11,6 +10,7 @@ class CustomCardTile extends StatelessWidget {
   final String gender;
   final String country;
   final String profileImage;
+  final String status;
   final VoidCallback? onTapImage;
 
   CustomCardTile({
@@ -20,6 +20,7 @@ class CustomCardTile extends StatelessWidget {
     required this.gender,
     required this.country,
     required this.profileImage,
+    required this.status,
     this.onTapImage,
   });
 
@@ -29,7 +30,12 @@ class CustomCardTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Container(
         height: MediaQuery.of(context).size.height * 0.135,
-        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.all(Radius.circular(10))),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.background,
+          borderRadius: const BorderRadius.all(
+            Radius.circular(10),
+          ),
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
@@ -41,8 +47,47 @@ class CustomCardTile extends StatelessWidget {
                 },
                 child: CircleAvatar(
                   radius: 50,
-                  backgroundImage: NetworkImage(profileImage),
-                  backgroundColor: Theme.of(context).secondaryHeaderColor,
+                  backgroundColor: Theme.of(context).colorScheme.onPrimary,
+                  child: Stack(
+                    children: [
+                      SizedBox(
+                        height: 90,
+                        width: 90,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(50),
+                          child: CachedNetworkImage(
+                            imageUrl: profileImage,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      status == "online"
+                          ? const Positioned(
+                              right: 2,
+                              bottom: 10,
+                              child: CircleAvatar(
+                                radius: 5,
+                                backgroundColor: Colors.white,
+                                child: CircleAvatar(
+                                  radius: 4,
+                                  backgroundColor: Color(0xFF39FF14),
+                                ),
+                              ),
+                            )
+                          : const Positioned(
+                              right: 2,
+                              bottom: 10,
+                              child: CircleAvatar(
+                                radius: 5,
+                                backgroundColor: Colors.white,
+                                child: CircleAvatar(
+                                  radius: 4,
+                                  backgroundColor: Colors.grey,
+                                ),
+                              ),
+                            ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -52,7 +97,9 @@ class CustomCardTile extends StatelessWidget {
                 name.trim(),
                 textAlign: TextAlign.start,
                 maxLines: 2,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.black),
+                style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
             ),
             Expanded(
@@ -68,13 +115,30 @@ class CustomCardTile extends StatelessWidget {
                         countryCodeToEmoji(country),
                         style: const TextStyle(fontSize: 20),
                       ),
-                      CallWithTime(
-                        id: id,
-                        name: name,
-                        height: 75,
-                        width: 45,
-                        video: true,
+                      IconButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => VideoCallScreen(
+                                remoteUid: int.tryParse(id),
+                                username: name,
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.videocam_rounded,
+                          size: 30,
+                          color: Colors.green,
+                        ),
                       ),
+                      // CallWithTime(
+                      //   id: id,
+                      //   name: name,
+                      //   height: 75,
+                      //   width: 45,
+                      //   video: true,
+                      // ),
                       // ZegoSendCallInvitationButton(
                       // buttonSize: const Size(45,75),
                       // isVideoCall: true,

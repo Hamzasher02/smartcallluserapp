@@ -1,9 +1,11 @@
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:slide_popup_dialog_null_safety/slide_popup_dialog.dart' as slideDialog;
-import 'package:smart_call_app/Screens/main_page.dart';
+import 'package:smart_call_app/Screens/bottomBar/main_page.dart';
+import 'package:smart_call_app/Util/app_url.dart';
 import 'package:smart_call_app/Util/constants.dart';
 import '../../../Widgets/image_portrate.dart';
 import '../../../Widgets/rounded_icon_button.dart';
@@ -21,7 +23,6 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
-
   String exam = '1';
   String country = 'Select Country';
   String gender = 'Male';
@@ -36,26 +37,47 @@ class _SignUpState extends State<SignUp> {
   final FirebaseStorageSource _storageSource = FirebaseStorageSource();
   final FirebaseDatabaseSource _databaseSource = FirebaseDatabaseSource();
 
+  InterstitialAd? _interstitialAd;
+  bool _isAdLoaded = false;
+
+  initAd() {
+    InterstitialAd.load(
+      adUnitId: AppUrls.interstitialAdID,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: onAdLoaded,
+        onAdFailedToLoad: (LoadAdError error) {
+          debugPrint('InterstitialAd failed to load: $error');
+        },
+      ),
+    );
+    _interstitialAd!.show();
+  }
+
+  void onAdLoaded(InterstitialAd ad) {
+    _interstitialAd = ad;
+    _isAdLoaded = true;
+  }
+
   Future<Response> _addUser(UserRegistration userRegistration) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     userRegistration.id = prefs.getString("myid")!;
-    Response<dynamic> res = await _storageSource.uploadUserProfilePhoto(
-        _imagePath, userRegistration.id);
-    if(res is Success<String>){
+    Response<dynamic> res = await _storageSource.uploadUserProfilePhoto(_imagePath, userRegistration.id);
+    if (res is Success<String>) {
       userRegistration.localProfilePhotoPath = res.value;
       AppUser user = AppUser(
-          id: userRegistration.id,
-          name: userRegistration.name,
-          age: userRegistration.age,
-          gender: userRegistration.gender,
-          country: userRegistration.country,
-          profilePhotoPath: userRegistration.localProfilePhotoPath,
-          token: "",
-          temp1: "",
-          temp2: "",
-          temp3: "",
-          temp4: "",
-          temp5: "",
+        id: userRegistration.id,
+        name: userRegistration.name,
+        age: userRegistration.age,
+        gender: userRegistration.gender,
+        country: userRegistration.country,
+        profilePhotoPath: userRegistration.localProfilePhotoPath,
+        token: "",
+        temp1: "",
+        temp2: "",
+        temp3: "",
+        temp4: "",
+        temp5: "",
         status: "online",
         likes: 0,
         type: "live",
@@ -80,7 +102,7 @@ class _SignUpState extends State<SignUp> {
   }
 
   Future pickImageFromGallery() async {
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       // widget.onPhotoChanged(pickedFile.path);
@@ -101,8 +123,7 @@ class _SignUpState extends State<SignUp> {
         pillColor: Theme.of(context).primaryColor,
         backgroundColor: Theme.of(context).colorScheme.background,
         child: Expanded(child: SingleChildScrollView(
-          child: StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
+          child: StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
             return SingleChildScrollView(
                 scrollDirection: Axis.vertical,
                 child: Column(
@@ -129,8 +150,7 @@ class _SignUpState extends State<SignUp> {
                           const Text("Profile Picture"),
                           Expanded(
                             child: Padding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(30, 10, 30, 10),
+                              padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
@@ -159,21 +179,13 @@ class _SignUpState extends State<SignUp> {
                                           alignment: Alignment.center,
                                           child: _imagePath == ""
                                               ? RoundedIconButton(
-                                                  onPressed:
-                                                      pickImageFromGallery,
+                                                  onPressed: pickImageFromGallery,
                                                   iconData: Icons.add,
                                                   iconSize: 20,
-                                                  buttonColor: Theme.of(context)
-                                                      .secondaryHeaderColor,
+                                                  buttonColor: Theme.of(context).secondaryHeaderColor,
                                                 )
                                               : RoundedIconButton(
-                                                  onPressed:
-                                                      pickImageFromGallery,
-                                                  iconData:
-                                                      Icons.autorenew_outlined,
-                                                  iconSize: 20,
-                                                  buttonColor: Theme.of(context)
-                                                      .secondaryHeaderColor),
+                                                  onPressed: pickImageFromGallery, iconData: Icons.autorenew_outlined, iconSize: 20, buttonColor: Theme.of(context).secondaryHeaderColor),
                                         ),
                                       ),
                                     ],
@@ -189,16 +201,12 @@ class _SignUpState extends State<SignUp> {
                                           shape: MaterialStateProperty.all(
                                             RoundedRectangleBorder(
                                               // Change your radius here
-                                              borderRadius:
-                                                  BorderRadius.circular(28),
+                                              borderRadius: BorderRadius.circular(28),
                                             ),
                                           ),
-                                          backgroundColor:
-                                              MaterialStateProperty.all<Color>(
-                                                  Theme.of(context).colorScheme.onPrimary),
+                                          backgroundColor: MaterialStateProperty.all<Color>(Theme.of(context).colorScheme.onPrimary),
                                         ),
-                                        child: const Text("Save",
-                                            style: TextStyle(fontSize: 18)),
+                                        child: const Text("Save", style: TextStyle(fontSize: 18)),
                                         onPressed: () => setState(() {
                                               // _primaryphoto = 'Selected';
                                               // _primaryphotocheck = true;
@@ -224,7 +232,10 @@ class _SignUpState extends State<SignUp> {
       appBar: AppBar(
         centerTitle: true,
         automaticallyImplyLeading: false,
-        title: Text('Create Profile',style: TextStyle(fontSize: 28,color: Theme.of(context).colorScheme.primary,fontWeight: FontWeight.bold),),
+        title: Text(
+          'Create Profile',
+          style: TextStyle(fontSize: 28, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
       ),
       body: SafeArea(
@@ -408,8 +419,7 @@ class _SignUpState extends State<SignUp> {
                           countryListTheme: CountryListThemeData(
                             flagSize: 25,
                             // backgroundColor: Colors.white,
-                            backgroundColor:
-                                Theme.of(context).secondaryHeaderColor,
+                            backgroundColor: Theme.of(context).secondaryHeaderColor,
                             textStyle: const TextStyle(
                               fontSize: 16,
                             ),
@@ -424,8 +434,7 @@ class _SignUpState extends State<SignUp> {
                               prefixIcon: const Icon(Icons.search),
                               border: OutlineInputBorder(
                                 borderSide: BorderSide(
-                                  color:
-                                      const Color(0xFF8C98A8).withOpacity(0.2),
+                                  color: const Color(0xFF8C98A8).withOpacity(0.2),
                                 ),
                               ),
                             ),
@@ -439,9 +448,7 @@ class _SignUpState extends State<SignUp> {
                     },
                     child: Text(
                       country,
-                      style: TextStyle(
-                          fontSize: 18,
-                          color: Theme.of(context).colorScheme.primary),
+                      style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.primary),
                     ),
                   ),
                 ),
@@ -452,8 +459,7 @@ class _SignUpState extends State<SignUp> {
                   width: 400,
                   child: DropdownButton<String>(
                     value: gender,
-                    items: <String>['Male', 'Female', 'Other']
-                        .map<DropdownMenuItem<String>>((String gen) {
+                    items: <String>['Male', 'Female', 'Other'].map<DropdownMenuItem<String>>((String gen) {
                       return DropdownMenuItem<String>(
                         value: gen,
                         child: Text(
@@ -475,89 +481,82 @@ class _SignUpState extends State<SignUp> {
                 SizedBox(
                   width: 400,
                   height: 50,
-                  child: isLoading ==false? ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            Theme.of(context).colorScheme.secondary,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          isLoading = true;
-                        });
-                        print(gender);
-                        print(country);
-                        print(exam);
-                        print(_nameController.text);
-                        _userRegistration.name = _nameController.text;
-                        _userRegistration.age = exam;
-                        _userRegistration.country =  country;
-                        _userRegistration.gender = gender;
-                        if(_nameController.text.isEmpty){
-                          setState(() {
-                            isLoading = false;
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    "Please Enter Name",
-                                    style: TextStyle(color: Colors.black), textAlign: TextAlign.center
-                                ),
-                                backgroundColor: Colors.redAccent,
-                                behavior: SnackBarBehavior.floating,
-                                width: 200),
-                          );
-                        }else
-                          if(country=='Select Country'){
+                  child: isLoading == false
+                      ? ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.secondary,
+                          ),
+                          onPressed: () {
                             setState(() {
-                              isLoading = false;
+                              isLoading = true;
                             });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      "Please Select Country",
-                                      style: TextStyle(color: Colors.black), textAlign: TextAlign.center
-                                  ),
-                                  backgroundColor: Colors.redAccent,
-                                  behavior: SnackBarBehavior.floating,
-                                  width: 200),
-                            );
-
-                          }else{
-                            _addUser(_userRegistration).then((res) {
-                              if(res is Success){
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (BuildContext context) => const MainPage(tab: 0,),
-                                  ),
-                                      (route) => false,
-                                );
-                              } else if (res is Error){
-                                setState(() {
-                                  isLoading = false;
-                                });
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text(
-                                          "Error",
-                                          style: TextStyle(color: Colors.black), textAlign: TextAlign.center
+                            print(gender);
+                            print(country);
+                            print(exam);
+                            print(_nameController.text);
+                            _userRegistration.name = _nameController.text;
+                            _userRegistration.age = exam;
+                            _userRegistration.country = country;
+                            _userRegistration.gender = gender;
+                            if (_nameController.text.isEmpty) {
+                              setState(() {
+                                isLoading = false;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text("Please Enter Name", style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
+                                    backgroundColor: Colors.redAccent,
+                                    behavior: SnackBarBehavior.floating,
+                                    width: 200),
+                              );
+                            } else if (country == 'Select Country') {
+                              setState(() {
+                                isLoading = false;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text("Please Select Country", style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
+                                    backgroundColor: Colors.redAccent,
+                                    behavior: SnackBarBehavior.floating,
+                                    width: 200),
+                              );
+                            } else {
+                              _addUser(_userRegistration).then((res) {
+                                if (res is Success) {
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (BuildContext context) => const MainPage(
+                                        tab: 0,
                                       ),
-                                      backgroundColor: Colors.redAccent,
-                                      behavior: SnackBarBehavior.floating,
-                                      width: 200),
-                                );
-                              }
-                            });
-                          }
-                      },
-                      child: Text(
-                        'Submit',
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Theme.of(context).colorScheme.primary),
-                      )):const Center(
-                    child: CircularProgressIndicator(color: Color(0xff607d8b),),
-                  ),
+                                    ),
+                                    (route) => false,
+                                  );
+                                  initAd();
+                                } else if (res is Error) {
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text("Error", style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
+                                        backgroundColor: Colors.redAccent,
+                                        behavior: SnackBarBehavior.floating,
+                                        width: 200),
+                                  );
+                                }
+                              });
+                            }
+                          },
+                          child: Text(
+                            'Submit',
+                            style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.primary),
+                          ))
+                      : const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xff607d8b),
+                          ),
+                        ),
                 ),
               ],
             ),

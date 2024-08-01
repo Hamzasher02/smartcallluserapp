@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
+// import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 
 class CallWithTime extends StatefulWidget {
 
@@ -48,21 +48,22 @@ class _CallWithTimeState extends State<CallWithTime> {
   @override
   Widget build(BuildContext context) {
     getData();
-    return ZegoSendCallInvitationButton(
-        isVideoCall: widget.video,
-        iconSize: Size(widget.width, widget.height),
-        buttonSize: Size(widget.width, widget.height),
-        resourceID: "hafeez_khan",
-        onWillPressed: (){
-          return _onWillPressed();
-        },
-        //You need to use the resourceID that you created in the subsequent steps. Please continue reading this document.
-        invitees: [
-          ZegoUIKitUser(
-            id: widget.id,
-            name: widget.name,
-          )
-        ]);
+    return Text("");
+      // ZegoSendCallInvitationButton(
+      //   isVideoCall: widget.video,
+      //   iconSize: Size(widget.width, widget.height),
+      //   buttonSize: Size(widget.width, widget.height),
+      //   resourceID: "hafeez_khan",
+      //   onWillPressed: (){
+      //     return _onWillPressed();
+      //   },
+      //   //You need to use the resourceID that you created in the subsequent steps. Please continue reading this document.
+      //   invitees: [
+      //     ZegoUIKitUser(
+      //       id: widget.id,
+      //       name: widget.name,
+      //     )
+      //   ]);
     //     :GestureDetector(onTap:(){
     //       setState(() {
     //         setCheck = true;

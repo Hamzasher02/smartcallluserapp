@@ -14,7 +14,7 @@ class Chat {
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'id': id,
-      'last_message': lastMessage != null ? lastMessage?.toMap() : null,
+      'last_message': lastMessage?.toMap(),
     };
   }
 }
