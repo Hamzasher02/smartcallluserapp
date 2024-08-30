@@ -1,4 +1,4 @@
-// import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 //
 // const Color primaryColor = Color(0xFFFFffff);
 // const Color blackColor = Color(0xff192d60);
@@ -148,3 +148,6 @@ SMART CALL APP is not responsible for the actions of its users and cannot guaran
 By using SMART CALL APP, users agree to abide by these policies. The app reserves the right to update and modify these policies as needed.\n
 This is a general template, and you may need to consult with legal professionals to ensure that your policy complies with relevant laws and regulations.\n
 """;
+
+
+

@@ -17,6 +17,55 @@ class UserProvider extends ChangeNotifier {
   bool isLoading = false;
   late AppUser _user;
 
+ 
+
+  Future<List<ChatWithUser>> getChatsWithUser(String userId) async {
+    var chatbuddy = await _databaseSource.getChatBuddy(userId);
+    List<ChatWithUser> chatWithUserList = [];
+    print(chatWithUserList);
+    print(chatbuddy.size);
+
+   for (var i = 0; i < chatbuddy.size; i++) {
+  try {
+    Match match = Match.fromSnapshot(chatbuddy.docs[i]);
+    print('Match found: ${match.id}');
+    
+    AppUser matchedUser = AppUser.fromSnapshot(await _databaseSource.getUser(match.id));
+    print('Matched User: ${matchedUser.name}');
+
+    String chatId = compareAndCombineIds(match.id, userId);
+    print('Chat ID: $chatId');
+
+    Chat chat = Chat.fromSnapshot(await _databaseSource.getChat(chatId));
+    print('Chat retrieved: ${chat.id}, Last Message: ${chat.lastMessage}');
+    
+    ChatWithUser chatWithUser = ChatWithUser(chat, matchedUser);
+    chatWithUserList.add(chatWithUser);
+  } catch (e) {
+    print('Error processing chat buddy: $e');
+  }
+}
+
+    // for (var i = 0; i < messagesent.size; i++) {
+    //   print(messagesent.size);
+    //   // Match match = Match.fromSnapshot(messagesent.docs[i]);
+    //   // print(match.id);
+    //   AppUser matchedUser =
+    //   AppUser.fromSnapshot(await _databaseSource.getUser(match.id));
+    //
+    //   String chatId = compareAndCombineIds(match.id, userId);
+    //   print(chatId);
+    //
+    //   Chat chat = Chat.fromSnapshot(await _databaseSource.getChat(chatId));
+    //   print(chat.id);
+    //   print(chat.lastMessage);
+    //   ChatWithUser chatWithUser = ChatWithUser(chat, matchedUser);
+    //   print(matchedUser);
+    //   chatWithUserList.add(chatWithUser);
+    // }
+    return chatWithUserList;
+  }
+ }
   // Future<AppUser> get user => _getUser();
 
   // Future<Response> loginUser(String email, String password,
@@ -100,49 +149,3 @@ class UserProvider extends ChangeNotifier {
   //   // _user = null;
   //   await SharedPreferencesUtil.removeUserId();
   // }
-
-  Future<List<ChatWithUser>> getChatsWithUser(String userId) async {
-    //var matches = await _databaseSource.getMatches(userId);
-    var chatbuddy = await _databaseSource.getChatBuddy(userId);
-    List<ChatWithUser> chatWithUserList = [];
-    print(chatWithUserList);
-    print(chatbuddy.size);
-
-    for (var i = 0; i < chatbuddy.size; i++) {
-      Match match = Match.fromSnapshot(chatbuddy.docs[i]);
-      AppUser matchedUser =
-          AppUser.fromSnapshot(await _databaseSource.getUser(match.id));
-
-
-      String chatId = compareAndCombineIds(match.id, userId);
-      print(chatId);
-
-      try{Chat chat = Chat.fromSnapshot(await _databaseSource.getChat(chatId));
-      print(chat.id);
-      print(chat.lastMessage);
-      ChatWithUser chatWithUser = ChatWithUser(chat, matchedUser);
-      print(matchedUser);
-      chatWithUserList.add(chatWithUser);}
-      catch(e){print(e.toString());}
-
-    }
-    // for (var i = 0; i < messagesent.size; i++) {
-    //   print(messagesent.size);
-    //   // Match match = Match.fromSnapshot(messagesent.docs[i]);
-    //   // print(match.id);
-    //   AppUser matchedUser =
-    //   AppUser.fromSnapshot(await _databaseSource.getUser(match.id));
-    //
-    //   String chatId = compareAndCombineIds(match.id, userId);
-    //   print(chatId);
-    //
-    //   Chat chat = Chat.fromSnapshot(await _databaseSource.getChat(chatId));
-    //   print(chat.id);
-    //   print(chat.lastMessage);
-    //   ChatWithUser chatWithUser = ChatWithUser(chat, matchedUser);
-    //   print(matchedUser);
-    //   chatWithUserList.add(chatWithUser);
-    // }
-    return chatWithUserList;
-  }
- }

@@ -43,24 +43,48 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
   }
 
   Future<Response> registerUserGoogle(BuildContext context) async {
-    Response<dynamic> response = await signInWithGoogle(context);
-    print('response haii');
+  Response<dynamic> response = await signInWithGoogle(context);
+  print('response haii');
+  print(response);
+
+  if (response is Success<OAuthCredential>) {
+    print('ooo');
+    print(FirebaseAuth.instance.currentUser!.uid);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("myid", FirebaseAuth.instance.currentUser!.uid);
+
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    DocumentSnapshot userDoc = await db.collection("users").doc(currentUser!.uid).get();
+
+    if (!userDoc.exists) {
+      // User is new, navigate to SignUp screen
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) => const SignUp(),
+        ),
+        (route) => false,
+      );
+    } else {
+      // User already exists, navigate to MainPage
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) => const MainPage(tab: 0),
+        ),
+        (route) => false,
+      );
+    }
+
+    prefs.setBool('isLogin', true);
+  } else if (response is Error) {
+    print('error');
     print(response);
-    if (response is Success<OAuthCredential>) {
-      print('ooo');
-      print(FirebaseAuth.instance.currentUser!.uid);
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setString("myid", FirebaseAuth.instance.currentUser!.uid);
-      return response;
-    }
-    if (response is Error) {
-      print('error');
-      print(response);
-    }
-    // ScaffoldMessenger.of(context)
-    //     .showSnackBar(SnackBar(content: Text(response.message)));
-    return response;
   }
+
+  return response;
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -111,15 +135,15 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                                 (event) async {
                                   SharedPreferences prefs = await SharedPreferences.getInstance();
                                   prefs.setBool('isLogin', true);
-                                  Navigator.pushAndRemoveUntil(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (BuildContext context) => const MainPage(
-                                        tab: 0,
-                                      ),
-                                    ),
-                                    (route) => false,
-                                  );
+                                  // Navigator.pushAndRemoveUntil(
+                                  //   context,
+                                  //   MaterialPageRoute(
+                                  //     builder: (BuildContext context) => const MainPage(
+                                  //       tab: 0,
+                                  //     ),
+                                  //   ),
+                                  //   (route) => false,
+                                  // );
                                 },
                               );
                             } catch (e) {

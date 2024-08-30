@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_picker/country_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:smart_call_app/Screens/call/agora/screen_video_call.dart';
+import 'package:smart_call_app/Screens/call/dummy_zego.dart';
 import 'package:smart_call_app/Util/app_url.dart';
+import 'package:smart_call_app/Util/video_call_utils.dart';
 import 'package:smart_call_app/Widgets/custom_grid_view.dart';
 
 import '../chat/chat_screen.dart';
@@ -89,7 +89,9 @@ class _FavouritesPageState extends State<FavouritesPage> {
       return 0;
     }
   }
-  showUserView(BuildContext context, String id, img, name, like, country, date, age, gender, view, myid, myuser, otherId, index, temp1) {
+
+  showUserView(BuildContext context, String id, img, name, like, country, date,
+      age, gender, view, myid, myuser, otherId, index, temp1) {
     int views;
     views = view++;
     bool fvtVisible = true;
@@ -106,7 +108,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                 height: MediaQuery.of(context).size.height * 0.8,
                 width: MediaQuery.of(context).size.width * 0.9,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.background,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20),
@@ -135,21 +137,26 @@ class _FavouritesPageState extends State<FavouritesPage> {
                     Expanded(
                       flex: 2,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 10),
                         child: Column(
                           children: [
                             /// name and fvrt
                             Expanded(
                               flex: 2,
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Expanded(
                                     flex: 2,
                                     child: Text(
                                       name,
-                                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge!
+                                          .copyWith(
                                             fontWeight: FontWeight.w700,
                                           ),
                                     ),
@@ -177,8 +184,12 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                             // }
                                           },
                                           child: Icon(
-                                            fvtVisible ? Icons.favorite : Icons.favorite_border,
-                                            color: fvtVisible ? Colors.redAccent : Colors.redAccent,
+                                            fvtVisible
+                                                ? Icons.favorite
+                                                : Icons.favorite_border,
+                                            color: fvtVisible
+                                                ? Colors.redAccent
+                                                : Colors.redAccent,
                                             size: 20,
                                           ),
                                         ),
@@ -204,7 +215,10 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                   ),
                                   Text(
                                     Country.tryParse(country)!.name,
-                                    style: Theme.of(context).textTheme.titleMedium!.copyWith(),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium!
+                                        .copyWith(),
                                   ),
                                 ],
                               ),
@@ -217,7 +231,10 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                 children: [
                                   Text(
                                     date,
-                                    style: Theme.of(context).textTheme.titleMedium!.copyWith(),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium!
+                                        .copyWith(),
                                   ),
                                 ],
                               ),
@@ -230,11 +247,17 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                 children: [
                                   Text(
                                     "Age: ",
-                                    style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(fontWeight: FontWeight.bold),
                                   ),
                                   Text(
                                     "$age",
-                                    style: Theme.of(context).textTheme.titleMedium!.copyWith(),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium!
+                                        .copyWith(),
                                   ),
                                 ],
                               ),
@@ -247,11 +270,17 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                 children: [
                                   Text(
                                     "Gender: ",
-                                    style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(fontWeight: FontWeight.bold),
                                   ),
                                   Text(
                                     "$gender",
-                                    style: Theme.of(context).textTheme.titleMedium!.copyWith(),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium!
+                                        .copyWith(),
                                   ),
                                 ],
                               ),
@@ -261,7 +290,8 @@ class _FavouritesPageState extends State<FavouritesPage> {
                             Expanded(
                               flex: 2,
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   GestureDetector(
@@ -277,14 +307,17 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                         "Say Hello 👋",
                                         "text",
                                       );
-                                      _databaseSource.addChat(Chat(chatId, message));
+                                      _databaseSource
+                                          .addChat(Chat(chatId, message));
                                       chatBuddySent(myid, id, "Buddy Sent");
                                       //messagerequestreceived(userid, myid, "received");
-                                      chatBuddyReceived(id, myid, "Buddy recived");
+                                      chatBuddyReceived(
+                                          id, myid, "Buddy recived");
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
                                           builder: (context) => MessageScreen(
-                                            chatId: compareAndCombineIds(myid, id),
+                                            chatId:
+                                                compareAndCombineIds(myid, id),
                                             myUserId: myid,
                                             otherUserId: id,
                                             user: myuser,
@@ -294,7 +327,8 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                       );
                                     },
                                     child: CircleAvatar(
-                                      backgroundColor: Colors.lightBlueAccent.withOpacity(0.7),
+                                      backgroundColor: Colors.lightBlueAccent
+                                          .withOpacity(0.7),
                                       radius: 30,
                                       child: const Icon(
                                         Icons.chat,
@@ -305,17 +339,25 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                   ),
                                   GestureDetector(
                                     onTap: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) => VideoCallScreen(
-                                            remoteUid: int.tryParse(id),
-                                            username: name,
-                                          ),
-                                        ),
-                                      );
+                                      // Navigator.of(context).push(
+                                      //   MaterialPageRoute(
+                                      //     builder: (context) => VideoCallScreen(
+                                      //       remoteUid: int.tryParse(id),
+                                      //       username: name,
+                                      //     ),
+                                      //   ),
+                                      // );
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => DummyZego(
+                                                    userId: id,
+                                                    userName: name,
+                                                  )));
                                     },
                                     child: CircleAvatar(
-                                      backgroundColor: Colors.lightBlueAccent.withOpacity(0.7),
+                                      backgroundColor: Colors.lightBlueAccent
+                                          .withOpacity(0.7),
                                       radius: 30,
                                       child: const Icon(
                                         Icons.videocam_rounded,
@@ -362,7 +404,12 @@ class _FavouritesPageState extends State<FavouritesPage> {
     String temp = '';
     fvtList = [];
     myid = prefs.getString("myid")!;
-    await db.collection("users").doc(widget.myuser.id).collection("favourites").get().then((event) async {
+    await db
+        .collection("users")
+        .doc(widget.myuser.id)
+        .collection("favourites")
+        .get()
+        .then((event) async {
       for (var doc in event.docs) {
         temp = doc.data()['id'];
         if (temp != '') {
@@ -416,7 +463,8 @@ class _FavouritesPageState extends State<FavouritesPage> {
     return FutureBuilder(
       future: fvtData(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (!snapshot.hasData || snapshot.connectionState == ConnectionState.waiting) {
+        if (!snapshot.hasData ||
+            snapshot.connectionState == ConnectionState.waiting) {
           return Center(
             child: CircularProgressIndicator(
               color: Theme.of(context).colorScheme.onPrimary,
@@ -424,6 +472,8 @@ class _FavouritesPageState extends State<FavouritesPage> {
           );
         }
         return Scaffold(
+                backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+
           body: fvtList.isEmpty
               ? const Center(
                   child: Column(
@@ -444,20 +494,20 @@ class _FavouritesPageState extends State<FavouritesPage> {
               : Padding(
                   padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
                   child: GridView.count(
+                    physics: const NeverScrollableScrollPhysics(),
                     crossAxisCount: 2,
                     crossAxisSpacing: 20.0,
                     mainAxisSpacing: 20.0,
                     children: List.generate(
+                      
                       fvtList.length,
                       (reversedIndex) {
                         final index = fvtList.length - reversedIndex - 1;
-                        if (index != 0 && index % 4 == 0) {
-                          return getAd();
-                        } else {
+                      
                           final int itemIndex = index - (index ~/ 4);
                           return GestureDetector(
                             onTap: () {
-                              initAd();
+                              // initAd();
                               showUserView(
                                 context,
                                 fvtList[itemIndex].id,
@@ -485,7 +535,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                               profileImage: fvtList[itemIndex].profilePhotoPath,
                             ),
                           );
-                        }
+                        
                       },
                     ),
                   ),
@@ -496,7 +546,8 @@ class _FavouritesPageState extends State<FavouritesPage> {
   }
 
   Widget getAd() {
-    BannerAdListener bannerAdListener = BannerAdListener(onAdWillDismissScreen: (ad) {
+    BannerAdListener bannerAdListener =
+        BannerAdListener(onAdWillDismissScreen: (ad) {
       ad.dispose();
     }, onAdClosed: (ad) {
       print("add closed");

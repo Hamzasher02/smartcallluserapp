@@ -63,47 +63,68 @@ class _HomeScreenState extends State<HomeScreen> {
             floating: true,
             forceElevated: innerBoxIsScrolled,
             flexibleSpace: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  CountryListPicker(context),
-                  _buildTabText(),
-                  IconButton(
-                    icon: Icon(
-                      _onlineVisible ? Icons.visibility : Icons.visibility_off,
-                      color: Colors.white,
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Country Picker Icon or Flag
+                    CountryListPicker(context),
+
+                    // Expanded widget wraps the _buildTabText to allow flexible space for the texts
+                    Expanded(
+                      child: _buildTabText(),
                     ),
-                    onPressed: () async {
-                      SharedPreferences prefs = await SharedPreferences.getInstance();
-                      setState(() {
-                        _onlineVisible = !_onlineVisible;
-                        prefs.setBool('eyeIconState', _onlineVisible);
-                      });
-                      if (_onlineVisible) {
-                        await _databaseSource.updateStatus(widget.myuser.id, "online");
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text("Online", style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
+
+                    // Visibility Icon
+                    IconButton(
+                      icon: Icon(
+                        _onlineVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.white,
+                      ),
+                      onPressed: () async {
+                        SharedPreferences prefs =
+                            await SharedPreferences.getInstance();
+                        setState(() {
+                          _onlineVisible = !_onlineVisible;
+                          prefs.setBool('eyeIconState', _onlineVisible);
+                        });
+                        if (_onlineVisible) {
+                          await _databaseSource.updateStatus(
+                              widget.myuser.id, "online");
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Online",
+                                style: TextStyle(color: Colors.black),
+                                textAlign: TextAlign.center,
+                              ),
                               backgroundColor: Colors.greenAccent,
                               behavior: SnackBarBehavior.floating,
-                              width: 200),
-                        );
-                      } else {
-                        await _databaseSource.updateStatus(widget.myuser.id, "offline");
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text("Offline", style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
+                              width: 200,
+                            ),
+                          );
+                        } else {
+                          await _databaseSource.updateStatus(
+                              widget.myuser.id, "offline");
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Offline",
+                                style: TextStyle(color: Colors.black),
+                                textAlign: TextAlign.center,
+                              ),
                               backgroundColor: Colors.red,
                               behavior: SnackBarBehavior.floating,
-                              width: 200),
-                        );
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ),
+                              width: 200,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                )),
           ),
         ];
       },
@@ -129,104 +150,132 @@ class _HomeScreenState extends State<HomeScreen> {
           countryRename = null;
         });
         showCountryPicker(
-            context: context,
-            countryListTheme: CountryListThemeData(
-              flagSize: 25,
-              backgroundColor: Theme.of(context).secondaryHeaderColor,
-              textStyle: const TextStyle(
-                fontSize: 16,
+          context: context,
+          countryListTheme: CountryListThemeData(
+            flagSize: 25,
+            backgroundColor: Colors.white,
+            textStyle: const TextStyle(
+              fontSize: 16,
+              color: Colors.black, // Ensure the country names are black
+            ),
+            bottomSheetHeight: 500,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20.0),
+              topRight: Radius.circular(20.0),
+            ),
+            inputDecoration: InputDecoration(
+              labelText: 'Search',
+              labelStyle: const TextStyle(
+                color: Colors.black, // Label text color black
               ),
-              bottomSheetHeight: 500,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20.0),
-                topRight: Radius.circular(20.0),
+              hintText: 'Start typing to search',
+              hintStyle: const TextStyle(
+                color: Colors.black, // Hint text color black
               ),
-              inputDecoration: InputDecoration(
-                labelText: 'Search',
-                hintText: 'Start typing to search',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: const Color(0xFF8C98A8).withOpacity(0.2),
-                  ),
+              prefixIcon: const Icon(
+                Icons.search,
+                color: Colors.black, // Search icon color black
+              ),
+              border: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: const Color(0xFF8C98A8).withOpacity(0.2),
+                ),
+              ),
+              // Add the style for the text entered in the search field
+              contentPadding: const EdgeInsets.all(12.0),
+              // Set the text style for the search input
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Colors.black.withOpacity(0.5),
                 ),
               ),
             ),
-            onSelect: (Country country) {
-              setState(() {
-                print(country.name);
-                print(country.displayName);
-                print(country.flagEmoji);
-                print(country.countryCode);
-                print(country.displayNameNoCountryCode);
-                print(country.e164Key);
-                print(country.e164Sc);
-                print(country.example);
-                countryRename = country;
-              });
-              log(countryRename!.countryCode);
+            // Set the style for the search input text
+            searchTextStyle: const TextStyle(
+              color: Colors.black, // Ensure the entered text color is black
+            ),
+          ),
+          onSelect: (Country country) {
+            setState(() {
+              print(country.name);
+              countryRename = country;
             });
+            log(countryRename!.countryCode);
+          },
+        );
       },
       child: countryRename == null
           ? const Icon(
               Icons.public,
-              color: Colors.white,
+              color: Colors.white, // Set icon color to white
               size: 30,
             )
           : Text(
               countryRename!.flagEmoji,
-              style: countryRename == null
-                  ? const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)
-                  : const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.normal,
-                    ),
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.normal,
+                color: Colors.white, // Set text color to white
+              ),
             ),
     );
   }
 
   Widget _buildTabText() {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double fontSize = screenWidth <= 300 ? 12 : 16;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          InkWell(
-            onTap: () {
-              _pageController.animateToPage(
-                0,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.bounceInOut,
-              );
-            },
-            child: Text(
-              'ForYou',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: _currentPage == 0 ? FontWeight.bold : FontWeight.w500,
-                color: _currentPage == 0 ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.secondary,
+          Expanded(
+            child: InkWell(
+              onTap: () {
+                _pageController.animateToPage(
+                  0,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.bounceInOut,
+                );
+              },
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'ForYou',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight:
+                        _currentPage == 0 ? FontWeight.bold : FontWeight.w500,
+                    color: Colors.white, // Set text color to white
+                  ),
+                ),
               ),
             ),
           ),
-          Container(
-            // color: borderColor,
-            width: 1,
-            height: 20,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-          ),
-          InkWell(
-            onTap: () {
-              _pageController.animateToPage(
-                1,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.bounceInOut,
-              );
-            },
-            child: Text(
-              'Favourites',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: _currentPage == 1 ? FontWeight.bold : FontWeight.w500,
-                color: _currentPage == 1 ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.secondary,
+          SizedBox(width: 16),
+          Expanded(
+            child: InkWell(
+              onTap: () {
+                _pageController.animateToPage(
+                  1,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.bounceInOut,
+                );
+              },
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'Favourites',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight:
+                        _currentPage == 1 ? FontWeight.bold : FontWeight.w500,
+                    color: Colors.white, // Set text color to white
+                  ),
+                ),
               ),
             ),
           ),

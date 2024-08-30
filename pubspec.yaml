@@ -67,7 +67,7 @@ dependencies:
   #FCM
   firebase_messaging: ^14.7.3
   # date intl
-  intl: ^0.18.1
+  intl: ^0.19.0
   #file picker
   file_picker: ^6.1.1
   #uuid
@@ -105,6 +105,16 @@ dependencies:
   http: ^0.13.6
   agora_rtc_engine: ^6.3.0
   badges: ^3.1.2
+  zego_uikit_prebuilt_call: ^3.1.1
+  flutter_plugin_android_lifecycle: ^2.0.21
+  zego_express_engine: ^3.16.0
+  zego_zim: ^2.12.1
+  zego_uikit_signaling_plugin: ^2.7.0
+  device_info_plus: ^10.1.2
+  zego_uikit: ^2.15.0
+  device_preview: ^1.2.0
+  get: ^4.6.6
+  camera: ^0.11.0+1
 
 
 dev_dependencies:

@@ -63,13 +63,16 @@ class _EditProfileState extends State<FeedbackScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade300,
+      backgroundColor: Theme.of(context).colorScheme.onSecondary,
       appBar: AppBar(
         centerTitle: true,
         automaticallyImplyLeading: false,
         title: Text(
           'FeedBack',
-          style: TextStyle(fontSize: 28, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontSize: 28,
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold),
         ),
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
         leading: IconButton(
@@ -158,7 +161,8 @@ class _EditProfileState extends State<FeedbackScreen> {
                 if (_isAdLoaded) {
                   _interstitialAd!.show();
                   Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const MainPage(tab: 3)),
+                    MaterialPageRoute(
+                        builder: (context) => const MainPage(tab: 3)),
                     (route) => false,
                   );
                 }

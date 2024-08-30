@@ -18,7 +18,7 @@ class ChatsObserver {
 
         if (updatedChat.lastMessage == null || value.chat.lastMessage == null || (updatedChat.lastMessage?.epochTimeMs != value.chat.lastMessage?.epochTimeMs)) {
           value.chat = updatedChat;
-          onChatUpdated(value);
+          onChatUpdated(); // Notify listeners of the change
         }
       });
 

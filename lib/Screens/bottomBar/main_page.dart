@@ -12,10 +12,6 @@ import 'package:smart_call_app/Screens/bottomBar/Tabs/profile_tab.dart';
 import 'package:smart_call_app/Screens/bottomBar/Tabs/status_tab.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:smart_call_app/Util/app_url.dart';
-import 'package:smart_call_app/Util/const_var.dart';
-
-// import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
-// import 'package:zego_uikit_signaling_plugin/zego_uikit_signaling_plugin.dart';
 
 import '../../db/entity/app_user.dart';
 
@@ -28,7 +24,8 @@ class MainPage extends StatefulWidget {
   State<MainPage> createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin {
+class _MainPageState extends State<MainPage>
+    with SingleTickerProviderStateMixin {
   AppUser? myuser;
   String token1 = '007';
   String myid = '';
@@ -41,11 +38,36 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
 
   @override
   void initState() {
+    super.initState();
+    _tabController =
+        TabController(initialIndex: widget.tab, length: 4, vsync: this);
+
+    // Add listener to TabController
+    _tabController.addListener(() {
+      setState(() {}); // Rebuild the widget to reflect the highlighted tab
+    });
+
     initCallServices();
     _initBannerAd();
     dataFireBase();
-    super.initState();
-    _tabController = TabController(initialIndex: widget.tab, length: 4, vsync: this);
+  }
+
+  Widget _buildTabIcon(BuildContext context, IconData icon, bool isSelected) {
+    return Container(
+      decoration: isSelected
+          ? BoxDecoration(
+              color: Colors.grey
+                  .withOpacity(0.2), // Background color when selected
+              shape: BoxShape.circle,
+            )
+          : null,
+      padding: const EdgeInsets.all(8.0),
+      child: Icon(
+        icon,
+        color: isSelected ? Colors.blue : Colors.white, // Icon color
+        size: isSelected ? 30 : 24, // Size of the icon when selected
+      ),
+    );
   }
 
   _initBannerAd() {
@@ -85,6 +107,9 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   }
 
   dataFireBase() async {
+    if (kDebugMode) {
+      print("Following is database registered users");
+    }
     SharedPreferences prefs = await SharedPreferences.getInstance();
     myid = prefs.getString("myid")!;
     print(myid);
@@ -270,63 +295,63 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
         initialIndex: widget.tab,
         length: 4,
         child: Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
           appBar: PreferredSize(
             preferredSize: const Size.fromHeight(60),
-            child: AppBar(
-              elevation: 0,
-              backgroundColor: Theme.of(context).colorScheme.onPrimary,
-              bottom: TabBar(
-                controller: _tabController,
-                labelColor: Theme.of(context).colorScheme.primary,
-                indicatorSize: TabBarIndicatorSize.tab,
-                indicator: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: const Color(0xff8097a2),
-                ),
-                indicatorPadding: const EdgeInsets.all(6),
-                unselectedLabelColor: Theme.of(context).colorScheme.primary,
-                indicatorColor: Colors.transparent,
-                indicatorWeight: 1,
-                dividerColor: Theme.of(context).colorScheme.onPrimary,
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                tabs: [
-                  const Tab(
-                    // text: '',
-                    icon: Icon(Icons.cabin),
-                  ),
-                  const Tab(
-                    // text: '',
-                    icon: Icon(Icons.add_chart),
-                  ),
-                  Tab(
-                    icon: badges.Badge(
-                      showBadge: true,
-                      badgeStyle: badges.BadgeStyle(
-                        badgeColor: Theme.of(context).colorScheme.primary,
-                      ),
-                      child: const Icon(Icons.chat),
-                    ),
-                  ),
-                  const Tab(
-                    // text: '',
-                    icon: Icon(Icons.person),
-                  )
-                ],
-              ),
-            ),
+            child:AppBar(
+  elevation: 0,
+  backgroundColor: Theme.of(context).colorScheme.onPrimary,
+  bottom: TabBar(
+    controller: _tabController,
+    labelColor: Colors.white,
+    unselectedLabelColor: Colors.white,
+    indicator: BoxDecoration(
+      color: Color(0xffD3D3D3), // Background color for the selected tab
+      borderRadius: BorderRadius.circular(20), // Rounded corners
+    ),
+    indicatorPadding: const EdgeInsets.symmetric(
+      horizontal: 15.0,
+      vertical: 8.0,
+    ), // Adjust padding for the size of the container
+    indicatorSize: TabBarIndicatorSize.tab, // Makes the indicator cover the entire tab
+    tabs: [
+      Tab(
+        icon: Icon(
+          Icons.cabin,
+          color: Colors.white,
+        ),
+      ),
+      Tab(
+        icon: Icon(
+          Icons.add_chart,
+          color: Colors.white,
+        ),
+      ),
+      Tab(
+        icon: Icon(
+          Icons.chat,
+          color: Colors.white,
+        ),
+      ),
+      Tab(
+        icon: Icon(
+          Icons.person,
+          color: Colors.white,
+        ),
+      ),
+    ],
+  ),
+),
           ),
-          body: isLoading == true
+          body: isLoading
               ? TabBarView(
                   controller: _tabController,
                   children: [
                     HomeScreen(myuser: myuser!),
-                    StatusScreen(
-                      myuser: myuser!,
-                    ),
+                    StatusScreen(myuser: myuser!),
                     ChatScreen(user: myuser!),
                     ProfileScreen(
-                      currentUserID: FirebaseAuth.instance.currentUser!.uid,
-                    )
+                        currentUserID: FirebaseAuth.instance.currentUser!.uid),
                   ],
                 )
               : const Center(

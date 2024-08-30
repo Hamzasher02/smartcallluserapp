@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide ModalBottomSheetRoute;
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:smart_call_app/Util/app_url.dart';
@@ -24,16 +24,98 @@ class StatusScreen extends StatefulWidget {
 class _StatusScreenState extends State<StatusScreen> {
   FirebaseFirestore db = FirebaseFirestore.instance;
   final FirebaseDatabaseSource _databaseSource = FirebaseDatabaseSource();
-  List storyData = [];
+  List<Story> storyData = [];
+  List<Story> storyData1 = [];
+  List<AppUser> usersData = [];
   InterstitialAd? _interstitialAd;
   bool _isAdLoaded = false;
+  bool _isLoading = true; // Add this line
 
   @override
   void initState() {
-    stoData();
-    getFakeUser();
-    // TODO: implement initState
     super.initState();
+    cleanupOldStatuses();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await fetchUsersData();
+    await fetchAndFilterStoriesData();
+    await fetchStoryData();
+    setState(() {
+      _isLoading = false; // Set _isLoading to false when data is loaded
+    });
+  }
+
+  Future<void> fetchUsersData() async {
+    try {
+      QuerySnapshot snapshot =
+          await db.collection("users").where("type", isEqualTo: "fake").get();
+      setState(() {
+        usersData =
+            snapshot.docs.map((doc) => AppUser.fromSnapshot(doc)).toList();
+      });
+    } catch (e) {
+      print('Error fetching users: $e');
+    }
+  }
+
+  Future<void> fetchAndFilterStoriesData() async {
+    try {
+      QuerySnapshot snapshot =
+          await db.collection("stories").where("type", isEqualTo: "img").get();
+      List<Story> allStories =
+          snapshot.docs.map((doc) => Story.fromSnapshot(doc)).toList();
+
+      final now = DateTime.now();
+      allStories.removeWhere(
+          (story) => story.timestamp.add(Duration(days: 7)).isBefore(now));
+
+      setState(() {
+        storyData = allStories.where((story) {
+          return usersData.any((user) => user.id == story.userId);
+        }).toList();
+        storyData.shuffle();
+        if (kDebugMode) {
+          print("Statuses are $storyData");
+          print(storyData.length);
+        }
+      });
+    } catch (e) {
+      print('Error fetching stories: $e');
+    }
+  }
+    Future<void> cleanupOldStatuses() async {
+    final DateTime now = DateTime.now();
+    final DateTime cutoffDate = now.subtract(Duration(days: 7));
+
+    try {
+      QuerySnapshot snapshot = await db.collection('stories')
+        .where('timestamp', isLessThan: Timestamp.fromDate(cutoffDate))
+        .get();
+
+      for (QueryDocumentSnapshot doc in snapshot.docs) {
+        await db.collection('stories').doc(doc.id).delete();
+      }
+
+      print('Old statuses deleted successfully.');
+    } catch (e) {
+      print('Error cleaning up old statuses: $e');
+    }
+  }
+
+  Future<void> fetchStoryData() async {
+    try {
+      QuerySnapshot snapshot = await db.collection("stories").get();
+      List<Story> allStories =
+          snapshot.docs.map((doc) => Story.fromSnapshot(doc)).toList();
+
+      setState(() {
+        storyData1 = allStories.toList();
+      });
+    } catch (e) {
+      print('Error fetching stories: $e');
+    }
   }
 
   initAd() {
@@ -47,15 +129,50 @@ class _StatusScreenState extends State<StatusScreen> {
         },
       ),
     );
-    _interstitialAd!.show();
   }
 
   void onAdLoaded(InterstitialAd ad) {
     _interstitialAd = ad;
     _isAdLoaded = true;
+    _interstitialAd!.show();
   }
 
-  showStatus(BuildContext context, String image, likes, name, country) {
+  Widget getAd() {
+    BannerAd bannerAd = BannerAd(
+      size: AdSize.banner,
+      adUnitId: AppUrls.nativeAdID,
+      listener: BannerAdListener(
+        onAdWillDismissScreen: (ad) {
+          ad.dispose();
+        },
+        onAdClosed: (ad) {
+          print("Ad closed");
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          print('Ad failed to load: $error');
+        },
+      ),
+      request: const AdRequest(),
+    );
+
+    bannerAd.load();
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.135,
+      child: Align(
+        alignment: Alignment.center,
+        child: SizedBox.expand(
+          child: AdWidget(
+            ad: bannerAd,
+          ),
+        ),
+      ),
+    );
+  }
+
+  showStatus(BuildContext context, String image, String likes, String name,
+      String country) {
     return showMaterialModalBottomSheet(
       context: context,
       builder: (context) => Container(
@@ -111,8 +228,9 @@ class _StatusScreenState extends State<StatusScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    name + " " + country,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                    '$name $country',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 22),
                   ),
                   const CircleAvatar(
                     backgroundColor: Colors.red,
@@ -127,219 +245,143 @@ class _StatusScreenState extends State<StatusScreen> {
     );
   }
 
-  List result = [];
-  bool tempcheck = false;
-
-  getFakeUser() async {
-    await db.collection("users").where("type", isEqualTo: "fake").get().then((event) async {
-      result = [];
-      var count = 0;
-      print(event.docs);
-      for (var doc in event.docs) {
-        result.add(AppUser(
-          id: doc.data()['id'],
-          name: doc.data()['name'],
-          gender: doc.data()['gender'],
-          age: doc.data()['age'],
-          country: doc.data()['country'],
-          profilePhotoPath: doc.data()['profile_photo_path'],
-          token: doc.data()['token'],
-          temp1: doc.data()['temp1'],
-          temp2: doc.data()['temp2'],
-          temp3: doc.data()['temp3'],
-          temp4: doc.data()['temp4'],
-          temp5: doc.data()['temp5'],
-          status: doc.data()['status'],
-          likes: doc.data()['likes'],
-          type: doc.data()['type'],
-          views: doc.data()['views'],
-        ));
-        result.shuffle();
-        count++;
-        if (count == event.docs.length) break;
-      }
+  Future<void> _refresh() async {
+    setState(() {
+      _isLoading = true; // Set _isLoading to false when data is loaded
     });
-    tempcheck = tempcheck;
-    if (tempcheck == true) {
-      Future.delayed(const Duration(seconds: 20), () {
-        return result;
-      });
-    }
-  }
-
-  Future _refresh() async {
-    storyData = [];
-    print("in function");
-    try {
-      await db.collection("stories").get().then((event) async {
-        print(event.docs.length);
-        temp = event.docs.length;
-        storyData = [];
-        for (var doc in event.docs) {
-          count = count + 1;
-          print(count);
-          print("count");
-          storyData.add(Story(
-            userId: doc.data()['userId'],
-            imageUrl: doc.data()['imageUrl'],
-            timestamp: doc.data()['timestamp'].toDate(),
-            likes: doc.data()['likes'],
-            type: doc.data()['type'],
-          ));
-          setState(() {
-            storyData.shuffle();
-          });
-          if (count == temp) break;
-        }
-      });
-    } catch (e) {
-      print(e.toString());
-    }
-    return storyData;
+    await fetchUsersData();
+    await fetchAndFilterStoriesData();
+    await fetchStoryData();
+    setState(() {
+      _isLoading = false; // Set _isLoading to false when data is loaded
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: getFakeUser(),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (!snapshot.hasData && snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-            child: CircularProgressIndicator(
-              color: Theme.of(context).colorScheme.onPrimary,
-            ),
-          );
-        }
-        return RefreshIndicator(
-          triggerMode: RefreshIndicatorTriggerMode.onEdge,
-          color: Theme.of(context).colorScheme.onPrimary,
-          onRefresh: _refresh,
-          child: Scaffold(
-            body: storyData.isEmpty
-                ? const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.warning_amber_outlined),
-                        SizedBox(
-                          height: 10,
-                        ),
-                        // Lottie.asset('assets/lottie/no data found.json',width: 200),
-                        Text(
-                          'No Status Found',
-                          style: TextStyle(fontSize: 20),
-                        ),
-                      ],
-                    ),
+    return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+
+        body: SafeArea(
+            child: _isLoading
+                ? Center(
+                    child: SizedBox(
+                      height: 50,
+                      width: 50,
+                      child: CircularProgressIndicator(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        strokeWidth: 2,
+                      ),
+                    ), // Show loading indicator
                   )
-                : SafeArea(
-                    child: Column(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                          child: Text(
-                            "Today's Feed",
-                            style: TextStyle(
-                              fontSize: 18.5,
-                              fontWeight: FontWeight.w600,
+                : storyData.isEmpty
+                    ? const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.warning_amber_outlined),
+                            SizedBox(
+                              height: 10,
                             ),
-                          ),
+                            Text(
+                              'No Status Found',
+                              style: TextStyle(fontSize: 20),
+                            ),
+                          ],
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10),
-                          child: SizedBox(
-                            height: 100,
-                            width: MediaQuery.of(context).size.width,
-                            child: StatusBarListView(
-                              fakeUser: result,
-                              myuser: widget.myuser,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                              top: 20,
-                              left: 10,
-                              right: 10,
-                            ),
-                            child: GridView.builder(
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 10.0,
-                                mainAxisSpacing: 10.0,
+                      )
+                    : RefreshIndicator(
+                        triggerMode: RefreshIndicatorTriggerMode.onEdge,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        onRefresh: _refresh,
+                        child: SafeArea(
+                            child: Column(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 10),
+                              child: Text(
+                                "Today's Feed",
+                                style: TextStyle(
+                                  fontSize: 18.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                              itemCount: storyData.length,
-                              shrinkWrap: true,
-                              itemBuilder: (context, index) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    initAd();
-                                    Navigator.of(context).push(MaterialPageRoute(
-                                        builder: (context) => StatusScrollImage(
-                                              path: storyData[index].imageUrl,
-                                              img: imagesStories,
-                                              userId: storyData[index].userId,
-                                              myuser: widget.myuser,
-                                            )));
-                                  },
-                                  child: StatusCustomGridView(
-                                    img: storyData[index].imageUrl,
-                                    type: storyData[index].type,
-                                  ),
-                                );
-                              },
                             ),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-          ),
-        );
-      },
-    );
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: SizedBox(
+                                height: 100,
+                                width: MediaQuery.of(context).size.width,
+                                child: StatusBarListView(
+                                  fakeUser: usersData,
+                                  myuser: widget.myuser,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 5,
+                                  left: 10,
+                                  right: 10,
+                                ),
+                                child: GridView.builder(
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2, // Two items per row
+                                    crossAxisSpacing: 10.0,
+                                    mainAxisSpacing: 10.0,
+                                  ),
+                                  itemCount: storyData.length, // Adjust item count
+                                  shrinkWrap: true,
+                                  itemBuilder: (context, index) {
+                                    // Calculate the storyData index considering the ads
+
+                                    // Check if the current position is where an ad should be displayed
+                                    
+                                      // Ensure that index is within the bounds of storyData
+                                      if (index < storyData.length) {
+                                        return GestureDetector(
+                                          onTap: () {
+                                            initAd();
+                                            Navigator.of(context)
+                                                .push(MaterialPageRoute(
+                                              builder: (context) =>
+                                                  StatusScrollImage(
+                                                story: storyData,
+                                                statusId:
+                                                    storyData[index].id,
+                                                currentUserId: widget.myuser.id,
+                                                path: storyData[index]
+                                                    .imageUrl,
+                                                img: storyData,
+                                                userId: storyData[index]
+                                                    .userId,
+                                                userName: storyData[index]
+                                                    .userName,
+                                                myuser: widget.myuser,
+                                              ),
+                                            ));
+                                          },
+                                          child: StatusCustomGridView(
+                                            img: storyData[index].imageUrl,
+                                            type: storyData[index].type,
+                                          ),
+                                        );
+                                      } else {
+                                        // Handle cases where index exceeds the bounds of storyData
+                                        return const SizedBox(); // Return an empty widget or handle appropriately
+                                      }
+                                    
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        )))));
   }
 
   int count = 0;
   int temp = 0;
-  List imagesStories = [];
-
-  Future stoData() async {
-    storyData = [];
-    imagesStories = [];
-    print("in function");
-    try {
-      await db.collection("stories").get().then((event) async {
-        print(event.docs.length);
-        temp = event.docs.length;
-        storyData = [];
-        for (var doc in event.docs) {
-          count = count + 1;
-          print(count);
-          print("count");
-          storyData.add(Story(
-            userId: doc.data()['userId'],
-            imageUrl: doc.data()['imageUrl'],
-            timestamp: doc.data()['timestamp'].toDate(),
-            likes: doc.data()['likes'],
-            type: doc.data()['type'],
-          ));
-          if (doc.data()['type'] == 'img') {
-            imagesStories.add(Story(
-              userId: doc.data()['userId'],
-              imageUrl: doc.data()['imageUrl'],
-              timestamp: doc.data()['timestamp'].toDate(),
-              likes: doc.data()['likes'],
-              type: doc.data()['type'],
-            ));
-          }
-          if (count == temp) break;
-        }
-      });
-    } catch (e) {
-      print(e.toString());
-    }
-    return storyData;
-  }
 }

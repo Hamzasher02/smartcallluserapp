@@ -1,9 +1,11 @@
 import 'package:country_picker/country_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:slide_popup_dialog_null_safety/slide_popup_dialog.dart' as slideDialog;
+import 'package:slide_popup_dialog_null_safety/slide_popup_dialog.dart'
+    as slideDialog;
 import 'package:smart_call_app/Screens/bottomBar/main_page.dart';
 import 'package:smart_call_app/Util/app_url.dart';
 import 'package:smart_call_app/Util/constants.dart';
@@ -62,7 +64,8 @@ class _SignUpState extends State<SignUp> {
   Future<Response> _addUser(UserRegistration userRegistration) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     userRegistration.id = prefs.getString("myid")!;
-    Response<dynamic> res = await _storageSource.uploadUserProfilePhoto(_imagePath, userRegistration.id);
+    Response<dynamic> res = await _storageSource.uploadUserProfilePhoto(
+        _imagePath, userRegistration.id);
     if (res is Success<String>) {
       userRegistration.localProfilePhotoPath = res.value;
       AppUser user = AppUser(
@@ -83,14 +86,24 @@ class _SignUpState extends State<SignUp> {
         type: "live",
         views: 0,
       );
+
+      // Add user to Firestore
       _databaseSource.addUser(user);
-      _user = _user;
+
+      // Store user ID and name in SharedPreferences
+      await prefs.setString('userId', user.id);
+      await prefs.setString('userName', user.name);
+      if (kDebugMode) {
+        print("The id of the regisrered user is ${prefs.getString("userId")}");
+        print(
+            "The name of the regisrered user is ${prefs.getString("userName")}");
+      }
+
+      _user = user;
       prefs.setBool('isLogin', true);
       return Response.success(user);
     }
-    // if (Response is Error<String>)
-    //   ScaffoldMessenger.of(context)
-    //       .showSnackBar(SnackBar(content: Text("error")));
+
     return res;
   }
 
@@ -123,7 +136,8 @@ class _SignUpState extends State<SignUp> {
         pillColor: Theme.of(context).primaryColor,
         backgroundColor: Theme.of(context).colorScheme.background,
         child: Expanded(child: SingleChildScrollView(
-          child: StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
+          child: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
             return SingleChildScrollView(
                 scrollDirection: Axis.vertical,
                 child: Column(
@@ -150,7 +164,8 @@ class _SignUpState extends State<SignUp> {
                           const Text("Profile Picture"),
                           Expanded(
                             child: Padding(
-                              padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
+                              padding:
+                                  const EdgeInsets.fromLTRB(30, 10, 30, 10),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
@@ -179,13 +194,21 @@ class _SignUpState extends State<SignUp> {
                                           alignment: Alignment.center,
                                           child: _imagePath == ""
                                               ? RoundedIconButton(
-                                                  onPressed: pickImageFromGallery,
+                                                  onPressed:
+                                                      pickImageFromGallery,
                                                   iconData: Icons.add,
                                                   iconSize: 20,
-                                                  buttonColor: Theme.of(context).secondaryHeaderColor,
+                                                  buttonColor: Theme.of(context)
+                                                      .secondaryHeaderColor,
                                                 )
                                               : RoundedIconButton(
-                                                  onPressed: pickImageFromGallery, iconData: Icons.autorenew_outlined, iconSize: 20, buttonColor: Theme.of(context).secondaryHeaderColor),
+                                                  onPressed:
+                                                      pickImageFromGallery,
+                                                  iconData:
+                                                      Icons.autorenew_outlined,
+                                                  iconSize: 20,
+                                                  buttonColor: Theme.of(context)
+                                                      .secondaryHeaderColor),
                                         ),
                                       ),
                                     ],
@@ -201,12 +224,18 @@ class _SignUpState extends State<SignUp> {
                                           shape: MaterialStateProperty.all(
                                             RoundedRectangleBorder(
                                               // Change your radius here
-                                              borderRadius: BorderRadius.circular(28),
+                                              borderRadius:
+                                                  BorderRadius.circular(28),
                                             ),
                                           ),
-                                          backgroundColor: MaterialStateProperty.all<Color>(Theme.of(context).colorScheme.onPrimary),
+                                          backgroundColor:
+                                              MaterialStateProperty.all<Color>(
+                                                  Theme.of(context)
+                                                      .colorScheme
+                                                      .onPrimary),
                                         ),
-                                        child: const Text("Save", style: TextStyle(fontSize: 18)),
+                                        child: const Text("Save",
+                                            style: TextStyle(fontSize: 18)),
                                         onPressed: () => setState(() {
                                               // _primaryphoto = 'Selected';
                                               // _primaryphotocheck = true;
@@ -234,7 +263,10 @@ class _SignUpState extends State<SignUp> {
         automaticallyImplyLeading: false,
         title: Text(
           'Create Profile',
-          style: TextStyle(fontSize: 28, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontSize: 28,
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold),
         ),
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
       ),
@@ -262,7 +294,10 @@ class _SignUpState extends State<SignUp> {
                       radius: 60,
                       backgroundColor: Theme.of(context).colorScheme.secondary,
                       child: _imagePath == ""
-                          ? Text(_primaryphoto)
+                          ? Text(_primaryphoto,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.secondaryContainer
+                          ),)
                           : ImagePortrait(
                               imagePath: _imagePath,
                               imageType: ImageType.FILE_IMAGE,
@@ -417,10 +452,15 @@ class _SignUpState extends State<SignUp> {
                       showCountryPicker(
                           context: context,
                           countryListTheme: CountryListThemeData(
+                            searchTextStyle: TextStyle(
+                              color: Colors.black
+                            ),
                             flagSize: 25,
-                            // backgroundColor: Colors.white,
-                            backgroundColor: Theme.of(context).secondaryHeaderColor,
-                            textStyle: const TextStyle(
+                            backgroundColor: Colors.white,
+                            // backgroundColor:
+                            //     Theme.of(context).secondaryHeaderColor,
+                            textStyle:  TextStyle(
+                              color: Colors.black,
                               fontSize: 16,
                             ),
                             bottomSheetHeight: 500,
@@ -430,11 +470,18 @@ class _SignUpState extends State<SignUp> {
                             ),
                             inputDecoration: InputDecoration(
                               labelText: 'Search',
+                              labelStyle: TextStyle(
+                                color: Colors.black
+                              ),
                               hintText: 'Start typing to search',
+                            hintStyle: TextStyle(
+                              color: Colors.black
+                            ),
                               prefixIcon: const Icon(Icons.search),
                               border: OutlineInputBorder(
                                 borderSide: BorderSide(
-                                  color: const Color(0xFF8C98A8).withOpacity(0.2),
+                                  color:
+                                      const Color(0xFF8C98A8).withOpacity(0.2),
                                 ),
                               ),
                             ),
@@ -448,7 +495,9 @@ class _SignUpState extends State<SignUp> {
                     },
                     child: Text(
                       country,
-                      style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.primary),
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: Theme.of(context).colorScheme.secondaryContainer),
                     ),
                   ),
                 ),
@@ -459,7 +508,8 @@ class _SignUpState extends State<SignUp> {
                   width: 400,
                   child: DropdownButton<String>(
                     value: gender,
-                    items: <String>['Male', 'Female', 'Other'].map<DropdownMenuItem<String>>((String gen) {
+                    items: <String>['Male', 'Female', 'Other']
+                        .map<DropdownMenuItem<String>>((String gen) {
                       return DropdownMenuItem<String>(
                         value: gen,
                         child: Text(
@@ -484,7 +534,8 @@ class _SignUpState extends State<SignUp> {
                   child: isLoading == false
                       ? ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.secondary,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.secondary,
                           ),
                           onPressed: () {
                             setState(() {
@@ -504,7 +555,9 @@ class _SignUpState extends State<SignUp> {
                               });
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content: Text("Please Enter Name", style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
+                                    content: Text("Please Enter Name",
+                                        style: TextStyle(color: Colors.black),
+                                        textAlign: TextAlign.center),
                                     backgroundColor: Colors.redAccent,
                                     behavior: SnackBarBehavior.floating,
                                     width: 200),
@@ -515,7 +568,9 @@ class _SignUpState extends State<SignUp> {
                               });
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content: Text("Please Select Country", style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
+                                    content: Text("Please Select Country",
+                                        style: TextStyle(color: Colors.black),
+                                        textAlign: TextAlign.center),
                                     backgroundColor: Colors.redAccent,
                                     behavior: SnackBarBehavior.floating,
                                     width: 200),
@@ -526,7 +581,8 @@ class _SignUpState extends State<SignUp> {
                                   Navigator.pushAndRemoveUntil(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (BuildContext context) => const MainPage(
+                                      builder: (BuildContext context) =>
+                                          const MainPage(
                                         tab: 0,
                                       ),
                                     ),
@@ -539,7 +595,10 @@ class _SignUpState extends State<SignUp> {
                                   });
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                        content: Text("Error", style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
+                                        content: Text("Error",
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                            textAlign: TextAlign.center),
                                         backgroundColor: Colors.redAccent,
                                         behavior: SnackBarBehavior.floating,
                                         width: 200),
@@ -550,7 +609,9 @@ class _SignUpState extends State<SignUp> {
                           },
                           child: Text(
                             'Submit',
-                            style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.primary),
+                            style: TextStyle(
+                                fontSize: 18,
+                                color: Theme.of(context).colorScheme.secondaryContainer),
                           ))
                       : const Center(
                           child: CircularProgressIndicator(

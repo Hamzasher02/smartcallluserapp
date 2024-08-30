@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../chat/chat_screen.dart';
 import '../../chat/widget/chats_list.dart';
-import '../../../Widgets/chatting_list_view.dart';
 import 'package:provider/provider.dart';
 import '../../../db/Models/chat_with_user.dart';
 import '../../../db/entity/app_user.dart';
@@ -20,52 +19,51 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  // Variables
-  AnimationController? _animationController;
-  AnimationController? controller2;
+  
+  String? myid;
+  String? myverificationstatus;
 
   @override
   void initState() {
-    // controller2 = AnimationController(vsync: this);
-    // _animationController = AnimationController(
-    //     vsync: this, duration: const Duration(milliseconds: 250))
-    //   ..forward();
     super.initState();
   }
 
   void chatWithUserPressed(ChatWithUser chatWithUser) async {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => MessageScreen(
-          chatId: compareAndCombineIds(myid, chatWithUser.user.id),
-          myUserId: myid,
-          otherUserId: chatWithUser.user.id,
-          user: widget.user,
-          otherUserName: chatWithUser.user.name,
+    if (myid != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => MessageScreen(
+            chatId: compareAndCombineIds(myid!, chatWithUser.user.id),
+            myUserId: myid!,
+            otherUserId: chatWithUser.user.id,
+            user: widget.user,
+            otherUserName: chatWithUser.user.name,
+          ),
         ),
-      ),
-    );
-    // Navigator.pushNamed(context, ChatScreen.id, arguments: {
-    //   "chat_id": chatWithUser.chat.id,
-    //   "user_id": user.id,
-    //   "other_user_id": chatWithUser.user.id
-    // });
+      );
+    } else {
+      if (kDebugMode) {
+        print("myid is null, cannot start chat");
+      }
+    }
   }
-
-  String myid = '';
-  String myverificationstatus = '';
 
   Future<String?> userId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    // myverificationstatus = prefs.getString("myverificationstatus")!;
-    myid = prefs.getString("myid")!;
-    print(myid);
+    myid = prefs.getString("myid");
+    myverificationstatus = prefs.getString("myverificationstatus");
+    
+    if (kDebugMode) {
+      print("My user ID is $myid");
+    }
+
     return myid;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
       body: FutureBuilder<String?>(
         future: userId(),
         builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
@@ -82,11 +80,12 @@ class _ChatScreenState extends State<ChatScreen> {
             );
           }
 
-          if (snapshot.hasError) return Center(child: Text(snapshot.hasError.toString()));
+          if (snapshot.hasError) return Center(child: Text(snapshot.error.toString()));
 
           final myId = snapshot.data;
-          // yCNNxSOczhe2t8FNQRTQjszOJSb2
-          if (myId == null) return const Center(child: Text('MyId is null'));
+          if (myId == null || myId.isEmpty) {
+            return const Center(child: Text('Failed to retrieve user ID.'));
+          }
 
           return Scaffold(
             body: Container(
@@ -94,45 +93,39 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Consumer<UserProvider>(
                 builder: (context, userProvider, child) {
                   return FutureBuilder<List<ChatWithUser>>(
-                    future: userProvider.getChatsWithUser(myid),
+                    future: userProvider.getChatsWithUser(myId),
                     builder: (context, chatWithUsersSnapshot) {
                       if (kDebugMode) {
                         print(chatWithUsersSnapshot.error);
                       }
-                      if (chatWithUsersSnapshot.data == null && chatWithUsersSnapshot.connectionState != ConnectionState.done) {
-                        if (kDebugMode) {
-                          print(chatWithUsersSnapshot.data);
-                          print(chatWithUsersSnapshot.error.toString());
-                        }
+                      if (chatWithUsersSnapshot.connectionState == ConnectionState.waiting) {
                         return Center(
                           child: CircularProgressIndicator(
                             color: Theme.of(context).colorScheme.onPrimary,
                           ),
                         );
-                      } else {
-                        return chatWithUsersSnapshot.data!.isEmpty
-                            ? const Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.warning_amber_outlined),
-                                    SizedBox(
-                                      height: 10,
-                                    ),
-                                    // Lottie.asset('assets/lottie/no data found.json',width: 200),
-                                    Text(
-                                      'No Chats Found',
-                                      style: TextStyle(fontSize: 20),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : ChatsList(
-                                chatWithUserList: chatWithUsersSnapshot.data!,
-                                onChatWithUserTap: chatWithUserPressed,
-                                myUserId: myId,
-                              );
                       }
+                      if (chatWithUsersSnapshot.hasError || chatWithUsersSnapshot.data == null) {
+                        return const Center(
+                          child: Text('Failed to load chats.'),
+                        );
+                      }
+                      return chatWithUsersSnapshot.data!.isEmpty
+                          ? const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.warning_amber_outlined),
+                                  SizedBox(height: 10),
+                                  Text('No Chats Found', style: TextStyle(fontSize: 20)),
+                                ],
+                              ),
+                            )
+                          : ChatsList(
+                              chatWithUserList: chatWithUsersSnapshot.data!,
+                              onChatWithUserTap: chatWithUserPressed,
+                              myUserId: myId,
+                            );
                     },
                   );
                 },

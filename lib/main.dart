@@ -1,15 +1,20 @@
+import 'package:camera/camera.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:device_preview/device_preview.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
+import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_call_app/Screens/authentication/authentication_screen.dart';
 import 'package:smart_call_app/Screens/bottomBar/main_page.dart';
-import 'package:smart_call_app/Util/Theme/dark_theme.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:smart_call_app/Util/Theme/light_theme.dart';
+import 'package:smart_call_app/Util/Theme/themes.dart';
+import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
+import 'package:zego_uikit_signaling_plugin/zego_uikit_signaling_plugin.dart';
 import 'Util/k_images.dart';
 import 'Widgets/custom_image.dart';
 import 'db/provider/user_provider.dart';
@@ -31,9 +36,16 @@ var isLoggedIn;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+ 
+
   MobileAds.instance.initialize();
+  // await ZegoUIKitSignalingPlugin.init(appID: Utils.appId, appSign: Utils.appSignin);
+
+  ZegoUIKitPrebuiltCallInvitationService().setNavigatorKey(navigatorKey);
+
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  isLoggedIn = (prefs.getBool('isLogin') == null) ? false : prefs.getBool('isLogin');
+  isLoggedIn =
+      (prefs.getBool('isLogin') == null) ? false : prefs.getBool('isLogin');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   requestPermissions();
   //FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -65,17 +77,23 @@ void main() async {
       print('Message also contained a notification: ${message.notification}');
     }
   });
+
   // ZegoUIKitPrebuiltCallInvitationService().setNavigatorKey(navigatorKey);
   //
-  // ZegoUIKit().initLog().then((value) {
-  //   ZegoUIKitPrebuiltCallInvitationService().useSystemCallingUI(
-  //     [ZegoUIKitSignalingPlugin()],
-  //   );
-  //
-  // }
-  //
-  // );
-  runApp(MyApp(navigatorKey: navigatorKey));
+  ZegoUIKit().initLog().then((value) {
+    ZegoUIKitPrebuiltCallInvitationService().useSystemCallingUI(
+      [ZegoUIKitSignalingPlugin()],
+    );
+  });
+
+  runApp(
+    DevicePreview(
+      enabled: !kReleaseMode, // Set to false in production
+      builder: (context) => MyApp(
+        navigatorKey: navigatorKey,
+      ), // Your app widget
+    ),
+  );
 }
 
 void requestPermissions() async {
@@ -106,18 +124,28 @@ class MyApp extends StatefulWidget {
 
 class MyAppState extends State<MyApp> {
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserProvider()),
       ],
-      child: MaterialApp(
+      child: GetMaterialApp(
+        builder: DevicePreview.appBuilder, // Add this line
+        locale: DevicePreview.locale(context), // Add this line
+        // useInheritedMediaQuery: true, // Add this line
         navigatorKey: widget.navigatorKey,
         title: 'Flutter Demo',
         debugShowCheckedModeBanner: false,
         //theme: lightTheme,
-        theme: lightTheme,
-        darkTheme: darkTheme,
+        // theme: lightTheme,
+        // darkTheme: darkTheme,
+        darkTheme: ThemeModes.darkTheme,
+        theme: ThemeModes.lightTheme,
         themeMode: ThemeMode.system,
         supportedLocales: const [
           Locale('en'),
@@ -129,7 +157,8 @@ class MyAppState extends State<MyApp> {
           CountryLocalizations.delegate,
         ],
         home: AnimatedSplashScreen(
-          // backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: const Color(
+              0xff8097a2), // Replace this with the actual color value you want
           splash: const CustomImage(
             path: Kimages.mainLogo,
           ),

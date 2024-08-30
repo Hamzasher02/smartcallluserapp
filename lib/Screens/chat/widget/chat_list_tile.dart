@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../db/Models/chat_with_user.dart';
 import '../../../db/entity/utils.dart';
 
-class ChatListTile extends StatelessWidget {
+class ChatListTile extends StatefulWidget {
   final ChatWithUser chatWithUser;
   final VoidCallback onTap;
   final Function onLongPress;
@@ -18,12 +18,29 @@ class ChatListTile extends StatelessWidget {
   });
 
   @override
+  State<ChatListTile> createState() => _ChatListTileState();
+}
+
+class _ChatListTileState extends State<ChatListTile> {
+  bool isMessageUnseen() {
+    return widget.chatWithUser.chat.lastMessage?.seen == false &&
+           widget.chatWithUser.chat.lastMessage?.senderId != widget.myUserId;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: (){
-        onTap.call();
+      onTap: () {
+        if (isMessageUnseen()) {
+          setState(() {
+            widget.chatWithUser.chat.lastMessage?.seen = true;
+          });
+        }
+        widget.onTap.call();
       },
-      onLongPress: () {},
+      onLongPress: () {
+        widget.onLongPress.call();
+      },
       child: SizedBox(
         height: MediaQuery.of(context).size.height * 0.085,
         child: Row(
@@ -41,11 +58,11 @@ class ChatListTile extends StatelessWidget {
                       child: CircleAvatar(
                         radius: 25,
                         backgroundImage: CachedNetworkImageProvider(
-                          chatWithUser.user.profilePhotoPath,
+                          widget.chatWithUser.user.profilePhotoPath,
                         ),
                       ),
                     ),
-                    chatWithUser.user.status == "online"
+                    widget.chatWithUser.user.status == "online"
                         ? const Positioned(
                             right: 5,
                             bottom: 10,
@@ -93,24 +110,13 @@ class ChatListTile extends StatelessWidget {
     );
   }
 
-  bool isLastMessageMyText() {
-    return chatWithUser.chat.lastMessage?.senderId == myUserId;
-  }
-
-  bool isLastMessageSeen() {
-    if (chatWithUser.chat.lastMessage?.seen == false && isLastMessageMyText() == false) {
-      return false;
-    }
-    return true;
-  }
-
   Widget getTopRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
           child: Text(
-            chatWithUser.user.name,
+            widget.chatWithUser.user.name,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontSize: 16),
@@ -118,7 +124,7 @@ class ChatListTile extends StatelessWidget {
         ),
         Expanded(
           child: Text(
-            chatWithUser.chat.lastMessage == null ? '' : convertEpochMsToDateTime(chatWithUser.chat.lastMessage!.epochTimeMs),
+            widget.chatWithUser.chat.lastMessage == null ? '' : convertEpochMsToDateTime(widget.chatWithUser.chat.lastMessage!.epochTimeMs),
             textAlign: TextAlign.end,
             style: const TextStyle(fontSize: 12),
           ),
@@ -127,33 +133,42 @@ class ChatListTile extends StatelessWidget {
     );
   }
 
-  Widget getBottomRow(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: Opacity(
-            opacity: 0.6,
-            child: Text(
-              chatWithUser.chat.lastMessage == null
-                  ? "Say Hello 👋"
-                  : ((isLastMessageMyText() ? "You: " : "") + (chatWithUser.chat.lastMessage!.type == "text" ? chatWithUser.chat.lastMessage!.text : chatWithUser.chat.lastMessage!.type)),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleMedium!.copyWith(fontSize: 14),
+ Widget getBottomRow(BuildContext context) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Expanded(
+        child: Opacity(
+          opacity: 0.6,
+          child: Text(
+            widget.chatWithUser.chat.lastMessage == null
+                ? "Say Hello 👋"
+                : ((isLastMessageMyText() ? "You: " : "") + 
+                   (widget.chatWithUser.chat.lastMessage!.type == "text" 
+                   ? widget.chatWithUser.chat.lastMessage!.text 
+                   : widget.chatWithUser.chat.lastMessage!.type)),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontSize: 14,
+              fontWeight: isMessageUnseen() ? FontWeight.bold : FontWeight.normal,
             ),
           ),
         ),
-        SizedBox(
-            width: 40,
-            child: chatWithUser.chat.lastMessage == null || isLastMessageSeen() == false
-                ? Container(
-                    width: 10,
-                    height: 10,
-                    decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                  )
-                : null)
-      ],
-    );
+      ),
+      SizedBox(
+        width: 40,
+        child: widget.chatWithUser.chat.lastMessage == null || isMessageUnseen() == false
+            ? Container()
+            : Icon(Icons.circle, color: Colors.red, size: 20), // Ensuring the red color is used
+      ),
+    ],
+  );
+}
+
+
+  bool isLastMessageMyText() {
+    return widget.chatWithUser.chat.lastMessage?.senderId == widget.myUserId;
   }
 }

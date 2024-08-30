@@ -13,7 +13,6 @@ import 'package:smart_call_app/Util/constants.dart';
 
 import '../../authentication/authentication_screen.dart';
 import '../main_page.dart';
-import '../../../Widgets/country_to_flag.dart';
 import '../../../db/entity/app_user.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -32,6 +31,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+
       body: StreamBuilder<DocumentSnapshot>(
           stream: db.collection("users").doc(widget.currentUserID).snapshots(),
           builder: (context, snapshot) {
@@ -46,167 +47,152 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 children: [
                   Container(
-                    height: 200.0,
+                    // height: 200.0,
                     decoration: BoxDecoration(
                       color: Colors.red[900],
                       boxShadow: const [BoxShadow(blurRadius: 20.0)],
-                      borderRadius: BorderRadius.vertical(bottom: Radius.elliptical(MediaQuery.of(context).size.width, 100.0)),
+                      borderRadius: BorderRadius.vertical(
+                          bottom: Radius.elliptical(
+                              MediaQuery.of(context).size.width, 100.0)),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 20),
-                            child: CircleAvatar(
-                              radius: 50,
-                              backgroundColor: Theme.of(context).colorScheme.onPrimary,
-                              child: Stack(
-                                children: [
-                                  SizedBox(
-                                    height: 90,
-                                    width: 90,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(50),
-                                      child: CachedNetworkImage(
-                                        imageUrl: myuser.profilePhotoPath,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                  myuser.status == "online"
-                                      ? const Positioned(
-                                          right: 2,
-                                          bottom: 10,
-                                          child: CircleAvatar(
-                                            radius: 5,
-                                            backgroundColor: Colors.white,
-                                            child: CircleAvatar(
-                                              radius: 4,
-                                              backgroundColor: Color(0xFF39FF14),
-                                            ),
-                                          ),
-                                        )
-                                      : const Positioned(
-                                          right: 2,
-                                          bottom: 10,
-                                          child: CircleAvatar(
-                                            radius: 5,
-                                            backgroundColor: Colors.white,
-                                            child: CircleAvatar(
-                                              radius: 4,
-                                              backgroundColor: Colors.grey,
-                                            ),
-                                          ),
-                                        ),
-                                ],
-                              ),
-                            ),
-                            // child: CircleAvatar(
-                            //   radius: 60,
-                            //   //backgroundImage: NetworkImage(widget.myuser.profilePhotoPath),
-                            // ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                    child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              FittedBox(
-                                child: Text(
-                                  myuser.name,
-                                  maxLines: 2,
-                                  style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                                    color: Colors.white,
-                                  ),
+                              CircleAvatar(
+                                radius: 50,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.onPrimary,
+                                child: Stack(
+                                  children: [
+                                    SizedBox(
+                                      height: 90,
+                                      width: 90,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(50),
+                                        child: CachedNetworkImage(
+                                          imageUrl: myuser.profilePhotoPath,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                    myuser.status == "online"
+                                        ? const Positioned(
+                                            right: 2,
+                                            bottom: 10,
+                                            child: CircleAvatar(
+                                              radius: 5,
+                                              backgroundColor: Colors.white,
+                                              child: CircleAvatar(
+                                                radius: 4,
+                                                backgroundColor:
+                                                    Color(0xFF39FF14),
+                                              ),
+                                            ),
+                                          )
+                                        : const Positioned(
+                                            right: 2,
+                                            bottom: 10,
+                                            child: CircleAvatar(
+                                              radius: 5,
+                                              backgroundColor: Colors.white,
+                                              child: CircleAvatar(
+                                                radius: 4,
+                                                backgroundColor: Colors.grey,
+                                              ),
+                                            ),
+                                          ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(
                                 height: 5,
                               ),
-                              Row(
+                              Text(
+                                myuser.name,
+                                maxLines: 2,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge!
+                                    .copyWith(
+                                      color: Colors.white,
+                                    ),
+                              ),
+                              const SizedBox(
+                                height: 5,
+                              ),
+                              Text(
+                                Country.tryParse(myuser.country)!.name,
+                                maxLines: 2,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge!
+                                    .copyWith(
+                                      color: Colors.white,
+                                    ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  // Expanded(
-                                  //   flex: 1,
-                                  //   child: Text(
-                                  //     countryCodeToEmoji(widget.myuser.country),
-                                  //     maxLines: 2,
-                                  //     style: const TextStyle(
-                                  //       fontSize: 18,
-                                  //       color: Colors.white,
-                                  //     ),
-                                  //   ),
-                                  // ),
-                                  Expanded(
-                                    flex: 3,
-                                    child: Text(
-                                      Country.tryParse(myuser.country)!.name,
-                                      maxLines: 2,
-                                      style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                                            color: Colors.white,
-                                          ),
+                                  const Icon(
+                                    Icons.visibility,
+                                    size: 30,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    myuser.views.toString(),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
                                     ),
                                   ),
                                 ],
-                              )
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 20),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.visibility,
-                                  size: 30,
-                                  color: Colors.white,
-                                ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text(
-                                  myuser.views.toString(),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.favorite,
-                                size: 30,
-                                color: Colors.white,
                               ),
                               const SizedBox(
-                                height: 10,
+                                width: 15,
                               ),
-                              Text(
-                                myuser.likes.toString(),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.favorite,
+                                    size: 30,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    myuser.likes.toString(),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
-                          ),
-                        ),
-                      ],
+                          )
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(
@@ -282,7 +268,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     logOut();
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (BuildContext context) => const AuthenticationScreen()),
+                      MaterialPageRoute(
+                          builder: (BuildContext context) =>
+                              const AuthenticationScreen()),
                       (route) => false,
                     );
                   }),
@@ -301,7 +289,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     prefs.clear();
   }
 
-  Card settingCard(BuildContext context, String text, VoidCallback onTapFunction) {
+  Card settingCard(
+      BuildContext context, String text, VoidCallback onTapFunction) {
     return Card(
       color: Theme.of(context).cardTheme.color,
       elevation: 8,

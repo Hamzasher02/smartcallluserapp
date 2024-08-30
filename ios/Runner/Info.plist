@@ -3,6 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+    <string>bluetoothDecription</string>
+
+    <key>NSCameraUsageDescription</key>
+    <string>cameraDesciption</string>
+
+    <key>NSMicrophoneUsageDescription</key>
+    <string>microphoneDesciption</string>
+
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>photoLibraryDescription</string>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>Smart Call App</string>

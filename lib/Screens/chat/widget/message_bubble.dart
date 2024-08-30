@@ -1,5 +1,3 @@
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
@@ -77,61 +75,7 @@ class MessageBubble extends StatelessWidget {
         });
   }
 
-  // showdocdialog(BuildContext context) async {
-  //   return await showDialog(context: context,
-  //       builder: (context) {
-  //         return AlertDialog(
-  //           actions: [
-  //             ElevatedButton(
-  //                 onPressed: (){
-  //                   Navigator.pop(context);
-  //                 },
-  //                 style: ElevatedButton.styleFrom(
-  //                   backgroundColor: Theme.of(context).primaryColorDark,
-  //                   shape: RoundedRectangleBorder(
-  //                     borderRadius: BorderRadius.circular(30.0),
-  //                   ),
-  //                 ),
-  //                 child: Text('Cancel')),
-  //             SizedBox(width: 20,),
-  //             ElevatedButton.icon(
-  //                 onPressed: () async {
-  //                   final status = await Permission.storage.request();
-  //
-  //                   if(status.isGranted){
-  //
-  //                     final externalDir = await getExternalStorageDirectory();
-  //
-  //                     final id = await FlutterDownloader.enqueue(
-  //                       url: text,
-  //                       savedDir: externalDir!.path,
-  //                       fileName: "file",
-  //                       showNotification: true,
-  //                       openFileFromNotification: true,
-  //                     );
-  //                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('File Downloading'),));
-  //
-  //                   }
-  //                   else{
-  //
-  //                   }
-  //
-  //                   // downloadImage(context, img);
-  //                 },
-  //                 style: ElevatedButton.styleFrom(
-  //                   backgroundColor: Colors.green,
-  //                   shape: RoundedRectangleBorder(
-  //                     borderRadius: BorderRadius.circular(30.0),
-  //                   ),
-  //                 ),
-  //                 icon: Icon(Icons.save_alt),
-  //                 label: Text('Save')),
-  //           ],
-  //           backgroundColor: Colors.transparent,
-  //           content: Text('Do you want to download this file? '),
-  //         );
-  //       });
-  // }
+ 
 
   Future downloadImage(BuildContext context, String img) async {
     //final url = await ref.getDownloadURL();
@@ -153,18 +97,7 @@ class MessageBubble extends StatelessWidget {
       child: Column(
         crossAxisAlignment: isSenderMyUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: <Widget>[
-          // this.includeTime
-          //     ? Opacity(
-          //         opacity: 0.4,
-          //         child: Container(
-          //           child: Text(convertEpochMsToDateTime(epochTimeMs),
-          //               textAlign: TextAlign.center,
-          //               style: Theme.of(context).textTheme.bodyText1?.copyWith(
-          //                   fontSize: 14, fontWeight: FontWeight.normal)),
-          //           width: double.infinity,
-          //         ),
-          //       )
-          //     : Container(),
+         
           type.compareTo('text') == 0
               ? Container(
                   constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
@@ -197,7 +130,7 @@ class MessageBubble extends StatelessWidget {
                             ),
                             child: Text(
                               text,
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal),
+                              style:TextStyle(color:Theme.of(context).colorScheme.secondaryContainer),
                             ),
                           ),
                           isSenderMyUser
@@ -233,49 +166,13 @@ class MessageBubble extends StatelessWidget {
                                         convertEpochMsToDateTime(epochTimeMs),
                                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
                                       ),
-                                      // SizedBox(
-                                      //   width: 5,
-                                      // ),
-                                      // Icon(
-                                      //   Icons.done_all,
-                                      //   size: 20,
-                                      // ),
+                                   
                                     ],
                                   ),
                                 ),
                         ],
                       ),
-                      // Text(
-                      //   "$text \n ${convertEpochMsToDateTime(epochTimeMs)}",
-                      //   style: Theme.of(context).textTheme.bodyText1?.copyWith(
-                      //       color: isSenderMyUser ? Theme.of(context).primaryColor : Theme.of(context).secondaryHeaderColor,
-                      //       fontWeight: FontWeight.normal),
-                      // ),
-                      // Column(
-                      //   crossAxisAlignment: CrossAxisAlignment.start,
-                      //   children:[
-                      //     Text(
-                      //       text,
-                      //       style: Theme.of(context).textTheme.bodyText1?.copyWith(
-                      //           color: isSenderMyUser ? Theme.of(context).primaryColor : Theme.of(context).secondaryHeaderColor,
-                      //           fontWeight: FontWeight.normal),
-                      //     ),
-                      //  //    Row(
-                      //  //        mainAxisAlignment: MainAxisAlignment.start,
-                      //  // children:[
-                      //  //
-                      //  //    ]),
-                      //     Row(
-                      //       mainAxisAlignment: MainAxisAlignment.end,
-                      //         children:[
-                      //           Text(
-                      //             convertEpochMsToDateTime(epochTimeMs),
-                      //             style: Theme.of(context).textTheme.bodyText1?.copyWith(
-                      //                 color: isSenderMyUser ? Theme.of(context).primaryColor : Theme.of(context).secondaryHeaderColor,
-                      //                 fontWeight: FontWeight.normal,fontSize: 10),
-                      //           ),
-                      //         ]),
-                      // ]),
+                  
                     ),
                   ),
                 )
@@ -310,21 +207,7 @@ class MessageBubble extends StatelessWidget {
                                   bottom: 15,
                                 ),
                                 child: GestureDetector(
-                                  // onDoubleTap: () async {
-                                  //   final status = await Permission.storage.request();
-                                  //
-                                  //   if(status.isGranted) {
-                                  //     final externalDir = await getExternalStorageDirectory();
-                                  //
-                                  //     final id = await FlutterDownloader.enqueue(
-                                  //       url: text,
-                                  //       savedDir: externalDir!.path,
-                                  //       fileName: "download",
-                                  //       showNotification: true,
-                                  //       openFileFromNotification: true,
-                                  //     );
-                                  //   }
-                                  // },
+                             
                                   onTap: () {
                                     Navigator.push(
                                       context,

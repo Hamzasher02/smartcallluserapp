@@ -1,19 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:slide_popup_dialog_null_safety/slide_popup_dialog.dart' as slideDialog;
+
 import 'package:smart_call_app/Screens/authentication/controller/response.dart';
 import 'package:smart_call_app/Screens/bottomBar/main_page.dart';
 import 'package:smart_call_app/Util/app_url.dart';
 import '../../../Widgets/image_portrate.dart';
-import '../../../Widgets/rounded_icon_button.dart';
 import '../../../db/Models/user_registration.dart';
 import '../../../db/entity/app_user.dart';
 import '../../../db/remote/firebase_database_source.dart';
 import '../../../db/remote/firebase_storage_source.dart';
+
+final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
 
 class EditProfile extends StatefulWidget {
   final AppUser myuser;
@@ -25,9 +28,13 @@ class EditProfile extends StatefulWidget {
 }
 
 class _EditProfileState extends State<EditProfile> {
+  String returnCountry() {
+    return widget.myuser.country;
+  }
+
   String exam = '1';
-  String country = 'Select Country';
-  String gender = 'Male';
+  String country = "Select Country";
+  String gender = 'Select Gender';
   String _imagePath = "";
   final picker = ImagePicker();
   bool isLoading = false;
@@ -71,6 +78,11 @@ class _EditProfileState extends State<EditProfile> {
     exam = widget.myuser.age;
     gender = widget.myuser.gender;
     _nameController.text = widget.myuser.name;
+    if (kDebugMode) {
+      print("Current name is ${widget.myuser.name}");
+      print("Current age is ${widget.myuser.age}");
+      print("Current country is ${widget.myuser.country}");
+    }
     initAd();
   }
 
@@ -87,20 +99,139 @@ class _EditProfileState extends State<EditProfile> {
     );
   }
 
+  void _handleUpdate() async {
+    if (!mounted) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      if (_nameController.text.isEmpty) {
+        showSnackBar("Please Enter Name", Colors.redAccent);
+      } else {
+        // Preserve existing values if no changes are made
+        String updatedCountry =
+            country == 'Select Country' ? widget.myuser.country : country;
+        String updatedName = _nameController.text.isEmpty
+            ? widget.myuser.name
+            : _nameController.text;
+        String updatedGender =
+            gender == 'Select Gender' ? widget.myuser.gender : gender;
+        String updatedAge = exam == 'Select Age' ? widget.myuser.age : exam;
+        String updatedProfilePhoto = _imagePath.isEmpty
+            ? widget.myuser.profilePhotoPath
+            : await _uploadProfilePhotoIfNeeded();
+
+        // Update user details
+        widget.myuser.country = updatedCountry;
+        widget.myuser.name = updatedName;
+        widget.myuser.gender = updatedGender;
+        widget.myuser.age = updatedAge;
+        widget.myuser.profilePhotoPath = updatedProfilePhoto;
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String userId = prefs.getString("myid")!;
+
+        await instance
+            .collection('users')
+            .doc(widget.myuser.id)
+            .update(widget.myuser.toMap());
+
+        if (mounted) {
+          if (_isAdLoaded) {
+            _interstitialAd!.show();
+            _interstitialAd!.fullScreenContentCallback =
+                FullScreenContentCallback(
+              onAdDismissedFullScreenContent: (InterstitialAd ad) {
+                ad.dispose();
+                if (mounted) _navigateToMainPage();
+              },
+              onAdFailedToShowFullScreenContent:
+                  (InterstitialAd ad, AdError error) {
+                ad.dispose();
+                if (mounted) _navigateToMainPage();
+              },
+            );
+          } else {
+            if (mounted) _navigateToMainPage();
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        showSnackBar("An error occurred: $e", Colors.redAccent);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<String> _uploadProfilePhotoIfNeeded() async {
+    if (_imagePath.isNotEmpty) {
+      Response<dynamic> res = await _storageSource.uploadUserProfilePhoto(
+          _imagePath,
+          (await SharedPreferences.getInstance()).getString("myid")!);
+      if (res is Success<String>) {
+        return res.value;
+      }
+    }
+    return widget.myuser.profilePhotoPath;
+  }
+
+  void showSnackBar(String message, Color backgroundColor) {
+    if (_scaffoldMessengerKey.currentState != null) {
+      _scaffoldMessengerKey.currentState!.showSnackBar(
+        SnackBar(
+          duration: Duration(seconds: 4),
+          content: Text(
+            message,
+            style: const TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: backgroundColor,
+          behavior: SnackBarBehavior.floating,
+          width: 200,
+        ),
+      );
+    }
+  }
+
+  void _navigateToMainPage() {
+    if (mounted) {
+      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const MainPage(tab: 0)),
+        (route) => false,
+      );
+    }
+  }
+
   void onAdLoaded(InterstitialAd ad) {
-    _interstitialAd = ad;
-    _isAdLoaded = true;
+    if (mounted) {
+      setState(() {
+        _interstitialAd = ad;
+        _isAdLoaded = true;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldMessengerKey,
       appBar: AppBar(
         centerTitle: true,
         automaticallyImplyLeading: false,
         title: Text(
           'Edit Profile',
-          style: TextStyle(fontSize: 28, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontSize: 28,
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold),
         ),
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
         leading: IconButton(
@@ -305,12 +436,19 @@ class _EditProfileState extends State<EditProfile> {
                       showCountryPicker(
                           context: context,
                           countryListTheme: CountryListThemeData(
-                            flagSize: 25,
-                            // backgroundColor: Colors.white,
-                            backgroundColor: Theme.of(context).secondaryHeaderColor,
                             textStyle: const TextStyle(
                               fontSize: 16,
+                              color: Colors
+                                  .black, // Ensure the country names are black
                             ),
+                            searchTextStyle: const TextStyle(
+                              color: Colors
+                                  .black, // Ensure the entered text color is black
+                            ),
+                            flagSize: 25,
+                            backgroundColor: Colors.white,
+                            // backgroundColor: Theme.of(context).secondaryHeaderColor,
+
                             bottomSheetHeight: 500,
                             borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(20.0),
@@ -318,11 +456,19 @@ class _EditProfileState extends State<EditProfile> {
                             ),
                             inputDecoration: InputDecoration(
                               labelText: 'Search',
+                              labelStyle: TextStyle(color: Colors.black),
                               hintText: 'Start typing to search',
-                              prefixIcon: const Icon(Icons.search),
+                              hintStyle: TextStyle(
+                                color: Colors.black,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                color: Colors.black, // Search icon color black
+                              ),
                               border: OutlineInputBorder(
                                 borderSide: BorderSide(
-                                  color: const Color(0xFF8C98A8).withOpacity(0.2),
+                                  color:
+                                      const Color(0xFF8C98A8).withOpacity(0.2),
                                 ),
                               ),
                             ),
@@ -337,8 +483,13 @@ class _EditProfileState extends State<EditProfile> {
                           );
                     },
                     child: Text(
-                      country,
-                      style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.primary),
+                      country == 'Select Country'
+                          ? widget.myuser.country
+                          : country,
+                      style: TextStyle(
+                          fontSize: 18,
+                          color:
+                              Theme.of(context).colorScheme.secondaryContainer),
                     ),
                   ),
                 ),
@@ -348,8 +499,11 @@ class _EditProfileState extends State<EditProfile> {
                 SizedBox(
                   width: 400,
                   child: DropdownButton<String>(
-                    value: gender,
-                    items: <String>['Male', 'Female', 'Other'].map<DropdownMenuItem<String>>((String gen) {
+                    value: gender == "Select Gender"
+                        ? widget.myuser.gender
+                        : gender,
+                    items: <String>['Male', 'Female', 'Other']
+                        .map<DropdownMenuItem<String>>((String gen) {
                       return DropdownMenuItem<String>(
                         value: gen,
                         child: Text(
@@ -371,76 +525,24 @@ class _EditProfileState extends State<EditProfile> {
                 SizedBox(
                   width: 400,
                   height: 50,
-                  child: isLoading == false
-                      ? ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.secondary,
-                          ),
-                          onPressed: () async {
-                            setState(() {
-                              isLoading = true;
-                            });
-                            print(gender);
-                            print(country);
-                            print(exam);
-                            print(_nameController.text);
-                            // _userRegistration.name = _nameController.text;
-                            // _userRegistration.age = exam;
-                            // _userRegistration.country = country;
-                            // _userRegistration.gender = gender;
-                            if (_nameController.text.isEmpty) {
-                              setState(() {
-                                isLoading = false;
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text("Please Enter Name", style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
-                                    backgroundColor: Colors.redAccent,
-                                    behavior: SnackBarBehavior.floating,
-                                    width: 200),
-                              );
-                            } else if (country == 'Select Country') {
-                              setState(() {
-                                isLoading = false;
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text("Please Select Country", style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
-                                    backgroundColor: Colors.redAccent,
-                                    behavior: SnackBarBehavior.floating,
-                                    width: 200),
-                              );
-                            } else {
-                              widget.myuser.country = country;
-                              widget.myuser.name = _nameController.text;
-                              widget.myuser.gender = gender;
-                              widget.myuser.age = exam;
-                              SharedPreferences prefs = await SharedPreferences.getInstance();
-                              String userId = prefs.getString("myid")!;
-                              Response<dynamic> res = await _storageSource.uploadUserProfilePhoto(_imagePath, userId);
-                              if (res is Success<String>) {
-                                widget.myuser.profilePhotoPath = res.value;
-                              }
-                              await instance.collection('users').doc(widget.myuser.id).update(widget.myuser.toMap());
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Update Successful')));
-                              if (_isAdLoaded) {
-                                _interstitialAd!.show();
-                                Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-                                  MaterialPageRoute(builder: (context) => const MainPage(tab: 3)),
-                                      (route) => false,
-                                );
-                              }
-                            }
-                          },
-                          child: Text(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                    ),
+                    onPressed: _handleUpdate,
+                    child: isLoading
+                        ? CircularProgressIndicator(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .secondaryContainer)
+                        : Text(
                             'Update',
-                            style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.primary),
-                          ))
-                      : const Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xff607d8b),
+                            style: TextStyle(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .secondaryContainer),
                           ),
-                        ),
+                  ),
                 ),
               ],
             ),
@@ -453,12 +555,15 @@ class _EditProfileState extends State<EditProfile> {
   uploadImage(String path) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String userId = prefs.getString("myid")!;
-    Response<dynamic> res = await _storageSource.uploadUserProfilePhoto(_imagePath, userId);
+    Response<dynamic> res =
+        await _storageSource.uploadUserProfilePhoto(_imagePath, userId);
   }
 
   @override
   void dispose() {
+    if (_interstitialAd != null) {
+      _interstitialAd!.dispose();
+    }
     super.dispose();
-    _interstitialAd!.dispose();
   }
 }

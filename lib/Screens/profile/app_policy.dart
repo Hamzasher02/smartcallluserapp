@@ -58,8 +58,8 @@ class _EditProfileState extends State<AppPolicy> {
                         Text(
                           policyList[index].title!,
                           textAlign: TextAlign.start,
-                          style: const TextStyle(
-                            color: Colors.black87,
+                          style:  TextStyle(
+                            color: Theme.of(context).colorScheme.secondary,
                             fontSize: 16.4,
                             fontWeight: FontWeight.w500,
                           ),
@@ -67,8 +67,8 @@ class _EditProfileState extends State<AppPolicy> {
                         Text(
                           policyList[index].answer!,
                           textAlign: TextAlign.start,
-                          style: const TextStyle(
-                            color: Colors.black87,
+                          style:  TextStyle(
+                            color: Theme.of(context).colorScheme.secondary,
                             fontSize: 16.4,
                             fontWeight: FontWeight.w200,
                           ),
@@ -87,8 +87,8 @@ class _EditProfileState extends State<AppPolicy> {
                 ),
                 Text(
                   disclaimerText,
-                  style: const TextStyle(
-                    color: Colors.black87,
+                  style:  TextStyle(
+                    color:Theme.of(context).colorScheme.secondary,
                     fontSize: 16.4,
                     fontWeight: FontWeight.w800,
                   ),

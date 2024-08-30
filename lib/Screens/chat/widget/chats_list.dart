@@ -45,9 +45,10 @@ class _ChatsListState extends State<ChatsList> {
     setState(() {});
   }
 
-  bool changeMessageSeen(int index) {
-    return widget.chatWithUserList[index].chat.lastMessage?.seen == false && widget.chatWithUserList[index].chat.lastMessage?.senderId != widget.myUserId;
-  }
+bool changeMessageSeen(int index) {
+  return widget.chatWithUserList[index].chat.lastMessage?.seen == false && 
+         widget.chatWithUserList[index].chat.lastMessage?.senderId != widget.myUserId;
+}
 
   String myid = '';
   String myverificationstatus = '';
@@ -56,10 +57,10 @@ class _ChatsListState extends State<ChatsList> {
   Future<String?> userId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     // myverificationstatus = prefs.getString("myverificationstatus")!;
-    return myid = prefs.getString("myid")!;
+    return myid = prefs.getString("myid") ?? "";
   }
 
-  @override
+   @override
   Widget build(BuildContext context) {
     widget.chatWithUserList.sort((a, b) {
       final aTimestamp = a.chat.lastMessage?.epochTimeMs ?? 0;
@@ -74,18 +75,12 @@ class _ChatsListState extends State<ChatsList> {
         return ChatListTile(
           chatWithUser: widget.chatWithUserList[index],
           onTap: () {
-            //if(myverificationstatus.compareTo('Verified')==0) {
-            if (widget.chatWithUserList[index].chat.lastMessage != null && changeMessageSeen(index)) {
+            if (widget.chatWithUserList[index].chat.lastMessage != null && 
+                widget.chatWithUserList[index].chat.lastMessage!.seen == false) {
               widget.chatWithUserList[index].chat.lastMessage?.seen = true;
               chatUpdated();
             }
             widget.onChatWithUserTap(widget.chatWithUserList[index]);
-            // }
-            // else
-            //   {
-            //     //showPaymentWarningDialog(context);
-            //     showSwpipDialog(context);
-            //   }
           },
           onLongPress: () {},
           myUserId: widget.myUserId,
@@ -93,6 +88,7 @@ class _ChatsListState extends State<ChatsList> {
       },
     );
   }
+
 
   Future _refresh() async {
     setState(() {});
