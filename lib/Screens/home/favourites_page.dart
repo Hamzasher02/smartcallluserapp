@@ -5,9 +5,7 @@ import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:smart_call_app/Screens/call/dummy_zego.dart';
 import 'package:smart_call_app/Util/app_url.dart';
-import 'package:smart_call_app/Util/video_call_utils.dart';
 import 'package:smart_call_app/Widgets/custom_grid_view.dart';
 
 import '../chat/chat_screen.dart';
@@ -300,13 +298,13 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                         myid,
                                         id,
                                       );
-                                      Message message = Message(
-                                        DateTime.now().millisecondsSinceEpoch,
-                                        false,
-                                        myid,
-                                        "Say Hello 👋",
-                                        "text",
-                                      );
+                                        Message1 message = Message1(
+                                      epochTimeMs: DateTime.now().millisecondsSinceEpoch,
+                                      seen: false,
+                                      senderId: myid,
+                                      text: "Say Hello 👋",
+                                      type: "text",
+                                    );
                                       _databaseSource
                                           .addChat(Chat(chatId, message));
                                       chatBuddySent(myid, id, "Buddy Sent");
@@ -347,13 +345,13 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                       //     ),
                                       //   ),
                                       // );
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => DummyZego(
-                                                    userId: id,
-                                                    userName: name,
-                                                  )));
+                                      // Navigator.push(
+                                      //     context,
+                                      //     MaterialPageRoute(
+                                      //         builder: (context) => DummyZego(
+                                      //               userId: id,
+                                      //               userName: name,
+                                      //             )));
                                     },
                                     child: CircleAvatar(
                                       backgroundColor: Colors.lightBlueAccent

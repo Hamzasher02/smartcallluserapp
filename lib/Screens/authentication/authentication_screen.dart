@@ -8,6 +8,7 @@ import '../bottomBar/main_page.dart';
 import 'controller/auth.dart';
 import 'controller/response.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 class AuthenticationScreen extends StatefulWidget {
   const AuthenticationScreen({Key? key}) : super(key: key);
 
@@ -16,31 +17,25 @@ class AuthenticationScreen extends StatefulWidget {
 }
 
 class _AuthenticationScreenState extends State<AuthenticationScreen> {
-  // final PageController _pageController = PageController(initialPage: 0);
-  // int _currentPage = 0;
-  // List pages = [const SignIn(), const SignUp()];
-
   FirebaseFirestore db = FirebaseFirestore.instance;
 
-  Future<Response> registerUserFb() async {
-    Response<dynamic> response = await signInWithFacebook();
-    print('response haii');
-    print(response);
-    if (response is Success<OAuthCredential>) {
-      print('ooo');
-      print(FirebaseAuth.instance.currentUser!.uid);
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setString("myid", FirebaseAuth.instance.currentUser!.uid);
-      return response;
-    }
-    if (response is Error) {
-      print('error');
-      print(response);
-    }
-    // ScaffoldMessenger.of(context)
-    //     .showSnackBar(SnackBar(content: Text(response.message)));
-    return response;
-  }
+  // Future<Response> registerUserFb() async {
+  //   Response<dynamic> response = await signInWithFacebook();
+  //   print('response haii');
+  //   print(response);
+  //   if (response is Success<OAuthCredential>) {
+  //     print('ooo');
+  //     print(FirebaseAuth.instance.currentUser!.uid);
+  //     SharedPreferences prefs = await SharedPreferences.getInstance();
+  //     prefs.setString("myid", FirebaseAuth.instance.currentUser!.uid);
+  //     return response;
+  //   }
+  //   if (response is Error) {
+  //     print('error');
+  //     print(response);
+  //   }
+  //   return response;
+  // }
 
   Future<Response> registerUserGoogle(BuildContext context) async {
   Response<dynamic> response = await signInWithGoogle(context);
@@ -54,10 +49,11 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
     prefs.setString("myid", FirebaseAuth.instance.currentUser!.uid);
 
     User? currentUser = FirebaseAuth.instance.currentUser;
-    DocumentSnapshot userDoc = await db.collection("users").doc(currentUser!.uid).get();
+    DocumentSnapshot userDoc =
+        await db.collection("users").doc(currentUser!.uid).get();
 
     if (!userDoc.exists) {
-      // User is new, navigate to SignUp screen
+      // If user document doesn't exist, go to the Sign Up screen
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
@@ -66,7 +62,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
         (route) => false,
       );
     } else {
-      // User already exists, navigate to MainPage
+      // If user document exists, navigate to the main page
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
@@ -91,7 +87,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.onPrimary,
+      backgroundColor: Color(0xff607d8b),
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: SizedBox(
@@ -131,23 +127,20 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                         registerUserGoogle(context).then((response) async {
                           if (response is Success<OAuthCredential>) {
                             try {
-                              await db.collection("users").doc(FirebaseAuth.instance.currentUser!.uid).get().then(
+                              await db
+                                  .collection("users")
+                                  .doc(FirebaseAuth.instance.currentUser!.uid)
+                                  .get()
+                                  .then(
                                 (event) async {
-                                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                                  SharedPreferences prefs =
+                                      await SharedPreferences.getInstance();
                                   prefs.setBool('isLogin', true);
-                                  // Navigator.pushAndRemoveUntil(
-                                  //   context,
-                                  //   MaterialPageRoute(
-                                  //     builder: (BuildContext context) => const MainPage(
-                                  //       tab: 0,
-                                  //     ),
-                                  //   ),
-                                  //   (route) => false,
-                                  // );
                                 },
                               );
                             } catch (e) {
-                              SharedPreferences prefs = await SharedPreferences.getInstance();
+                              SharedPreferences prefs =
+                                  await SharedPreferences.getInstance();
                               prefs.setBool('isLogin', true);
                               nextScreen();
                             }
@@ -156,7 +149,9 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                       },
                       child: Text(
                         'Continue with Google',
-                        style: TextStyle(fontSize: 20, color: Theme.of(context).colorScheme.primary),
+                        style: TextStyle(
+                            fontSize: 20,
+                            color: Theme.of(context).colorScheme.primary),
                       ),
                     ),
                   ),
@@ -171,32 +166,33 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                           backgroundColor: Colors.blue,
                         ),
                         onPressed: () {
-                          registerUserFb().then((response) async {
-                            if (response is Success<OAuthCredential>) {
-                              try {
-                                await db.collection("users").doc(FirebaseAuth.instance.currentUser!.uid).get().then((event) async {
-                                  SharedPreferences prefs = await SharedPreferences.getInstance();
-                                  prefs.setBool('isLogin', true);
-                                  homeScreen();
-                                  // Navigator.pushAndRemoveUntil(
-                                  //   context,
-                                  //   MaterialPageRoute(
-                                  //     builder: (BuildContext context) => const MainPage(tab: 0,),
-                                  //   ),
-                                  //       (route) => false,
-                                  // );
-                                });
-                              } catch (e) {
-                                SharedPreferences prefs = await SharedPreferences.getInstance();
-                                prefs.setBool('isLogin', true);
-                                nextScreen();
-                              }
-                            }
-                          });
+                          // registerUserFb().then((response) async {
+                          //   if (response is Success<OAuthCredential>) {
+                          //     try {
+                          //       await db
+                          //           .collection("users")
+                          //           .doc(FirebaseAuth.instance.currentUser!.uid)
+                          //           .get()
+                          //           .then((event) async {
+                          //         SharedPreferences prefs =
+                          //             await SharedPreferences.getInstance();
+                          //         prefs.setBool('isLogin', true);
+                          //         homeScreen();
+                          //       });
+                          //     } catch (e) {
+                          //       SharedPreferences prefs =
+                          //           await SharedPreferences.getInstance();
+                          //       prefs.setBool('isLogin', true);
+                          //       nextScreen();
+                          //     }
+                          //   }
+                          // });
                         },
                         child: Text(
                           'Continue with Facebook',
-                          style: TextStyle(fontSize: 20, color: Theme.of(context).colorScheme.primary),
+                          style: TextStyle(
+                              fontSize: 20,
+                              color: Theme.of(context).colorScheme.primary),
                         )),
                   ),
                 ),
@@ -221,52 +217,6 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
       ),
     );
   }
-
-  // Widget _buildTabText() {
-  //   const tabunSelectedtextColor = Color(0xff797979);
-  //   return Padding(
-  //     padding: const EdgeInsets.symmetric(horizontal: 20),
-  //     child: Row(
-  //       children: [
-  //         InkWell(
-  //           onTap: () {
-  //             _pageController.animateToPage(0,
-  //                 duration: kDuration, curve: Curves.bounceInOut);
-  //           },
-  //           child: Text(
-  //             'Sign In',
-  //             style: TextStyle(
-  //                 fontSize: 18,
-  //                 fontWeight: FontWeight.w600,
-  //                 color: _currentPage == 0
-  //                     ? Theme.of(context).colorScheme.primary
-  //                     : tabunSelectedtextColor),
-  //           ),
-  //         ),
-  //         Container(
-  //           width: 1,
-  //           height: 20,
-  //           margin: const EdgeInsets.symmetric(horizontal: 16),
-  //         ),
-  //         InkWell(
-  //           onTap: () {
-  //             _pageController.animateToPage(1,
-  //                 duration: kDuration, curve: Curves.bounceInOut);
-  //           },
-  //           child: Text(
-  //             'Sign Up',
-  //             style: TextStyle(
-  //                 fontSize: 18,
-  //                 fontWeight: FontWeight.w600,
-  //                 color: _currentPage == 1
-  //                     ? Theme.of(context).colorScheme.primary
-  //                     : tabunSelectedtextColor),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-//   }
 
   nextScreen() {
     Navigator.pushAndRemoveUntil(

@@ -17,7 +17,7 @@ class DummyWaitingCallScreen extends StatefulWidget {
   final List<Story>? story;
   final String? userId;
 
-  DummyWaitingCallScreen({
+  const DummyWaitingCallScreen({
     Key? key,
     required this.userImage,
     required this.userName,
@@ -39,9 +39,9 @@ class _DummyWaitingCallScreenState extends State<DummyWaitingCallScreen> {
   InterstitialAd? _interstitialAd;
   bool _isAdLoaded1 = false;
   CameraController? _cameraController;
-  Future<void>? _initializeControllerFuture;
+  bool _isCameraInitialized = false;
 
-  initAd() {
+  void initAd() {
     InterstitialAd.load(
       adUnitId: AppUrls.interstitialAdID,
       request: const AdRequest(),
@@ -59,36 +59,27 @@ class _DummyWaitingCallScreenState extends State<DummyWaitingCallScreen> {
     _isAdLoaded1 = true;
   }
 
-  @override
-  void initState() {
-    super.initState();
-    initAd();
-    _initializeCamera();
-  }
-
-  Future<void> _initializeCamera() async {
+  Future<void> initializeCamera() async {
     try {
       final cameras = await availableCameras();
       final frontCamera = cameras.firstWhere(
         (camera) => camera.lensDirection == CameraLensDirection.front,
       );
-
-      _cameraController = CameraController(
-        frontCamera,
-        ResolutionPreset.high,
-        enableAudio: false, // Disable audio to avoid any audio issues
-      );
-
-      _initializeControllerFuture = _cameraController?.initialize();
-      await _initializeControllerFuture;
-      setState(() {});
-    } catch (e) {
-      debugPrint('Error initializing camera: $e');
-      // Show a placeholder if the camera fails to initialize
+      _cameraController = CameraController(frontCamera, ResolutionPreset.max);
+      await _cameraController?.initialize();
       setState(() {
-        _cameraController = null;
+        _isCameraInitialized = true;
       });
+    } catch (e) {
+      debugPrint('Camera Error: $e');
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initAd();
+    initializeCamera();
   }
 
   @override
@@ -102,21 +93,12 @@ class _DummyWaitingCallScreenState extends State<DummyWaitingCallScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          if (_cameraController != null) ...[
-            FutureBuilder<void>(
-              future: _initializeControllerFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  return CameraPreview(_cameraController!);
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Camera Error: ${snapshot.error}'));
-                } else {
-                  return const Center(child: CircularProgressIndicator());
-                }
-              },
+          // Camera Preview in the background
+          if (_isCameraInitialized)
+            Positioned.fill(
+              child: CameraPreview(_cameraController!),
             ),
-          ],
-          // Your other widgets on top of the camera preview
+          // Other UI elements
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -139,7 +121,8 @@ class _DummyWaitingCallScreenState extends State<DummyWaitingCallScreen> {
                 widget.userName,
                 style: TextStyle(
                   fontSize: 20.0,
-                  color: Theme.of(context).colorScheme.primary,
+                  // color: Theme.of(context).colorScheme.primary,
+                  color: Colors.white
                 ),
               ),
               const SizedBox(height: 15),
@@ -147,7 +130,8 @@ class _DummyWaitingCallScreenState extends State<DummyWaitingCallScreen> {
                 'Calling...',
                 style: TextStyle(
                   fontSize: 16.0,
-                  color: Theme.of(context).colorScheme.primary,
+                  // color: Theme.of(context).colorScheme.primary,
+                  color: Colors.white
                 ),
               ),
               const SizedBox(height: 30),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:zego_express_engine/zego_express_engine.dart';
 // Dart imports:
 import 'dart:convert';
 import 'dart:io' show Platform;
@@ -72,49 +71,49 @@ Widget switchDropList<T>(
 }
 
   
-    static Future<void> loginUser(String userId, String userName) async {
-    ZegoUser user = ZegoUser(userId, userName);
-    await ZegoExpressEngine.instance.loginRoom('your_room_id', user);
-  }
+  //   static Future<void> loginUser(String userId, String userName) async {
+  //   ZegoUser user = ZegoUser(userId, userName);
+  //   await ZegoExpressEngine.instance.loginRoom('your_room_id', user);
+  // }
 
-  static Future<void> startCall(String roomId) async {
-    await ZegoExpressEngine.instance.startPublishingStream(roomId);
-    await ZegoExpressEngine.instance.startPreview();
-  }
+  // static Future<void> startCall(String roomId) async {
+  //   await ZegoExpressEngine.instance.startPublishingStream(roomId);
+  //   await ZegoExpressEngine.instance.startPreview();
+  // }
 
-  static Future<void> joinCall(String roomId) async {
-    await ZegoExpressEngine.instance.loginRoom(roomId, ZegoUser('user_id', 'user_name'));
-    await ZegoExpressEngine.instance.startPlayingStream(roomId);
-  }
+  // static Future<void> joinCall(String roomId) async {
+  //   await ZegoExpressEngine.instance.loginRoom(roomId, ZegoUser('user_id', 'user_name'));
+  //   await ZegoExpressEngine.instance.startPlayingStream(roomId);
+  // }
 
-  static Future<void> endCall(String roomId) async {
-    await ZegoExpressEngine.instance.stopPublishingStream();
-    await ZegoExpressEngine.instance.logoutRoom(roomId);
-  }
+  // static Future<void> endCall(String roomId) async {
+  //   await ZegoExpressEngine.instance.stopPublishingStream();
+  //   await ZegoExpressEngine.instance.logoutRoom(roomId);
+  // }
 
-  static void onIncomingCall(String roomId, BuildContext context) {
-    // Show an alert or a dialog for the incoming call
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text("Incoming Call"),
-        content: Text("You have an incoming call from $roomId"),
-        actions: [
-          TextButton(
-            onPressed: () {
-              joinCall(roomId);
-              Navigator.of(context).pop();
-            },
-            child: Text("Answer"),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text("Decline"),
-          ),
-        ],
-      ),
-    );
-  }
+  // static void onIncomingCall(String roomId, BuildContext context) {
+  //   // Show an alert or a dialog for the incoming call
+  //   showDialog(
+  //     context: context,
+  //     builder: (_) => AlertDialog(
+  //       title: Text("Incoming Call"),
+  //       content: Text("You have an incoming call from $roomId"),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () {
+  //             joinCall(roomId);
+  //             Navigator.of(context).pop();
+  //           },
+  //           child: Text("Answer"),
+  //         ),
+  //         TextButton(
+  //           onPressed: () {
+  //             Navigator.of(context).pop();
+  //           },
+  //           child: Text("Decline"),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }

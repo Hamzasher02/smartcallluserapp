@@ -6,16 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_call_app/Screens/bottomBar/main_page.dart';
+import 'package:smart_call_app/Screens/call/agora/video_call_screen_1.dart';
 import 'package:smart_call_app/Screens/chat/chat_screen.dart';
 import 'package:smart_call_app/Util/app_url.dart';
-import 'package:smart_call_app/Util/video_call_utils.dart';
+import 'package:smart_call_app/Util/video_call_fcm.dart';
 import 'package:smart_call_app/Widgets/country_to_flag.dart';
 import 'package:smart_call_app/Widgets/custom_card_tile.dart';
 import 'package:smart_call_app/Widgets/dummy_waiting_call_screen.dart';
+import 'package:smart_call_app/db/Models/native_ad_model_1.dart';
 import 'package:smart_call_app/db/entity/app_user.dart';
 import 'package:smart_call_app/db/entity/chat.dart';
 import 'package:smart_call_app/db/entity/fvrt.dart';
@@ -23,8 +25,6 @@ import 'package:smart_call_app/db/entity/message.dart';
 import 'package:smart_call_app/db/entity/sentmessage.dart';
 import 'package:smart_call_app/db/entity/utils.dart';
 import 'package:smart_call_app/db/remote/firebase_database_source.dart';
-import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
-import 'package:zego_uikit_signaling_plugin/zego_uikit_signaling_plugin.dart';
 
 class ForYouPage extends StatefulWidget {
   final AppUser myuser;
@@ -85,7 +85,7 @@ class _ForYouPageState extends State<ForYouPage> {
         .snapshots();
   }
 
-  late ZegoUIKitPrebuiltCallInvitationService _callInvitationService;
+  // late ZegoUIKitPrebuiltCallInvitationService _callInvitationService;
 
   String generateCallId() {
     return DateTime.now().millisecondsSinceEpoch.toString();
@@ -98,7 +98,9 @@ class _ForYouPageState extends State<ForYouPage> {
 
     //dataFireBase();
     super.initState();
-    initZego();
+        nativeAdModel.loadAds(5); // Load 5 ads (or any number based on your needs)
+
+    // initZego();
 
     _initializeAd();
     if (kDebugMode) {
@@ -121,66 +123,66 @@ class _ForYouPageState extends State<ForYouPage> {
     dataFireBase();
   }
 
-  void initZego() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? storedUserId = prefs.getString('userId');
-    String? storedUserName = prefs.getString('userName');
+  // void initZego() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String? storedUserId = prefs.getString('userId');
+  //   String? storedUserName = prefs.getString('userName');
 
-    if (kDebugMode) {
-      print("Id of the current user is $storedUserId");
-      print("Name of the current user is $storedUserName");
-    }
+  //   if (kDebugMode) {
+  //     print("Id of the current user is $storedUserId");
+  //     print("Name of the current user is $storedUserName");
+  //   }
 
-    // Ensure userID and userName are not null before passing them to Zego
-    await ZegoUIKitPrebuiltCallInvitationService().init(
-        appID: Utils.appId,
-        appSign: Utils.appSignin,
-        userID: storedUserId ?? "defaultUserId",
-        userName: storedUserName ?? "defaultUserName",
-        notifyWhenAppRunningInBackgroundOrQuit: true,
-        androidNotificationConfig: ZegoAndroidNotificationConfig(
-          channelID: "ZegoUIKit",
-          channelName: "Call Notifications",
-          sound: "notification",
-          icon: "notification_icon",
-        ),
-        iOSNotificationConfig: ZegoIOSNotificationConfig(
-          isSandboxEnvironment: false,
-          systemCallingIconName: 'CallKitIcon',
-        ),
-        plugins: [ZegoUIKitSignalingPlugin()],
-        requireConfig: (ZegoCallInvitationData data) {
-          final config = (data.invitees.length > 1)
-              ? ZegoCallType.videoCall == data.type
-                  ? ZegoUIKitPrebuiltCallConfig.groupVideoCall()
-                  : ZegoUIKitPrebuiltCallConfig.groupVoiceCall()
-              : ZegoCallType.videoCall == data.type
-                  ? ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall()
-                  : ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall();
+  //   // Ensure userID and userName are not null before passing them to Zego
+  //   await ZegoUIKitPrebuiltCallInvitationService().init(
+  //       appID: Utils.appId,
+  //       appSign: Utils.appSignin,
+  //       userID: storedUserId ?? "defaultUserId",
+  //       userName: storedUserName ?? "defaultUserName",
+  //       notifyWhenAppRunningInBackgroundOrQuit: true,
+  //       androidNotificationConfig: ZegoAndroidNotificationConfig(
+  //         channelID: "ZegoUIKit",
+  //         channelName: "Call Notifications",
+  //         sound: "notification",
+  //         icon: "notification_icon",
+  //       ),
+  //       iOSNotificationConfig: ZegoIOSNotificationConfig(
+  //         isSandboxEnvironment: false,
+  //         systemCallingIconName: 'CallKitIcon',
+  //       ),
+  //       plugins: [ZegoUIKitSignalingPlugin()],
+  //       requireConfig: (ZegoCallInvitationData data) {
+  //         final config = (data.invitees.length > 1)
+  //             ? ZegoCallType.videoCall == data.type
+  //                 ? ZegoUIKitPrebuiltCallConfig.groupVideoCall()
+  //                 : ZegoUIKitPrebuiltCallConfig.groupVoiceCall()
+  //             : ZegoCallType.videoCall == data.type
+  //                 ? ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall()
+  //                 : ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall();
 
-          config.topMenuBarConfig.isVisible = true;
-          config.topMenuBarConfig.buttons
-              .insert(0, ZegoMenuBarButtonName.minimizingButton);
-          // Handle when the call ends
+  //         config.topMenuBarConfig.isVisible = true;
+  //         config.topMenuBarConfig.buttons
+  //             .insert(0, ZegoMenuBarButtonName.minimizingButton);
+  //         // Handle when the call ends
 
-          // Handle when the call ends
-          // config.onHangUpConfirmation = (context) async {
-          //   onCallEnd();
-          //   return Future.value(true);
-          // };
+  //         // Handle when the call ends
+  //         // config.onHangUpConfirmation = (context) async {
+  //         //   onCallEnd();
+  //         //   return Future.value(true);
+  //         // };
 
-          // // Handle when the call is declined
-          // config.onHangUp = () {
-          //   onCallDecline();
-          // };
+  //         // // Handle when the call is declined
+  //         // config.onHangUp = () {
+  //         //   onCallDecline();
+  //         // };
 
-          return config;
-        });
-  }
+  //         return config;
+  //       });
+  // }
 
-  void _uninitializeCallInvitationService() {
-    _callInvitationService.uninit();
-  }
+  // void _uninitializeCallInvitationService() {
+  //   _callInvitationService.uninit();
+  // }
 
   String country = 'Country';
 
@@ -354,8 +356,24 @@ class _ForYouPageState extends State<ForYouPage> {
     }
   }
 
-  showUserView(BuildContext context, String type, String id, img, name, country,
-      date, age, gender, view, like, myid, myuser, otherId, index, temp1) {
+  showUserView(
+      BuildContext context,
+      String token,
+      String type,
+      String id,
+      img,
+      name,
+      country,
+      date,
+      age,
+      gender,
+      view,
+      like,
+      myid,
+      myuser,
+      otherId,
+      index,
+      temp1) {
     int views = view + 1;
     bool isFavorite =
         temp1 == "true"; // Initially set based on the 'temp1' field
@@ -453,7 +471,11 @@ class _ForYouPageState extends State<ForYouPage> {
                                               player.play();
 
                                               // Dismiss the dialog
-                                              Navigator.pop(context);
+                                              Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          MainPage(tab: 0)));
 
                                               // Show Snackbar after the dialog is dismissed
                                               Future.delayed(Duration.zero, () {
@@ -472,7 +494,11 @@ class _ForYouPageState extends State<ForYouPage> {
                                                   "removeF", index);
 
                                               // Dismiss the dialog
-                                              Navigator.pop(context);
+                                              Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          MainPage(tab: 0)));
 
                                               // Show Snackbar after the dialog is dismissed
                                               Future.delayed(Duration.zero, () {
@@ -591,12 +617,13 @@ class _ForYouPageState extends State<ForYouPage> {
                                         myid,
                                         id,
                                       );
-                                      Message message = Message(
-                                        DateTime.now().millisecondsSinceEpoch,
-                                        false,
-                                        myid,
-                                        "Say Hello 👋",
-                                        "text",
+                                      Message1 message = Message1(
+                                        epochTimeMs: DateTime.now()
+                                            .millisecondsSinceEpoch,
+                                        seen: false,
+                                        senderId: myid,
+                                        text: "Say Hello 👋",
+                                        type: "text",
                                       );
                                       _databaseSource
                                           .addChat(Chat(chatId, message));
@@ -608,11 +635,11 @@ class _ForYouPageState extends State<ForYouPage> {
                                           builder: (context) => MessageScreen(
                                             gender: gender,
                                             userType: type,
-                                            date:date,
+                                            otherUserDeviceToken: token,
+                                            date: date,
                                             age: age,
                                             image: img,
                                             country: country,
-                                            
                                             chatId:
                                                 compareAndCombineIds(myid, id),
                                             myUserId: myid,
@@ -629,35 +656,50 @@ class _ForYouPageState extends State<ForYouPage> {
                                       radius: 30,
                                       child: const Icon(
                                         Icons.chat,
-                                        size: 30,
+                                        size: 25,
                                         color: Colors.white,
                                       ),
                                     ),
                                   ),
                                   type == "live"
-                                      ? SizedBox(
-                                          width: 90.0, // Set your desired width
-                                          height:
-                                              90.0, // Set your desired height
-                                          child: FittedBox(
-                                            fit: BoxFit.cover,
-                                            child: ZegoSendCallInvitationButton(
-                                              isVideoCall: true,
-                                              resourceID: "zegouikit_call",
-                                              invitees: [
-                                                ZegoUIKitUser(
-                                                  id: id,
-                                                  name: name,
+                                      ? GestureDetector(
+                                          onTap: () {
+                                            VideoCallFcm.sendCallNotification(
+                                                token,
+                                                "smart_call_app",
+                                                "007eJxTYLhwLq7i2b4u2QWOVy8FxG5Qe8vgtvHrA4bjt0806j6yuKukwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUFKb1K60hkJHh/zZ+FkYGCATx+RiKcxOLSuKTE3Ny4hMLChgYAIFIJgw=",
+                                                name);
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    VideoCallScreen1(
+                                                  recieverName: name,
+                                                  agoraAppId:
+                                                      "18c4ec28d42d4dbda9159124878e6cbb",
+                                                  agoraAppToken:
+                                                      "007eJxTYLhwLq7i2b4u2QWOVy8FxG5Qe8vgtvHrA4bjt0806j6yuKukwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUFKb1K60hkJHh/zZ+FkYGCATx+RiKcxOLSuKTE3Ny4hMLChgYAIFIJgw=", // Use dynamic channel name
+                                                  agoraAppCertificate:
+                                                      "064b1a009cc248afa93a01234876a4c9", // Use your dynamic token
+                                                  agoraAppChannelName:
+                                                      "smart_call_app",
                                                 ),
-                                              ],
-                                              icon: ButtonIcon(
-                                                  icon: const Icon(
-                                                    Icons.videocam_rounded,
-                                                    size: 50,
-                                                    color: Colors.white,
-                                                  ),
-                                                  backgroundColor:
-                                                      Colors.green),
+                                              ),
+                                            );
+                                          },
+                                          child: Container(
+                                            width: 45,
+                                            height: 45,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.green,
+                                            ),
+                                            child: const Center(
+                                              child: Icon(
+                                                Icons.videocam,
+                                                size: 25,
+                                                color: Colors.white,
+                                              ),
                                             ),
                                           ),
                                         )
@@ -718,6 +760,8 @@ class _ForYouPageState extends State<ForYouPage> {
     //_databaseSource.addMessageRequestRecived(otherid, ReceivedRequest(myid, received));
     _databaseSource.addChatBuddy(otherid, SentMessage(myid, received));
   }
+
+  NativeAdModel1 nativeAdModel = Get.put(NativeAdModel1());
 
   @override
   Widget build(BuildContext context) {
@@ -786,10 +830,20 @@ class _ForYouPageState extends State<ForYouPage> {
                           return Expanded(
                             child: ListView.builder(
                               itemCount: result.length + (result.length ~/ 5),
-                              physics: const BouncingScrollPhysics(),
-                              itemBuilder: (BuildContext context, int index) {
-                                if (index != 0 && index % 5 == 0) {
-                                  return getAd();
+                itemBuilder: (BuildContext context, int index) {
+                  if (index != 0 && index % 5 == 0) {
+                    // Show native ad every 5th item
+                    final adIndex = index ~/ 5;
+                                  // Display the native ad after every 5th user
+                                   return Obx(() {
+                      return nativeAdModel.isAdLoaded(adIndex)
+                          ? Container(
+                              height: MediaQuery.of(context).size.height * 0.2,
+                              width: MediaQuery.of(context).size.width,
+                              child: AdWidget(ad: nativeAdModel.getAd(adIndex)!),
+                            )
+                          : const Center(child: CircularProgressIndicator());
+                    });
                                 } else {
                                   final int itemIndex = index - (index ~/ 5);
                                   return GestureDetector(
@@ -801,12 +855,12 @@ class _ForYouPageState extends State<ForYouPage> {
                                       }
                                       showUserView(
                                         context,
+                                        result[itemIndex].token,
                                         result[itemIndex].type,
                                         result[itemIndex].id,
                                         result[itemIndex].profilePhotoPath,
                                         result[itemIndex].name,
                                         result[itemIndex].country,
-                                        
                                         dateFormat.format(DateTime.now()),
                                         result[itemIndex].age,
                                         result[itemIndex].gender,
@@ -832,11 +886,14 @@ class _ForYouPageState extends State<ForYouPage> {
                                       });
                                     },
                                     child: CustomCardTile(
+                                      recieverDeviceToken:
+                                          result[itemIndex].token,
                                       currentUserId: FirebaseAuth
                                           .instance.currentUser!.uid,
                                       currentUserName: FirebaseAuth.instance
                                               .currentUser!.displayName ??
                                           "",
+                                      type: result[itemIndex].type,
                                       id: result[itemIndex].id,
                                       name: result[itemIndex].name,
                                       age: result[itemIndex].age,
@@ -888,16 +945,9 @@ class _ForYouPageState extends State<ForYouPage> {
     bannerAd.load();
 
     return Container(
-      height: MediaQuery.of(context).size.height *
-          0.135, // Match the height of CustomCardTile
-      child: Align(
-        alignment: Alignment.center,
-        child: SizedBox.expand(
-          child: AdWidget(
-            ad: bannerAd,
-          ),
-        ),
-      ),
+      height: MediaQuery.of(context).size.height * 0.135,
+      width: MediaQuery.of(context).size.width,
+      child: AdWidget(ad: bannerAd),
     );
   }
 
@@ -905,6 +955,8 @@ class _ForYouPageState extends State<ForYouPage> {
   void dispose() {
     super.dispose();
     _interstitialAd!.dispose();
-    _uninitializeCallInvitationService();
+        nativeAdModel.dispose();
+
+    // _uninitializeCallInvitationService();
   }
 }

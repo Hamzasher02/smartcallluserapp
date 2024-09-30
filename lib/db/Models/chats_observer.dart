@@ -11,18 +11,20 @@ class ChatsObserver {
 
   ChatsObserver(this.chatsList);
 
-  void startObservers(Function onChatUpdated) {
-    for (var value in chatsList) {
-      StreamSubscription<DocumentSnapshot> chatSubscription = _databaseSource.observeChat(value.chat.id).listen((event) {
-        Chat updatedChat = Chat.fromSnapshot(event);
+void startObservers(Function onChatUpdated) {
+  for (var chatWithUser in chatsList) {
+    StreamSubscription<DocumentSnapshot> chatSubscription = _databaseSource.observeChat(chatWithUser.chat.id).listen((event) {
+      Chat updatedChat = Chat.fromSnapshot(event);
 
-        if (updatedChat.lastMessage == null || value.chat.lastMessage == null || (updatedChat.lastMessage?.epochTimeMs != value.chat.lastMessage?.epochTimeMs)) {
-          value.chat = updatedChat;
-          onChatUpdated(); // Notify listeners of the change
-        }
-      });
+      // Update the chat object if there's a new message
+      if (updatedChat.lastMessage != null && 
+          (chatWithUser.chat.lastMessage == null || updatedChat.lastMessage!.epochTimeMs != chatWithUser.chat.lastMessage!.epochTimeMs)) {
+        chatWithUser.chat = updatedChat;
+        onChatUpdated(); // Trigger UI update
+      }
+    });
 
-      subscriptionList.add(chatSubscription);
-    }
+    subscriptionList.add(chatSubscription);
   }
+}
 }

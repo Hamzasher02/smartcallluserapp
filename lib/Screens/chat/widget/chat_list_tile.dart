@@ -22,6 +22,7 @@ class ChatListTile extends StatefulWidget {
 }
 
 class _ChatListTileState extends State<ChatListTile> {
+
   bool isMessageUnseen() {
     return widget.chatWithUser.chat.lastMessage?.seen == false &&
            widget.chatWithUser.chat.lastMessage?.senderId != widget.myUserId;
@@ -133,7 +134,7 @@ class _ChatListTileState extends State<ChatListTile> {
     );
   }
 
- Widget getBottomRow(BuildContext context) {
+Widget getBottomRow(BuildContext context) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
@@ -141,12 +142,12 @@ class _ChatListTileState extends State<ChatListTile> {
         child: Opacity(
           opacity: 0.6,
           child: Text(
-            widget.chatWithUser.chat.lastMessage == null
-                ? "Say Hello 👋"
-                : ((isLastMessageMyText() ? "You: " : "") + 
-                   (widget.chatWithUser.chat.lastMessage!.type == "text" 
-                   ? widget.chatWithUser.chat.lastMessage!.text 
-                   : widget.chatWithUser.chat.lastMessage!.type)),
+            widget.chatWithUser.chat.lastMessage != null
+                ? (isLastMessageMyText() ? "You: " : "") +
+                  (widget.chatWithUser.chat.lastMessage!.type == "text"
+                      ? widget.chatWithUser.chat.lastMessage!.text
+                      : widget.chatWithUser.chat.lastMessage!.type)
+                : "Say Hello 👋",
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
@@ -159,13 +160,15 @@ class _ChatListTileState extends State<ChatListTile> {
       ),
       SizedBox(
         width: 40,
-        child: widget.chatWithUser.chat.lastMessage == null || isMessageUnseen() == false
-            ? Container()
-            : Icon(Icons.circle, color: Colors.red, size: 20), // Ensuring the red color is used
+        child: widget.chatWithUser.chat.lastMessage != null && isMessageUnseen()
+            ? Icon(Icons.circle, color: Colors.red, size: 20)
+            : Container(),
       ),
     ],
   );
 }
+
+
 
 
   bool isLastMessageMyText() {

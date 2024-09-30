@@ -3,15 +3,15 @@ import 'package:country_picker/country_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
+import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:skeletons/skeletons.dart';
 import 'package:smart_call_app/Screens/bottomBar/main_page.dart';
-import 'package:smart_call_app/Screens/call/agora/screen_video_call.dart';
 import 'package:smart_call_app/Util/app_url.dart';
 import 'package:smart_call_app/Widgets/call_with_timer.dart';
-// import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
+import 'package:smart_call_app/Widgets/dummy_waiting_call_screen.dart';
 
 import '../Screens/chat/chat_screen.dart';
 import '../Util/constants.dart';
@@ -28,7 +28,8 @@ class StatusBarListView extends StatefulWidget {
   final List fakeUser;
   final AppUser myuser;
 
-  const StatusBarListView({super.key, required this.fakeUser, required this.myuser});
+  const StatusBarListView(
+      {super.key, required this.fakeUser, required this.myuser});
 
   @override
   State<StatusBarListView> createState() => _StatusBarListViewState();
@@ -84,6 +85,7 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                 initAd();
                 showUserView(
                   context,
+                  widget.fakeUser[index].type,
                   widget.fakeUser[index].id,
                   widget.fakeUser[index].profilePhotoPath,
                   widget.fakeUser[index].name,
@@ -187,8 +189,12 @@ class _StatusBarListViewState extends State<StatusBarListView> {
     }
   }
 
-  showUserView(BuildContext context, String id, img, name, country, date, age, gender, view, like, myid, myuser, otherId, index, temp1) {
+  showUserView(BuildContext context, String type, String id, img, name, country,
+      date, age, gender, view, like, myid, myuser, otherId, index, temp1) {
     int views;
+    bool isFavorite =
+        temp1 == "true"; // Initially set based on the 'temp1' field
+    int likes = like; // Initialize likes counter
     print(view);
     bool fvtVisible = false;
     views = view + 1;
@@ -235,23 +241,28 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                     Expanded(
                       flex: 2,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 10),
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            /// name and fvrt
+                            /// Name and Favorite Icon
                             Expanded(
                               flex: 2,
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Expanded(
                                     flex: 2,
                                     child: Text(
                                       name,
-                                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                                            fontWeight: FontWeight.w700,
-                                          ),
+                                      style: const TextStyle(
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
                                   Expanded(
@@ -259,29 +270,75 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                                     child: Column(
                                       children: [
                                         GestureDetector(
-                                          onTap: fvtVisible
-                                              ? null
-                                              : () {
-                                                  addF(myid, otherId, "addF", index);
-                                                  int likes;
-                                                  likes = like + 1;
-                                                  player.setAsset('assets/audio/ting.mp3');
-                                                  player.play();
-                                                  setState(() {
-                                                    fvtVisible = !fvtVisible;
-                                                  });
-                                                  _databaseSource.addFav(id, likes);
-                                                  _databaseSource.addFav2(id, fvtVisible.toString());
-                                                },
+                                          onTap: () async {
+                                            setState(() {
+                                              isFavorite = !isFavorite;
+                                              likes += isFavorite ? 1 : -1;
+                                            });
+
+                                            // Update the like count and favorite status in Firestore
+                                            _databaseSource.addFav(id, likes);
+                                            _databaseSource.addFav2(
+                                                id, isFavorite.toString());
+
+                                            if (isFavorite) {
+                                              await addF(
+                                                  myid, otherId, "addF", index);
+                                              player.setAsset(
+                                                  'assets/audio/ting.mp3');
+                                              player.play();
+
+                                              // Dismiss the dialog
+                                              Navigator.pop(context);
+
+                                              // Show Snackbar after the dialog is dismissed
+                                              Future.delayed(Duration.zero, () {
+                                                Get.snackbar(
+                                                    backgroundColor:
+                                                        const Color(0xff607d8b),
+                                                    snackPosition:
+                                                        SnackPosition.TOP,
+                                                    duration:
+                                                        Duration(seconds: 4),
+                                                    "Favourites",
+                                                    "$name is added in the favorites by you. See in the Favorite tab");
+                                              });
+                                            } else {
+                                              await addF(myid, otherId,
+                                                  "removeF", index);
+
+                                              // Dismiss the dialog
+                                              Navigator.pop(context);
+
+                                              // Show Snackbar after the dialog is dismissed
+                                              Future.delayed(Duration.zero, () {
+                                                Get.snackbar(
+                                                    backgroundColor:
+                                                        const Color(0xff607d8b),
+                                                    snackPosition:
+                                                        SnackPosition.TOP,
+                                                    duration: const Duration(
+                                                        seconds: 4),
+                                                    "Favourites",
+                                                    "$name is removed from the favorites by you.");
+                                              });
+                                            }
+                                          },
                                           child: Icon(
-                                            temp1 != "" || fvtVisible ? Icons.favorite : Icons.favorite_border,
-                                            color: temp1 != "" || fvtVisible ? Colors.redAccent : Colors.redAccent,
+                                            isFavorite
+                                                ? Icons.favorite
+                                                : Icons.favorite_border,
+                                            color: isFavorite
+                                                ? Colors.redAccent
+                                                : Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
                                             size: 20,
                                           ),
                                         ),
                                         Text(
-                                          showZeroIfNegative(like).toString(),
-                                          style: const TextStyle(fontSize: 18),
+                                          showZeroIfNegative(likes).toString(),
+                                          style: const TextStyle(fontSize: 16),
                                         ),
                                       ],
                                     ),
@@ -290,7 +347,7 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                               ),
                             ),
 
-                            /// country
+                            /// Country
                             Expanded(
                               flex: 1,
                               child: Row(
@@ -301,64 +358,67 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                                   ),
                                   Text(
                                     Country.tryParse(country)!.name,
-                                    style: Theme.of(context).textTheme.titleMedium!.copyWith(),
+                                    style: const TextStyle(fontSize: 20),
                                   ),
                                 ],
                               ),
                             ),
-
-                            /// date
                             Expanded(
                               flex: 1,
                               child: Row(
                                 children: [
                                   Text(
                                     date,
-                                    style: Theme.of(context).textTheme.titleMedium!.copyWith(),
+                                    style: const TextStyle(fontSize: 18),
                                   ),
                                 ],
                               ),
                             ),
 
-                            /// age
+                            /// Age
                             Expanded(
                               flex: 1,
                               child: Row(
                                 children: [
-                                  Text(
+                                  const Text(
                                     "Age: ",
-                                    style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                   Text(
                                     "$age",
-                                    style: Theme.of(context).textTheme.titleMedium!.copyWith(),
+                                    style: const TextStyle(fontSize: 20),
                                   ),
                                 ],
                               ),
                             ),
 
-                            /// gender
+                            /// Gender
                             Expanded(
                               flex: 1,
                               child: Row(
                                 children: [
-                                  Text(
+                                  const Text(
                                     "Gender: ",
-                                    style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                   Text(
                                     "$gender",
-                                    style: Theme.of(context).textTheme.titleMedium!.copyWith(),
+                                    style: const TextStyle(fontSize: 20),
                                   ),
                                 ],
                               ),
                             ),
 
-                            /// buttons
+                            /// Buttons
                             Expanded(
                               flex: 2,
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   GestureDetector(
@@ -367,31 +427,40 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                                         myid,
                                         id,
                                       );
-                                      Message message = Message(
-                                        DateTime.now().millisecondsSinceEpoch,
-                                        false,
-                                        myid,
-                                        "Say Hello 👋",
-                                        "text",
-                                      );
-                                      _databaseSource.addChat(Chat(chatId, message));
+                                        Message1 message = Message1(
+                                      epochTimeMs: DateTime.now().millisecondsSinceEpoch,
+                                      seen: false,
+                                      senderId: myid,
+                                      text: "Say Hello 👋",
+                                      type: "text",
+                                    );
+                                      _databaseSource
+                                          .addChat(Chat(chatId, message));
                                       chatBuddySent(myid, id, "Buddy Sent");
-                                      //messagerequestreceived(userid, myid, "received");
-                                      chatBuddyReceived(id, myid, "Buddy recived");
+                                      chatBuddyReceived(
+                                          id, myid, "Buddy received");
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
                                           builder: (context) => MessageScreen(
-                                            chatId: compareAndCombineIds(myid, id),
+                                            gender: gender,
+                                            userType: type,
+                                            date: date,
+                                            age: age,
+                                            image: img,
+                                            country: country,
+                                            chatId:
+                                                compareAndCombineIds(myid, id),
                                             myUserId: myid,
                                             otherUserId: id,
-                                            user: myuser,
                                             otherUserName: name,
+                                            user: myuser,
                                           ),
                                         ),
                                       );
                                     },
                                     child: CircleAvatar(
-                                      backgroundColor: Colors.lightBlueAccent.withOpacity(0.7),
+                                      backgroundColor:
+                                          Colors.blue.withOpacity(0.7),
                                       radius: 30,
                                       child: const Icon(
                                         Icons.chat,
@@ -400,30 +469,65 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                                       ),
                                     ),
                                   ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) => VideoCallScreen(
-                                            remoteUid: int.tryParse(id),
-                                            username: name,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    child: CircleAvatar(
-                                      backgroundColor: Colors.lightBlueAccent.withOpacity(0.7),
-                                      radius: 30,
-                                      child: const Icon(
-                                        Icons.videocam_rounded,
-                                        size: 30,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
+                                  // type == "live"
+                                  //     ? SizedBox(
+                                  //         width: 90.0, // Set your desired width
+                                  //         height:
+                                  //             90.0, // Set your desired height
+                                  //         child: FittedBox(
+                                  //           fit: BoxFit.cover,
+                                  //           child: ZegoSendCallInvitationButton(
+                                  //             isVideoCall: true,
+                                  //             resourceID: "zegouikit_call",
+                                  //             invitees: [
+                                  //               ZegoUIKitUser(
+                                  //                 id: id,
+                                  //                 name: name,
+                                  //               ),
+                                  //             ],
+                                  //             icon: ButtonIcon(
+                                  //                 icon: const Icon(
+                                  //                   Icons.videocam_rounded,
+                                  //                   size: 50,
+                                  //                   color: Colors.white,
+                                  //                 ),
+                                  //                 backgroundColor:
+                                  //                     Colors.green),
+                                  //           ),
+                                  //         ),
+                                  //       )
+                                  //     : type == "fake"
+                                  //         ? GestureDetector(
+                                  //             onTap: () {
+                                  //               Navigator.push(
+                                  //                   context,
+                                  //                   MaterialPageRoute(
+                                  //                       builder: (context) =>
+                                  //                           DummyWaitingCallScreen(
+                                  //                             userImage: img,
+                                  //                             userName: name,
+                                  //                           )));
+                                  //             },
+                                  //             child: const Align(
+                                  //               alignment:
+                                  //                   Alignment.centerRight,
+                                  //               child: CircleAvatar(
+                                  //                 backgroundColor: Colors.green,
+                                  //                 radius: 30,
+                                  //                 child: Icon(
+                                  //                   Icons.videocam_rounded,
+                                  //                   size: 40,
+                                  //                   color: Colors.white,
+                                  //                 ),
+                                  //               ),
+                                  //             ),
+                                  //           )
+                                  //         : Container(),
                                 ],
                               ),
                             ),
+
+                            /// Date
                           ],
                         ),
                       ),

@@ -57,9 +57,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     child: Padding(
                       padding:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                        const  EdgeInsets.symmetric(horizontal: 20, vertical: 40),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Column(

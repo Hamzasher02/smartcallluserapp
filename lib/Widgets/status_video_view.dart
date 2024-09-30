@@ -175,7 +175,13 @@ showStatusVideo(context, String path, likes, userId, AppUser myuser) async {
                           myid,
                           otherUser!.id,
                         );
-                        Message message = Message(DateTime.now().millisecondsSinceEpoch, false, myid, "Say Hello 👋", "text");
+                        Message1 message = Message1(
+                          epochTimeMs: DateTime.now().millisecondsSinceEpoch,
+                          seen: false,
+                          senderId: myid,
+                          text: "Say Hello 👋",
+                          type: "text",
+                        );
                         _databaseSource.addChat(Chat(chatId, message));
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -192,7 +198,8 @@ showStatusVideo(context, String path, likes, userId, AppUser myuser) async {
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: CircleAvatar(
-                          backgroundColor: Colors.lightBlueAccent.withOpacity(0.7),
+                          backgroundColor:
+                              Colors.lightBlueAccent.withOpacity(0.7),
                           radius: 30,
                           child: const Icon(
                             Icons.chat,
@@ -229,7 +236,8 @@ showStatusVideo(context, String path, likes, userId, AppUser myuser) async {
                         CircleAvatar(
                           backgroundColor: Colors.red,
                           radius: 30,
-                          backgroundImage: NetworkImage(otherUser!.profilePhotoPath),
+                          backgroundImage:
+                              NetworkImage(otherUser!.profilePhotoPath),
                         ),
                         Text(
                           "\t\t${otherUser!.name}\t${countryCodeToEmoji(otherUser!.country)}",
@@ -239,7 +247,6 @@ showStatusVideo(context, String path, likes, userId, AppUser myuser) async {
                             fontSize: 22,
                           ),
                         ),
-
                       ],
                     )
                   ],

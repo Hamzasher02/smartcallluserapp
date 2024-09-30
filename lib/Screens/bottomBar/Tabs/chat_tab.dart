@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../chat/chat_screen.dart';
 import '../../chat/widget/chats_list.dart';
@@ -19,7 +20,8 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  
+  final dateFormat = DateFormat('yyyy-MM-dd hh:mm');
+
   String? myid;
   String? myverificationstatus;
 
@@ -28,31 +30,56 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
   }
 
-  void chatWithUserPressed(ChatWithUser chatWithUser) async {
-    if (myid != null) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => MessageScreen(
-            chatId: compareAndCombineIds(myid!, chatWithUser.user.id),
-            myUserId: myid!,
-            otherUserId: chatWithUser.user.id,
-            user: widget.user,
-            otherUserName: chatWithUser.user.name,
-          ),
+
+ void chatWithUserPressed(ChatWithUser chatWithUser) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+  if (kDebugMode) {
+    print("Image url of the user ${chatWithUser.user.profilePhotoPath}");
+    print("Name of the user is ${chatWithUser.user.name}");
+    print("Age of the user ${chatWithUser.user.age}");
+    print("Country of the user is ${chatWithUser.user.country}");
+    print("my id is $myid");
+    print("Gender Of the user is ${chatWithUser.user.gender}");
+  }
+  
+  if (myid != null) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => MessageScreen(
+          userType: chatWithUser.user.type,
+          date: dateFormat.format(DateTime.now()),
+          gender: chatWithUser.user.gender,
+          age: chatWithUser.user.age,
+          country: chatWithUser.user.country,
+          image: chatWithUser.user.profilePhotoPath,
+          chatId: compareAndCombineIds(myid ?? "", chatWithUser.user.id),
+          myUserId: myid ?? "",
+          otherUserId: chatWithUser.user.id,
+          user: widget.user,
+          otherUserName: chatWithUser.user.name,
+          onChatClear: (chatId) {
+            // Handle chat clear callback here, for example:
+            setState(() {
+              userProvider.removeChatWithUser(chatId);
+            });
+          },
         ),
-      );
-    } else {
-      if (kDebugMode) {
-        print("myid is null, cannot start chat");
-      }
+      ),
+    );
+  } else {
+    if (kDebugMode) {
+      print("myid is null, cannot start chat");
     }
   }
+}
+
 
   Future<String?> userId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     myid = prefs.getString("myid");
     myverificationstatus = prefs.getString("myverificationstatus");
-    
+
     if (kDebugMode) {
       print("My user ID is $myid");
     }
@@ -80,7 +107,8 @@ class _ChatScreenState extends State<ChatScreen> {
             );
           }
 
-          if (snapshot.hasError) return Center(child: Text(snapshot.error.toString()));
+          if (snapshot.hasError)
+            return Center(child: Text(snapshot.error.toString()));
 
           final myId = snapshot.data;
           if (myId == null || myId.isEmpty) {
@@ -89,7 +117,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
           return Scaffold(
             body: Container(
-              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
               child: Consumer<UserProvider>(
                 builder: (context, userProvider, child) {
                   return FutureBuilder<List<ChatWithUser>>(
@@ -98,14 +127,16 @@ class _ChatScreenState extends State<ChatScreen> {
                       if (kDebugMode) {
                         print(chatWithUsersSnapshot.error);
                       }
-                      if (chatWithUsersSnapshot.connectionState == ConnectionState.waiting) {
+                      if (chatWithUsersSnapshot.connectionState ==
+                          ConnectionState.waiting) {
                         return Center(
                           child: CircularProgressIndicator(
                             color: Theme.of(context).colorScheme.onPrimary,
                           ),
                         );
                       }
-                      if (chatWithUsersSnapshot.hasError || chatWithUsersSnapshot.data == null) {
+                      if (chatWithUsersSnapshot.hasError ||
+                          chatWithUsersSnapshot.data == null) {
                         return const Center(
                           child: Text('Failed to load chats.'),
                         );
@@ -117,7 +148,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                 children: [
                                   Icon(Icons.warning_amber_outlined),
                                   SizedBox(height: 10),
-                                  Text('No Chats Found', style: TextStyle(fontSize: 20)),
+                                  Text('No Chats Found',
+                                      style: TextStyle(fontSize: 20)),
                                 ],
                               ),
                             )

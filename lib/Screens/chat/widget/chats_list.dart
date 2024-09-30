@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_call_app/db/entity/utils.dart';
@@ -23,6 +24,8 @@ class ChatsList extends StatefulWidget {
 }
 
 class _ChatsListState extends State<ChatsList> {
+ 
+
   ChatsObserver? _chatsObserver;
   final FirebaseDatabaseSource _databaseSource = FirebaseDatabaseSource();
 
@@ -31,6 +34,12 @@ class _ChatsListState extends State<ChatsList> {
     super.initState();
     _chatsObserver = ChatsObserver(widget.chatWithUserList);
     _chatsObserver!.startObservers(chatUpdated);
+ if (kDebugMode) {
+  for (var chatWithUser in widget.chatWithUserList) {
+    print("User: ${chatWithUser.user.name}, Last Message: ${chatWithUser.chat.lastMessage?.text ?? 'No Message'}, Timestamp: ${chatWithUser.chat.lastMessage?.epochTimeMs ?? 'No Timestamp'}");
+  }
+}
+
     userId();
   }
 
@@ -62,11 +71,13 @@ bool changeMessageSeen(int index) {
 
    @override
   Widget build(BuildContext context) {
-    widget.chatWithUserList.sort((a, b) {
-      final aTimestamp = a.chat.lastMessage?.epochTimeMs ?? 0;
-      final bTimestamp = b.chat.lastMessage?.epochTimeMs ?? 0;
-      return bTimestamp.compareTo(aTimestamp);
-    });
+widget.chatWithUserList.sort((a, b) {
+  final aTimestamp = a.chat.lastMessage?.epochTimeMs ?? 0;
+  final bTimestamp = b.chat.lastMessage?.epochTimeMs ?? 0;
+  return bTimestamp.compareTo(aTimestamp);
+});
+
+
 
     return ListView.separated(
       separatorBuilder: (BuildContext context, int index) => const Divider(color: Colors.grey),
@@ -75,6 +86,9 @@ bool changeMessageSeen(int index) {
         return ChatListTile(
           chatWithUser: widget.chatWithUserList[index],
           onTap: () {
+            if(kDebugMode){
+              print("All Chat list is ${widget.chatWithUserList}");
+            }
             if (widget.chatWithUserList[index].chat.lastMessage != null && 
                 widget.chatWithUserList[index].chat.lastMessage!.seen == false) {
               widget.chatWithUserList[index].chat.lastMessage?.seen = true;

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
@@ -8,7 +10,7 @@ import '../../../db/entity/utils.dart';
 import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
 import 'package:dio/dio.dart';
 
-class MessageBubble extends StatelessWidget {
+class MessageBubble extends StatefulWidget {
   final int epochTimeMs;
   final String text;
   final bool isSenderMyUser;
@@ -16,8 +18,26 @@ class MessageBubble extends StatelessWidget {
   final bool? isSeen;
   final String type;
   final bool? lastSeen;
+  final String messageId;
+  final String chatId;
 
-  MessageBubble({required this.epochTimeMs, required this.text, required this.isSenderMyUser, required this.includeTime, required this.isSeen, required this.type, required this.lastSeen});
+  MessageBubble({required this.epochTimeMs,required this.chatId,required this.messageId, required this.text, required this.isSenderMyUser, required this.includeTime, required this.isSeen, required this.type, required this.lastSeen});
+
+  @override
+  State<MessageBubble> createState() => _MessageBubbleState();
+}
+
+class _MessageBubbleState extends State<MessageBubble> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if(kDebugMode){
+      print("The message Id is ${widget.messageId}");
+    }
+  }
+ // Method to show the confirmation dialog
+ 
 
   showimagedialog(BuildContext context, String img) async {
     return await showDialog(
@@ -47,7 +67,7 @@ class MessageBubble extends StatelessWidget {
                       final externalDir = await getExternalStorageDirectory();
 
                       final id = await FlutterDownloader.enqueue(
-                        url: text,
+                        url: widget.text,
                         savedDir: externalDir!.path,
                         fileName: "image",
                         showNotification: true,
@@ -75,8 +95,6 @@ class MessageBubble extends StatelessWidget {
         });
   }
 
- 
-
   Future downloadImage(BuildContext context, String img) async {
     //final url = await ref.getDownloadURL();
 
@@ -95,14 +113,14 @@ class MessageBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(left: 10, right: 10),
       child: Column(
-        crossAxisAlignment: isSenderMyUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: widget.isSenderMyUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: <Widget>[
          
-          type.compareTo('text') == 0
+          widget.type.compareTo('text') == 0
               ? Container(
                   constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
                   child: Material(
-                    borderRadius: isSenderMyUser
+                    borderRadius: widget.isSenderMyUser
                         ? const BorderRadius.only(
                             topRight: Radius.circular(0),
                             topLeft: Radius.circular(20.0),
@@ -116,7 +134,7 @@ class MessageBubble extends StatelessWidget {
                             bottomRight: Radius.circular(20.0),
                           ),
                     elevation: 5.0,
-                    color: isSenderMyUser ? Theme.of(context).primaryColorLight : Theme.of(context).colorScheme.secondary,
+                    color: widget.isSenderMyUser ? Theme.of(context).primaryColorLight : Theme.of(context).colorScheme.secondary,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
                       child: Stack(
@@ -129,11 +147,11 @@ class MessageBubble extends StatelessWidget {
                               bottom: 0,
                             ),
                             child: Text(
-                              text,
+                              widget.text,
                               style:TextStyle(color:Theme.of(context).colorScheme.secondaryContainer),
                             ),
                           ),
-                          isSenderMyUser
+                          widget.isSenderMyUser
                               ? Positioned(
                                   bottom: 0,
                                   right: 0,
@@ -141,15 +159,15 @@ class MessageBubble extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
                                       Text(
-                                        convertEpochMsToDateTime(epochTimeMs),
-                                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
+                                        convertEpochMsToDateTime(widget.epochTimeMs),
+                                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: widget.isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
                                       ),
                                       Icon(
                                         Icons.done_all,
                                         size: 12,
-                                        color: isSeen == true
+                                        color: widget.isSeen == true
                                             ? Colors.lightBlueAccent
-                                            : lastSeen == true
+                                            : widget.lastSeen == true
                                                 ? Colors.lightBlueAccent
                                                 : Colors.black54,
                                       )
@@ -163,8 +181,8 @@ class MessageBubble extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
                                       Text(
-                                        convertEpochMsToDateTime(epochTimeMs),
-                                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
+                                        convertEpochMsToDateTime(widget.epochTimeMs),
+                                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: widget.isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
                                       ),
                                    
                                     ],
@@ -176,11 +194,11 @@ class MessageBubble extends StatelessWidget {
                     ),
                   ),
                 )
-              : type.compareTo('doc') == 0
+              : widget.type.compareTo('doc') == 0
                   ? Container(
                       constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
                       child: Material(
-                        borderRadius: isSenderMyUser
+                        borderRadius: widget.isSenderMyUser
                             ? const BorderRadius.only(
                                 topRight: Radius.circular(0),
                                 topLeft: Radius.circular(20.0),
@@ -194,7 +212,7 @@ class MessageBubble extends StatelessWidget {
                                 bottomRight: Radius.circular(20.0),
                               ),
                         elevation: 5.0,
-                        color: isSenderMyUser ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
+                        color: widget.isSenderMyUser ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
                           child: Stack(
@@ -213,7 +231,7 @@ class MessageBubble extends StatelessWidget {
                                       context,
                                       MaterialPageRoute<dynamic>(
                                         builder: (_) => PDFViewerCachedFromUrl(
-                                          url: text,
+                                          url: widget.text,
                                         ),
                                       ),
                                     );
@@ -238,7 +256,7 @@ class MessageBubble extends StatelessWidget {
 
                                 // Image.network(text),
                               ),
-                              isSenderMyUser
+                              widget.isSenderMyUser
                                   ? Positioned(
                                       bottom: 0,
                                       right: 0,
@@ -246,13 +264,13 @@ class MessageBubble extends StatelessWidget {
                                         mainAxisAlignment: MainAxisAlignment.end,
                                         children: [
                                           Text(
-                                            convertEpochMsToDateTime(epochTimeMs),
-                                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
+                                            convertEpochMsToDateTime(widget.epochTimeMs),
+                                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: widget.isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
                                           ),
                                           Icon(
                                             Icons.done_all,
                                             size: 12,
-                                            color: isSeen == true ? Colors.lightBlueAccent : Colors.black54,
+                                            color: widget.isSeen == true ? Colors.lightBlueAccent : Colors.black54,
                                           )
                                         ],
                                       ),
@@ -264,8 +282,8 @@ class MessageBubble extends StatelessWidget {
                                         mainAxisAlignment: MainAxisAlignment.end,
                                         children: [
                                           Text(
-                                            convertEpochMsToDateTime(epochTimeMs),
-                                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
+                                            convertEpochMsToDateTime(widget.epochTimeMs),
+                                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: widget.isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
                                           ),
                                         ],
                                       ),
@@ -278,7 +296,7 @@ class MessageBubble extends StatelessWidget {
                   : Container(
                       constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
                       child: Material(
-                        borderRadius: isSenderMyUser
+                        borderRadius: widget.isSenderMyUser
                             ? const BorderRadius.only(
                                 topRight: Radius.circular(0),
                                 topLeft: Radius.circular(20.0),
@@ -292,14 +310,14 @@ class MessageBubble extends StatelessWidget {
                                 bottomRight: Radius.circular(20.0),
                               ),
                         elevation: 5.0,
-                        color: isSenderMyUser ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
+                        color: widget.isSenderMyUser ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
                           child: Stack(
                             children: [
                               GestureDetector(
                                 onTap: () {
-                                  showimagedialog(context, text);
+                                  showimagedialog(context, widget.text);
                                 },
                                 child: Padding(
                                     padding: const EdgeInsets.only(
@@ -309,7 +327,7 @@ class MessageBubble extends StatelessWidget {
                                       bottom: 15,
                                     ),
                                     child: CachedNetworkImage(
-                                      imageUrl: text!,
+                                      imageUrl: widget.text!,
                                       fit: BoxFit.cover,
                                       placeholder: (context, url) => const CircularProgressIndicator(),
                                       errorWidget: (context, url, error) => const Icon(Icons.error),
@@ -317,7 +335,7 @@ class MessageBubble extends StatelessWidget {
                                     // Image.network(text),
                                     ),
                               ),
-                              isSenderMyUser
+                              widget.isSenderMyUser
                                   ? Positioned(
                                       bottom: 0,
                                       right: 0,
@@ -325,13 +343,13 @@ class MessageBubble extends StatelessWidget {
                                         mainAxisAlignment: MainAxisAlignment.end,
                                         children: [
                                           Text(
-                                            convertEpochMsToDateTime(epochTimeMs),
-                                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
+                                            convertEpochMsToDateTime(widget.epochTimeMs),
+                                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: widget.isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
                                           ),
                                           Icon(
                                             Icons.done_all,
                                             size: 12,
-                                            color: isSeen == true ? Colors.lightBlueAccent : Colors.black54,
+                                            color: widget.isSeen == true ? Colors.lightBlueAccent : Colors.black54,
                                           )
                                         ],
                                       ),
@@ -343,8 +361,8 @@ class MessageBubble extends StatelessWidget {
                                         mainAxisAlignment: MainAxisAlignment.end,
                                         children: [
                                           Text(
-                                            convertEpochMsToDateTime(epochTimeMs),
-                                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
+                                            convertEpochMsToDateTime(widget.epochTimeMs),
+                                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: widget.isSenderMyUser ? Colors.black : Colors.black, fontWeight: FontWeight.normal, fontSize: 10),
                                           ),
                                         ],
                                       ),

@@ -37,13 +37,13 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   #Fonts
-  google_fonts: ^2.3.1
+  google_fonts: ^6.2.1
   #country picker
   country_picker: ^2.0.19
   #image dialog
   slide_popup_dialog_null_safety: ^1.0.0
-  image_picker: ^0.8.7+5
-  flutter_svg: ^1.1.6
+  image_picker: ^1.1.2
+  flutter_svg: ^2.0.10+1
   #animated splash screen
   animated_splash_screen: ^1.3.0
   #animated Dialog
@@ -51,27 +51,27 @@ dependencies:
   #modal bottom sheet for status view
   modal_bottom_sheet: ^3.0.0-pre
   #firebase
-  firebase_core: ^2.22.0
   #google sign_in
   google_sign_in: ^6.2.1
   #facebook sign_in
-  flutter_facebook_auth: ^5.0.11
+  flutter_facebook_auth: ^7.1.1
   #firebase auth
-  firebase_auth: ^4.16.0
+  firebase_core: ^3.4.1
+  firebase_auth: ^5.2.1
+  firebase_messaging: ^15.0.0
   #shared preferences
-  shared_preferences: ^2.2.1
+  shared_preferences: ^2.3.2
   #cloud store
-  cloud_firestore: ^4.12.2
+  cloud_firestore: ^5.4.1
   #fire Storage
-  firebase_storage: ^11.4.1
+  firebase_storage: ^12.3.0
   #FCM
-  firebase_messaging: ^14.7.3
   # date intl
   intl: ^0.19.0
   #file picker
-  file_picker: ^6.1.1
+  file_picker: ^8.1.2
   #uuid
-  uuid: ^3.0.7
+  uuid: ^4.5.0
   #dio
   dio: ^5.3.3
   #cached image
@@ -91,30 +91,35 @@ dependencies:
   # audio
   just_audio: ^0.9.31
   # share
-  share_plus: ^7.2.1
+  share_plus: ^10.0.2
   # adds in app
-  google_mobile_ads: ^3.1.0
+  google_mobile_ads: ^5.1.0
   # video player
   video_player: ^2.8.1
+  awesome_notifications: ^0.9.3+1
   # dialog
   quickalert: ^1.0.1
   # loading
   skeletons: ^0.0.3
   tiktoklikescroller: ^0.2.6
   agora_uikit: ^1.3.8
-  http: ^0.13.6
+  http: ^1.2.2
   agora_rtc_engine: ^6.3.0
   badges: ^3.1.2
-  zego_uikit_prebuilt_call: ^3.1.1
-  flutter_plugin_android_lifecycle: ^2.0.21
-  zego_express_engine: ^3.16.0
-  zego_zim: ^2.12.1
-  zego_uikit_signaling_plugin: ^2.7.0
+  # zego_uikit_prebuilt_call: ^3.1.1
+
+  # flutter_plugin_android_lifecycle: ^2.0.21
+  # zego_express_engine: ^3.16.0
+  # zego_zim: ^2.12.1
+  # zego_uikit_signaling_plugin: ^2.7.0
   device_info_plus: ^10.1.2
-  zego_uikit: ^2.15.0
+  # zego_uikit: ^2.15.0
   device_preview: ^1.2.0
   get: ^4.6.6
-  camera: ^0.11.0+1
+  camera: ^0.11.0+2  # Use the stable version of the camera package
+  googleapis_auth: ^1.4.1
+  flutter_foreground_task: ^8.9.0
+
 
 
 dev_dependencies:
@@ -126,7 +131,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+  flutter_lints: ^3.0.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

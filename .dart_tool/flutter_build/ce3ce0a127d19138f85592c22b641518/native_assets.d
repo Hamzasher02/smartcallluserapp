@@ -1,0 +1,1 @@
+ D:\\fuck_smart_app\\.dart_tool\\flutter_build\\ce3ce0a127d19138f85592c22b641518\\native_assets.yaml: 

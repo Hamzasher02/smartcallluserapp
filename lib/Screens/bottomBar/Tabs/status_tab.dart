@@ -85,14 +85,16 @@ class _StatusScreenState extends State<StatusScreen> {
       print('Error fetching stories: $e');
     }
   }
-    Future<void> cleanupOldStatuses() async {
+
+  Future<void> cleanupOldStatuses() async {
     final DateTime now = DateTime.now();
     final DateTime cutoffDate = now.subtract(Duration(days: 7));
 
     try {
-      QuerySnapshot snapshot = await db.collection('stories')
-        .where('timestamp', isLessThan: Timestamp.fromDate(cutoffDate))
-        .get();
+      QuerySnapshot snapshot = await db
+          .collection('stories')
+          .where('timestamp', isLessThan: Timestamp.fromDate(cutoffDate))
+          .get();
 
       for (QueryDocumentSnapshot doc in snapshot.docs) {
         await db.collection('stories').doc(doc.id).delete();
@@ -260,8 +262,7 @@ class _StatusScreenState extends State<StatusScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-
+        backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
         body: SafeArea(
             child: _isLoading
                 ? Center(
@@ -333,47 +334,45 @@ class _StatusScreenState extends State<StatusScreen> {
                                     crossAxisSpacing: 10.0,
                                     mainAxisSpacing: 10.0,
                                   ),
-                                  itemCount: storyData.length, // Adjust item count
+                                  itemCount:
+                                      storyData.length, // Adjust item count
                                   shrinkWrap: true,
                                   itemBuilder: (context, index) {
                                     // Calculate the storyData index considering the ads
 
                                     // Check if the current position is where an ad should be displayed
-                                    
-                                      // Ensure that index is within the bounds of storyData
-                                      if (index < storyData.length) {
-                                        return GestureDetector(
-                                          onTap: () {
-                                            initAd();
-                                            Navigator.of(context)
-                                                .push(MaterialPageRoute(
-                                              builder: (context) =>
-                                                  StatusScrollImage(
-                                                story: storyData,
-                                                statusId:
-                                                    storyData[index].id,
-                                                currentUserId: widget.myuser.id,
-                                                path: storyData[index]
-                                                    .imageUrl,
-                                                img: storyData,
-                                                userId: storyData[index]
-                                                    .userId,
-                                                userName: storyData[index]
-                                                    .userName,
-                                                myuser: widget.myuser,
-                                              ),
-                                            ));
-                                          },
-                                          child: StatusCustomGridView(
-                                            img: storyData[index].imageUrl,
-                                            type: storyData[index].type,
-                                          ),
-                                        );
-                                      } else {
-                                        // Handle cases where index exceeds the bounds of storyData
-                                        return const SizedBox(); // Return an empty widget or handle appropriately
-                                      }
-                                    
+
+                                    // Ensure that index is within the bounds of storyData
+                                    if (index < storyData.length) {
+                                      return GestureDetector(
+                                        onTap: () {
+                                          initAd();
+                                          Navigator.of(context)
+                                              .push(MaterialPageRoute(
+                                            builder: (context) =>
+                                                StatusScrollImage(
+                                                  userImage:storyData[index].imageUrl,
+                                              story: storyData,
+                                              statusId: storyData[index].id,
+                                              currentUserId: widget.myuser.id,
+                                              path: storyData[index].imageUrl,
+                                              img: storyData,
+                                              userId: storyData[index].userId,
+                                              userName:
+                                                  storyData[index].userName,
+                                              myuser: widget.myuser,
+                                            ),
+                                          ));
+                                        },
+                                        child: StatusCustomGridView(
+                                          img: storyData[index].imageUrl,
+                                          type: storyData[index].type,
+                                        ),
+                                      );
+                                    } else {
+                                      // Handle cases where index exceeds the bounds of storyData
+                                      return const SizedBox(); // Return an empty widget or handle appropriately
+                                    }
                                   },
                                 ),
                               ),

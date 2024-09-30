@@ -10,142 +10,59 @@ import '../remote/firebase_database_source.dart';
 import '../remote/firebase_storage_source.dart';
 
 class UserProvider extends ChangeNotifier {
-  //FirebaseAuthSource _authSource = FirebaseAuthSource();
   FirebaseStorageSource _storageSource = FirebaseStorageSource();
   FirebaseDatabaseSource _databaseSource = FirebaseDatabaseSource();
 
   bool isLoading = false;
   late AppUser _user;
+  String _myId = ''; // Add this to store the logged-in user's id.
+  List<ChatWithUser> chatWithUserList = [];
 
- 
+  // Getter for the current user
+  AppUser get myuser => _user;
 
+  // Getter for the current user's id
+  String get myid => _myId;
+
+  // Set user details when the user logs in or data is fetched
+  Future<void> setUserDetails(AppUser user, String myId) async {
+    _user = user;
+    _myId = myId;
+    notifyListeners();  // Notifies listeners that user data has been updated
+  }
+
+  // Method to remove a chat with a user
+  void removeChatWithUser(String chatId) {
+    chatWithUserList.removeWhere((chatWithUser) => chatWithUser.chat.id == chatId);
+    notifyListeners(); // This ensures the UI updates
+  }
+
+  // Fetch chat details with users
   Future<List<ChatWithUser>> getChatsWithUser(String userId) async {
     var chatbuddy = await _databaseSource.getChatBuddy(userId);
     List<ChatWithUser> chatWithUserList = [];
-    print(chatWithUserList);
-    print(chatbuddy.size);
 
-   for (var i = 0; i < chatbuddy.size; i++) {
-  try {
-    Match match = Match.fromSnapshot(chatbuddy.docs[i]);
-    print('Match found: ${match.id}');
-    
-    AppUser matchedUser = AppUser.fromSnapshot(await _databaseSource.getUser(match.id));
-    print('Matched User: ${matchedUser.name}');
+    for (var i = 0; i < chatbuddy.size; i++) {
+      try {
+        Match match = Match.fromSnapshot(chatbuddy.docs[i]);
+        AppUser matchedUser = AppUser.fromSnapshot(await _databaseSource.getUser(match.id));
+        String chatId = compareAndCombineIds(match.id, userId);
+        Chat chat = Chat.fromSnapshot(await _databaseSource.getChat(chatId));
 
-    String chatId = compareAndCombineIds(match.id, userId);
-    print('Chat ID: $chatId');
+        ChatWithUser chatWithUser = ChatWithUser(chat, matchedUser);
+        chatWithUserList.add(chatWithUser);
+      } catch (e) {
+        print('Error processing chat buddy: $e');
+      }
+    }
 
-    Chat chat = Chat.fromSnapshot(await _databaseSource.getChat(chatId));
-    print('Chat retrieved: ${chat.id}, Last Message: ${chat.lastMessage}');
-    
-    ChatWithUser chatWithUser = ChatWithUser(chat, matchedUser);
-    chatWithUserList.add(chatWithUser);
-  } catch (e) {
-    print('Error processing chat buddy: $e');
+    // Sort the list by the timestamp of the last message
+    chatWithUserList.sort((a, b) {
+      return (b.chat.lastMessage?.epochTimeMs ?? 0).compareTo(a.chat.lastMessage?.epochTimeMs ?? 0);
+    });
+
+    return chatWithUserList;
   }
 }
 
-    // for (var i = 0; i < messagesent.size; i++) {
-    //   print(messagesent.size);
-    //   // Match match = Match.fromSnapshot(messagesent.docs[i]);
-    //   // print(match.id);
-    //   AppUser matchedUser =
-    //   AppUser.fromSnapshot(await _databaseSource.getUser(match.id));
-    //
-    //   String chatId = compareAndCombineIds(match.id, userId);
-    //   print(chatId);
-    //
-    //   Chat chat = Chat.fromSnapshot(await _databaseSource.getChat(chatId));
-    //   print(chat.id);
-    //   print(chat.lastMessage);
-    //   ChatWithUser chatWithUser = ChatWithUser(chat, matchedUser);
-    //   print(matchedUser);
-    //   chatWithUserList.add(chatWithUser);
-    // }
-    return chatWithUserList;
-  }
- }
-  // Future<AppUser> get user => _getUser();
-
-  // Future<Response> loginUser(String email, String password,
-  //     GlobalKey<ScaffoldState> errorScaffoldKey) async {
-  //   Response<dynamic> response = await _authSource.signIn(email, password);
-  //   if (response is Success<UserCredential>) {
-  //     String id = response.value.user!.uid;
-  //     print("love");
-  //     print(id);
-  //     // SharedPreferencesUtil.setUserId(id);
-  //   } else if (response is Error) {
-  //     // showSnackBar(errorScaffoldKey, response.message);
-  //   }
-  //   return response;
-  // }
-  //
-  // Future<Response> registerUser(UserRegistration userRegistration,
-  //     GlobalKey<ScaffoldState> errorScaffoldKey) async {
-  //   Response<dynamic> response = await _authSource.register(
-  //       userRegistration.email, userRegistration.password);
-  //   if (response is Success<UserCredential>) {
-  //     String id = (response as Success<UserCredential>).value.user!.uid;
-  //     response = await _storageSource.uploadUserProfilePhoto(
-  //         userRegistration.localProfilePhotoPath, id);
-  //
-  //     if (response is Success<String>) {
-  //       String profilePhotoUrl = response.value;
-  //       AppUser user = AppUser(
-  //           id: id,
-  //           firstname: userRegistration.firstname,
-  //           lastname: userRegistration.lastname,
-  //           // age: userRegistration.age,
-  //           profilePhotoPath: profilePhotoUrl
-  //           );
-  //       _databaseSource.addUser(user);
-  //       SharedPreferencesUtil.setUserId(id);
-  //       _user = _user;
-  //       return Response.success(user);
-  //     }
-  //   }
-  //   if (response is Error) showSnackBar(errorScaffoldKey, response.message);
-  //   return response;
-  // }
-
-  // Future<AppUser> _getUser() async {
-  //   if (_user != null) return _user;
-  //   String? id = await SharedPreferencesUtil.getUserId();
-  //   _user = AppUser.fromSnapshot(await _databaseSource.getUser(id!));
-  //   return _user;
-  // }
-
-  // void updateUserProfilePhoto(
-  //     String localFilePath, GlobalKey<ScaffoldState> errorScaffoldKey) async {
-  //   isLoading = true;
-  //   notifyListeners();
-  //   Response<dynamic> response =
-  //       await _storageSource.uploadUserProfilePhoto(localFilePath, _user.id);
-  //   isLoading = false;
-  //   if (response is Success<String>) {
-  //     // _user.profilePhotoPath = response.value;
-  //     _databaseSource.updateUser(_user);
-  //   } else if (response is Error) {
-  //     showSnackBar(errorScaffoldKey, response.message);
-  //   }
-  //   notifyListeners();
-  // }
-  //
-  // void updateUserlastname(String newlastname) {
-  //   // _user.lastname = newlastname;
-  //   _databaseSource.updateUser(_user);
-  //   notifyListeners();
-  // }
-  //
-  // void updateUserBio(String newBio) {
-  //   // _user.bio = newBio;
-  //   _databaseSource.updateUser(_user);
-  //   notifyListeners();
-  // }
-
-  // Future<void> logoutUser() async {
-  //   // _user = null;
-  //   await SharedPreferencesUtil.removeUserId();
-  // }
+ 

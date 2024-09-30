@@ -1,16 +1,21 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:smart_call_app/Screens/call/agora/video_call_screen_1.dart';
 import 'package:smart_call_app/Util/app_url.dart';
-import 'package:smart_call_app/Util/video_call_utils.dart';
-import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
-import 'package:zego_uikit_signaling_plugin/zego_uikit_signaling_plugin.dart';
+import 'package:smart_call_app/Util/video_call_fcm.dart';
+import 'package:smart_call_app/Widgets/dummy_waiting_call_screen.dart';
+// import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
+// import 'package:zego_uikit_signaling_plugin/zego_uikit_signaling_plugin.dart';
 import 'country_to_flag.dart';
 
 class CustomCardTile extends StatefulWidget {
   final String id;
+  final String recieverDeviceToken;
   final String name;
+  final String type;
   final String age;
   final String gender;
   final String country;
@@ -25,11 +30,13 @@ class CustomCardTile extends StatefulWidget {
   CustomCardTile({
     required this.id,
     required this.name,
+    required this.type,
     required this.age,
     required this.gender,
     required this.currentUserId,
     required this.currentUserName,
     required this.country,
+    required this.recieverDeviceToken,
     required this.myId,
     required this.profileImage,
     required this.myStatus,
@@ -50,7 +57,7 @@ class _CustomCardTileState extends State<CustomCardTile> {
   void initState() {
     super.initState();
     _initializeAd(); // Initialize the ad as soon as the widget is created
-    initZego(); // Initialize Zego after ad initialization
+    // initZego(); // Initialize Zego after ad initialization
   }
 
   void _initializeAd() {
@@ -80,62 +87,7 @@ class _CustomCardTileState extends State<CustomCardTile> {
     );
   }
 
-  void initZego() async {
-    print(
-        "Initializing Zego with userId: ${widget.currentUserId}, userName: ${widget.currentUserName}");
 
-    await ZegoUIKitPrebuiltCallInvitationService().init(
-      appID: Utils.appId,
-      appSign: Utils.appSignin,
-      userID: widget.currentUserId,
-      userName: widget.currentUserName,
-      notifyWhenAppRunningInBackgroundOrQuit: true,
-      ringtoneConfig: const ZegoRingtoneConfig(
-        incomingCallPath: "assets/audio/ringtone.mp3",
-        outgoingCallPath: "assets/audio/ringtone.mp3",
-      ),
-      androidNotificationConfig: ZegoAndroidNotificationConfig(
-        channelID: "ZegoUIKit",
-        channelName: "Call Notifications",
-        sound: "ringtone",
-        icon: "notification_icon",
-      ),
-      iOSNotificationConfig: ZegoIOSNotificationConfig(
-        isSandboxEnvironment: false,
-        systemCallingIconName: 'CallKitIcon',
-      ),
-      plugins: [ZegoUIKitSignalingPlugin()],
-      requireConfig: (ZegoCallInvitationData data) {
-        final config = (data.invitees.length > 1)
-            ? ZegoCallType.videoCall == data.type
-                ? ZegoUIKitPrebuiltCallConfig.groupVideoCall()
-                : ZegoUIKitPrebuiltCallConfig.groupVoiceCall()
-            : ZegoCallType.videoCall == data.type
-                ? ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall()
-                : ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall();
-
-        config.topMenuBarConfig.isVisible = true;
-        config.topMenuBarConfig.buttons
-            .insert(0, ZegoMenuBarButtonName.minimizingButton);
-
-        // Show interstitial ad after call ends or is declined
-        config.onHangUp = () {
-          print('Call ended or declined, checking ad status...');
-          if (_isAdLoaded1 && _interstitialAd != null) {
-            print('Showing interstitial ad...');
-            _interstitialAd!.show();
-            _interstitialAd = null;
-            _isAdLoaded1 = false;
-            _initializeAd(); // Load a new ad for the next time
-          } else {
-            print('Ad not ready or not loaded');
-          }
-        };
-
-        return config;
-      },
-    );
-  }
 
   @override
   void dispose() {
@@ -221,55 +173,87 @@ class _CustomCardTileState extends State<CustomCardTile> {
                       ),
                       Expanded(
                         flex: 1,
-                        child: GestureDetector(
-                          onTap: () {
-                            if (widget.status == "offline") {
-                              Get.snackbar(
-                                backgroundColor:const  Color(0xff607d8b),
-                                "Call Invitation",
-                                "${widget.name} is offline. Please try later",
-                                snackPosition: SnackPosition.TOP,
-                              );
-                            } else {
-                              // Proceed with the call invitation if the user is online
-                              ZegoSendCallInvitationButton(
-                                isVideoCall: true,
-                                resourceID: "zegouikit_call",
-                                invitees: [
-                                  ZegoUIKitUser(
-                                    id: widget.id,
-                                    name: widget.name,
+                        child: widget.type == "live"
+                            ? GestureDetector(
+                                onTap: () {
+                                  if (widget.status == "offline") {
+                                    Get.snackbar(
+                                      backgroundColor: const Color(0xff607d8b),
+                                      "Call Invitation",
+                                      "${widget.name} is offline. Please try later",
+                                      snackPosition: SnackPosition.TOP,
+                                    );
+                                  } else {
+                                    if (widget.name.isNotEmpty) {
+                                    VideoCallFcm.sendCallNotification(  widget.recieverDeviceToken,
+                                          "smart_call_app",
+                                          "007eJxTYLhwLq7i2b4u2QWOVy8FxG5Qe8vgtvHrA4bjt0806j6yuKukwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUFKb1K60hkJHh/zZ+FkYGCATx+RiKcxOLSuKTE3Ny4hMLChgYAIFIJgw=",
+                                          widget.name);
+                                    }
+
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => VideoCallScreen1(
+                                          recieverName: widget.name,
+                                          agoraAppId:
+                                              "18c4ec28d42d4dbda9159124878e6cbb",
+                                          agoraAppToken:
+                                              "007eJxTYLhwLq7i2b4u2QWOVy8FxG5Qe8vgtvHrA4bjt0806j6yuKukwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUFKb1K60hkJHh/zZ+FkYGCATx+RiKcxOLSuKTE3Ny4hMLChgYAIFIJgw=", // Use dynamic channel name
+                                          agoraAppCertificate:
+                                              "064b1a009cc248afa93a01234876a4c9", // Use your dynamic token
+                                          agoraAppChannelName: "smart_call_app",
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: Container(
+                                  width: 45,
+                                  height: 45,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.green,
                                   ),
-                                ],
-                                icon: ButtonIcon(
-                                  icon: const Icon(
-                                    Icons.videocam,
-                                    size: 30,
-                                    color: Colors.white,
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.videocam,
+                                      size: 25,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
-                              ); // This triggers the button's tap action manually.
-                            }
-                          },
-                          child: Container(
-                            width: 45,
-                            height: 45,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors
-                                  .green, // Ensure the container color is set correctly
-                            ),
-                            child: Center(
-                              child: Icon(
-                             Icons.videocam,
-                                size:
-                                    25, // Adjust the size to fit well within the container
-                                color: Colors
-                                    .white, // Ensure the icon color is white
+                              )
+                            : GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              DummyWaitingCallScreen(
+                                                  userImage:
+                                                      widget.profileImage,
+                                                  userName: widget.name)));
+                                },
+                                child: Container(
+                                  width: 45,
+                                  height: 45,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors
+                                        .green, // Ensure the container color is set correctly
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.videocam,
+                                      size:
+                                          25, // Adjust the size to fit well within the container
+                                      color: Colors
+                                          .white, // Ensure the icon color is white
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        ),
                       ),
                     ],
                   )

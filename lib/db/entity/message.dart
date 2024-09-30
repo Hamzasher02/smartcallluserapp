@@ -40,11 +40,11 @@ class Message {
 
 
 class Message1 {
-  int epochTimeMs = 0;
+  int epochTimeMs;
   bool? seen;
   String senderId;
-  String text = '';
-  String type = '';
+  String text;
+  String type;
 
   // Additional fields for call logs
   String? callType; // 'missed', 'received', 'ended', etc.

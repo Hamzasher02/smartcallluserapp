@@ -10,6 +10,7 @@ class NativeAdModel extends GetxController {
   
   // Use the test ad unit ID for debugging
   final String adUnitId = "ca-app-pub-3940256099942544/2247696110";
+  // final String adUnitId="ca-app-pub-3940256099942544/6300978111";
 
   loadAd() {
     nativeAd = NativeAd(

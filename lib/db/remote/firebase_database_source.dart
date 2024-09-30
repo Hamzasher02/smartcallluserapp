@@ -65,11 +65,7 @@ void addUser(AppUser user) {
 }
 
 
-  // void deleteUser(String userId,Delete delete) {
-  //   instance.collection('deletedacc').doc(userId).set(delete.toMap());
-  // }
-  //
-  //
+  
 void addChat(Chat chat) {
   instance.collection('chats').doc(chat.id).set(chat.toMap());
 }
@@ -148,7 +144,7 @@ Future<void> addFavourite(String myId, AddFavourites fav) async {
     instance.collection('chats').doc(chat.id).update(chat.toMap());
   }
 
-  void updateMessage(String chatId, String messageId, Message message) {
+  void updateMessage(String chatId, String messageId, Message1 message) {
     instance.collection('chats').doc(chatId).collection('messages').doc(messageId).update(message.toMap());
   }
 
