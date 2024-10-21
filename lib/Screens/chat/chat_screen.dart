@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -203,6 +204,12 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   void _startCall(String callType) {
+    if (kDebugMode) {
+      print("The id of the current user is ${widget.myUserId}");
+      print("The id of the other user is ${widget.otherUserId}");
+      print("The chat id is ${widget.chatId}");
+      print("The call type is $callType");
+    }
     _databaseSource.storeCallInfo(
       chatId: widget.chatId,
       myUserId: widget.myUserId,
@@ -211,6 +218,34 @@ class _MessageScreenState extends State<MessageScreen> {
       callStatus: "Started",
       isIncoming: false,
     );
+  }
+
+  bool _isToday(DateTime date) {
+    final today = DateTime.now();
+    return date.year == today.year &&
+        date.month == today.month &&
+        date.day == today.day;
+  }
+
+  bool _isYesterday(DateTime date) {
+    final yesterday = DateTime.now().subtract(Duration(days: 1));
+    return date.year == yesterday.year &&
+        date.month == yesterday.month &&
+        date.day == yesterday.day;
+  }
+
+  String _formatDate(DateTime date) {
+    return DateFormat('dd MMM yyyy').format(date);
+  }
+
+  String _getDateLabel(DateTime date) {
+    if (_isToday(date)) {
+      return "Today";
+    } else if (_isYesterday(date)) {
+      return "Yesterday";
+    } else {
+      return _formatDate(date);
+    }
   }
 
   void _showDeleteConfirmationDialog(BuildContext context, String messageId) {
@@ -778,7 +813,7 @@ class _MessageScreenState extends State<MessageScreen> {
 
     if (response.statusCode == 200) {
       print('FCM message sent successfully.');
-    } else {
+    } else { 
       print('Failed to send FCM message: ${response.body}');
     }
   }
@@ -1020,78 +1055,154 @@ class _MessageScreenState extends State<MessageScreen> {
                 snapshot.data?.docs.forEach((element) {
                   messages.add(Message1.fromSnapshot(element));
                 });
+
                 if (snapshot.data != null && snapshot.data!.docs.isNotEmpty) {
-                  // Update the message seen status if needed
-                  // Implement your logic here
+                  // Update message seen status if needed
+                  // Implement your logic here (e.g., update 'seen' status)
                 }
+
                 if (_scrollController.hasClients) {
-                  _scrollController.jumpTo(0.0);
+                  _scrollController
+                      .jumpTo(0.0); // Auto-scroll to the latest message
                 }
 
                 return ListView.builder(
-                  shrinkWrap: true,
-                  reverse: true,
-                  controller: _scrollController,
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final item = messages[index];
-                    final messageData = snapshot.data!.docs[index];
-                    bool isSelected =
-                        selectedMessageIds.contains(messageData.id);
+                    shrinkWrap: true,
+                    reverse: true,
+                    controller: _scrollController,
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final item = messages[index];
+                      final messageData = snapshot.data!.docs[index];
+                      bool isSelected =
+                          selectedMessageIds.contains(messageData.id);
+                      DateTime messageDate =
+                          DateTime.fromMillisecondsSinceEpoch(item.epochTimeMs);
+                      // Display the date label if it’s the first message of the day
+                      bool showDateLabel = false;
 
-                    var date =
-                        DateTime.fromMillisecondsSinceEpoch(item.epochTimeMs);
-                    var formattedDate = DateFormat('dd MMM yyyy').format(date);
+                      if (index == messages.length - 1) {
+                        // If it's the first message
+                        showDateLabel = true;
+                      } else {
+                        DateTime previousMessageDate =
+                            DateTime.fromMillisecondsSinceEpoch(
+                                messages[index + 1].epochTimeMs);
 
-                    // Check the message type
-                    if (item.type == 'call') {
-                      return ListTile(
-                        title: CallMessageBubble(
-                          callType: item.callType,
-                          callStatus: item.callStatus,
-                          callDuration: item.callDuration,
-                          isSenderMyUser: item.senderId == widget.myUserId,
-                          epochTimeMs: item.epochTimeMs,
-                        ),
-                      );
-                    } else {
-                      return ListTile(
-                          title: GestureDetector(
-                        onLongPress: () {
-                          enterSelectionMode(); // Enter selection mode
-                          toggleMessageSelection(
-                              messageData.id); // Select the message
-                        },
-                        onTap: isSelectionMode
-                            ? () => toggleMessageSelection(
-                                messageData.id) // Toggle selection on tap
-                            : null, // Only select if in selection mode
-                        child: Container(
-                          color: isSelected
-                              ? Colors.blue.withOpacity(0.3)
-                              : Colors.transparent,
-                          child: ListTile(
-                            title: MessageBubble(
-                              messageId: messageData.id,
-                              chatId: widget.chatId,
-                              epochTimeMs: item.epochTimeMs,
-                              text: item.text,
-                              isSenderMyUser: item.senderId == widget.myUserId,
-                              includeTime: true,
-                              isSeen: item.seen,
-                              type: item.type,
-                              lastSeen: messages.first.seen,
+                        // Show date label if the current message and the previous message are from different days
+                        if (messageDate.day != previousMessageDate.day ||
+                            messageDate.month != previousMessageDate.month ||
+                            messageDate.year != previousMessageDate.year) {
+                          showDateLabel = true;
+                        }
+                      }
+
+                      var date =
+                          DateTime.fromMillisecondsSinceEpoch(item.epochTimeMs);
+                      var formattedDate =
+                          DateFormat('dd MMM yyyy').format(date);
+
+                      return Column(
+                        children: [
+                          if (showDateLabel)
+                            Center(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color:
+                                        Theme.of(context).colorScheme.onPrimary,
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8),
+                                    child: Text(
+                                      _getDateLabel(messageDate),
+                                      style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ));
-                    }
-                  },
-                );
+                          if (item.type == 'call')
+                            ListTile(
+                              title: GestureDetector(
+                                onLongPress: () {
+                                  enterSelectionMode();
+                                  toggleMessageSelection(messageData.id);
+                                },
+                                onTap: isSelectionMode
+                                    ? () => toggleMessageSelection(messageData
+                                        .id) // Toggle selection on tap
+                                    : null,
+                                child: Container(
+                                  color: isSelected
+                                      ? Colors.blue.withOpacity(0.3)
+                                      : Colors.transparent,
+                                  child: CallMessageBubble(
+                                    callType: item
+                                        .callType, // E.g., 'video' or 'audio'
+                                    callStatus: item
+                                        .callStatus, // E.g., 'started' or 'ended'
+                                    callDuration:
+                                        item.callDuration, // E.g., "02:30"
+                                    isSenderMyUser:
+                                        item.senderId == widget.myUserId,
+                                    epochTimeMs: item.epochTimeMs,
+                                  ),
+                                ),
+                              ),
+                            )
+                          else
+                            // Regular text message rendering
+
+                            ListTile(
+                              title: GestureDetector(
+                                onLongPress: () {
+                                  enterSelectionMode(); // Enter selection mode
+                                  toggleMessageSelection(
+                                      messageData.id); // Select the message
+                                },
+                                onTap: isSelectionMode
+                                    ? () => toggleMessageSelection(messageData
+                                        .id) // Toggle selection on tap
+                                    : null, // Only select if in selection mode
+                                child: Container(
+                                  color: isSelected
+                                      ? Colors.blue.withOpacity(0.3)
+                                      : Colors.transparent,
+                                  child: ListTile(
+                                    title: MessageBubble(
+                                      messageId: messageData.id,
+                                      chatId: widget.chatId,
+                                      epochTimeMs: item.epochTimeMs,
+                                      text: item.text,
+                                      isSenderMyUser:
+                                          item.senderId == widget.myUserId,
+                                      includeTime: true,
+                                      isSeen: item.seen,
+                                      type: item.type,
+                                      lastSeen: messages.first.seen,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+
+                      // Check the message type
+                    });
               },
             ),
           ),
-          getBottomContainer(context, widget.myUserId)
+          getBottomContainer(context, widget.myUserId),
         ],
       ),
     );
@@ -1149,31 +1260,29 @@ class _MessageScreenState extends State<MessageScreen> {
                 flex: 1,
                 child: GestureDetector(
                   onTap: () {
-                    (String code, String message, List<String> invitees) {
-                      _startCall('video'); // Track the start of the call
-                    };
-                       VideoCallFcm.sendCallNotification(
-                                                widget.otherUserDeviceToken ?? "",
-                                                "smart_call_app",
-                                                "007eJxTYLhwLq7i2b4u2QWOVy8FxG5Qe8vgtvHrA4bjt0806j6yuKukwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUFKb1K60hkJHh/zZ+FkYGCATx+RiKcxOLSuKTE3Ny4hMLChgYAIFIJgw=",
-                                                widget.otherUserName);
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    VideoCallScreen1(
-                                                  recieverName: widget.otherUserName,
-                                                  agoraAppId:
-                                                      "18c4ec28d42d4dbda9159124878e6cbb",
-                                                  agoraAppToken:
-                                                      "007eJxTYLhwLq7i2b4u2QWOVy8FxG5Qe8vgtvHrA4bjt0806j6yuKukwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUFKb1K60hkJHh/zZ+FkYGCATx+RiKcxOLSuKTE3Ny4hMLChgYAIFIJgw=", // Use dynamic channel name
-                                                  agoraAppCertificate:
-                                                      "064b1a009cc248afa93a01234876a4c9", // Use your dynamic token
-                                                  agoraAppChannelName:
-                                                      "smart_call_app",
-                                                ),
-                                              ),
-                                            );
+                    // (String code, String message, List<String> invitees) {
+                    _startCall('video'); // Track the start of the call
+
+                    VideoCallFcm.sendCallNotification(
+                        FirebaseAuth.instance.currentUser!.displayName ?? "",
+                        widget.otherUserDeviceToken ?? "",
+                        "smart_call_app",
+                        "007eJxTYKgqO6gXVnrxxLo9AacmXRbtsby4jPHTR+cjm3q4Tj7q/qyrwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUtNVeLL0hkJFhQ6YWAyMUgvh8DMW5iUUl8cmJOTnxiQUFDAwAbtklag==",
+                        widget.otherUserName);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => VideoCallScreen1(
+                          recieverName: widget.otherUserName,
+                          agoraAppId: "18c4ec28d42d4dbda9159124878e6cbb",
+                          agoraAppToken:
+                              "007eJxTYKgqO6gXVnrxxLo9AacmXRbtsby4jPHTR+cjm3q4Tj7q/qyrwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUtNVeLL0hkJFhQ6YWAyMUgvh8DMW5iUUl8cmJOTnxiQUFDAwAbtklag==", // Use dynamic channel name
+                          agoraAppCertificate:
+                              "064b1a009cc248afa93a01234876a4c9", // Use your dynamic token
+                          agoraAppChannelName: "smart_call_app",
+                        ),
+                      ),
+                    );
                   },
                   child: Icon(
                     Icons.videocam_rounded,
@@ -1450,20 +1559,32 @@ class CallMessageBubble extends StatelessWidget {
           color: isSenderMyUser ? Colors.blueAccent : Colors.grey[300],
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Row(
+        child: Column(
           children: [
-            Icon(
-              callIcon,
-              color: Colors.white,
-              size: 20,
+            Row(
+              children: [
+                Icon(
+                  callIcon,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    callInfo,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
             ),
-            SizedBox(width: 8),
-            Expanded(
+            Align(
+              alignment: Alignment.bottomRight,
               child: Text(
-                callInfo,
-                style: TextStyle(color: Colors.white),
+                DateFormat('hh:mm a')
+                    .format(DateTime.fromMillisecondsSinceEpoch(epochTimeMs)),
+                style: TextStyle(fontSize: 12),
               ),
-            ),
+            )
           ],
         ),
       ),

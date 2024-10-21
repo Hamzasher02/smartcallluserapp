@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +9,8 @@ import 'package:smart_call_app/Screens/call/agora/video_call_screen_1.dart';
 import 'package:smart_call_app/Util/app_url.dart';
 import 'package:smart_call_app/Util/video_call_fcm.dart';
 import 'package:smart_call_app/Widgets/dummy_waiting_call_screen.dart';
+import 'package:smart_call_app/db/entity/utils.dart';
+import 'package:smart_call_app/db/remote/firebase_database_source.dart';
 // import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 // import 'package:zego_uikit_signaling_plugin/zego_uikit_signaling_plugin.dart';
 import 'country_to_flag.dart';
@@ -49,6 +53,27 @@ class CustomCardTile extends StatefulWidget {
 }
 
 class _CustomCardTileState extends State<CustomCardTile> {
+  FirebaseDatabaseSource _firebaseDatabaseSource = FirebaseDatabaseSource();
+  Random random = Random();
+
+  void _startCall(String callType, String chatId) {
+    if (kDebugMode) {
+      print(
+          "Custom Card Tile The id of the current user is ${widget.currentUserId}");
+      print("Custom Card Tile The id of the other user is ${widget.id}");
+      print("Custom Card Tile The chat id is $chatId");
+      print("Custom Card Tile The call type is $callType");
+    }
+    _firebaseDatabaseSource.storeCallInfo(
+      chatId: chatId,
+      myUserId: widget.currentUserId,
+      otherUserId: widget.id,
+      callType: callType,
+      callStatus: "Started",
+      isIncoming: false,
+    );
+  }
+
   InterstitialAd? _interstitialAd;
   bool _isAdLoaded1 = false;
   int retryCount = 0;
@@ -86,8 +111,6 @@ class _CustomCardTileState extends State<CustomCardTile> {
       ),
     );
   }
-
-
 
   @override
   void dispose() {
@@ -176,6 +199,8 @@ class _CustomCardTileState extends State<CustomCardTile> {
                         child: widget.type == "live"
                             ? GestureDetector(
                                 onTap: () {
+                                  String chatId = compareAndCombineIds(
+                                      widget.currentUserId, widget.id);
                                   if (widget.status == "offline") {
                                     Get.snackbar(
                                       backgroundColor: const Color(0xff607d8b),
@@ -185,9 +210,12 @@ class _CustomCardTileState extends State<CustomCardTile> {
                                     );
                                   } else {
                                     if (widget.name.isNotEmpty) {
-                                    VideoCallFcm.sendCallNotification(  widget.recieverDeviceToken,
+                                      _startCall("video", chatId);
+                                      VideoCallFcm.sendCallNotification(
+                                          widget.currentUserName,
+                                          widget.recieverDeviceToken,
                                           "smart_call_app",
-                                          "007eJxTYLhwLq7i2b4u2QWOVy8FxG5Qe8vgtvHrA4bjt0806j6yuKukwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUFKb1K60hkJHh/zZ+FkYGCATx+RiKcxOLSuKTE3Ny4hMLChgYAIFIJgw=",
+                                          "007eJxTYKgqO6gXVnrxxLo9AacmXRbtsby4jPHTR+cjm3q4Tj7q/qyrwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUtNVeLL0hkJFhQ6YWAyMUgvh8DMW5iUUl8cmJOTnxiQUFDAwAbtklag==",
                                           widget.name);
                                     }
 
@@ -199,7 +227,7 @@ class _CustomCardTileState extends State<CustomCardTile> {
                                           agoraAppId:
                                               "18c4ec28d42d4dbda9159124878e6cbb",
                                           agoraAppToken:
-                                              "007eJxTYLhwLq7i2b4u2QWOVy8FxG5Qe8vgtvHrA4bjt0806j6yuKukwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUFKb1K60hkJHh/zZ+FkYGCATx+RiKcxOLSuKTE3Ny4hMLChgYAIFIJgw=", // Use dynamic channel name
+                                              "007eJxTYKgqO6gXVnrxxLo9AacmXRbtsby4jPHTR+cjm3q4Tj7q/qyrwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUtNVeLL0hkJFhQ6YWAyMUgvh8DMW5iUUl8cmJOTnxiQUFDAwAbtklag==", // Use dynamic channel name
                                           agoraAppCertificate:
                                               "064b1a009cc248afa93a01234876a4c9", // Use your dynamic token
                                           agoraAppChannelName: "smart_call_app",

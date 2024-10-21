@@ -26,6 +26,8 @@ class VideoCallScreen1 extends StatefulWidget {
 }
 
 class _VideoCallScreen1State extends State<VideoCallScreen1> {
+ 
+    
   bool _isMuted = false;
   bool _isSwitched = false;
   bool _isAdLoaded = false;
@@ -121,7 +123,8 @@ class _VideoCallScreen1State extends State<VideoCallScreen1> {
     // In a real implementation, you'll fetch a new token from your server.
     debugPrint("Token is about to expire. Renewing token...");
     setState(() {
-      _newToken = "new_temp_token"; // Get this from your token generation server
+      _newToken =
+          "new_temp_token"; // Get this from your token generation server
     });
 
     if (_newToken != null) {
@@ -233,7 +236,7 @@ class _VideoCallScreen1State extends State<VideoCallScreen1> {
         ),
       );
     } else {
-      return  Text('Please wait for ${widget.recieverName} to join',
+      return Text('Please wait for ${widget.recieverName} to join',
           textAlign: TextAlign.center);
     }
   }

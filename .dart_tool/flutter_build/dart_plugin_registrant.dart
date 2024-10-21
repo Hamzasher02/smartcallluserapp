@@ -27,6 +27,7 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_selector_linux/file_selector_linux.dart';
+import 'package:flutter_local_notifications_linux/flutter_local_notifications_linux.dart';
 import 'package:image_picker_linux/image_picker_linux.dart';
 import 'package:path_provider_linux/path_provider_linux.dart';
 import 'package:share_plus/share_plus.dart';
@@ -244,6 +245,15 @@ class _PluginRegistrant {
       } catch (err) {
         print(
           '`file_selector_linux` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        LinuxFlutterLocalNotificationsPlugin.registerWith();
+      } catch (err) {
+        print(
+          '`flutter_local_notifications_linux` threw an error: $err. '
           'The app may not function as expected until you remove this plugin from pubspec.yaml'
         );
       }

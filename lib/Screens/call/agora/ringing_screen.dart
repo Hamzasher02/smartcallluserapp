@@ -5,10 +5,12 @@ class RingingScreen extends StatelessWidget {
   final String channelName;
   final String agoraToken;
   final String recieverName;
+  final String callerName;
 
   RingingScreen({
     required this.channelName,
     required this.agoraToken,
+    required this.callerName,
     required this.recieverName,
   });
 
@@ -16,13 +18,13 @@ class RingingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Incoming Call from $recieverName'),
+        title: Text('Incoming Call from $callerName'),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('$recieverName is calling you...'),
+            Text('$callerName is calling you...'),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [

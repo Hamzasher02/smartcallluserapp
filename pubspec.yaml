@@ -119,6 +119,7 @@ dependencies:
   camera: ^0.11.0+2  # Use the stable version of the camera package
   googleapis_auth: ^1.4.1
   flutter_foreground_task: ^8.9.0
+  flutter_local_notifications: ^17.2.3
 
 
 

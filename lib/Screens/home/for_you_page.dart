@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:math';
+import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -37,6 +40,25 @@ class ForYouPage extends StatefulWidget {
 }
 
 class _ForYouPageState extends State<ForYouPage> {
+  FirebaseDatabaseSource _databaseSource = FirebaseDatabaseSource();
+  void _startCall(String callType, String chatId, String currentUserId,
+      String otherUserId) {
+    if (kDebugMode) {
+      print("The id of the current user is $currentUserId");
+      print("The id of the other user is $otherUserId");
+      print("The chat id is $chatId");
+      print("The call type is $callType");
+    }
+    _databaseSource.storeCallInfo(
+      chatId: chatId,
+      myUserId: currentUserId,
+      otherUserId: otherUserId,
+      callType: callType,
+      callStatus: "Started",
+      isIncoming: false,
+    );
+  }
+
   void onCallEnd() {
     if (_isAdLoaded1 && _interstitialAd != null) {
       _interstitialAd!.show();
@@ -60,6 +82,23 @@ class _ForYouPageState extends State<ForYouPage> {
   bool _isAdLoaded1 = false;
   late int screenWidthInt;
   late int screenHeghitInt;
+  String baseUrl =
+      "https://sheltered-falls-89286-198a03792e78.herokuapp.com/rtc/room33/publisher/userAccount/8566/";
+
+  String? agoraToken;
+
+  Future<void> getToken() async {
+    final response = await http.get(Uri.parse(baseUrl)).then((response) {
+      if (response.statusCode == 200) {
+        setState(() {
+          agoraToken = jsonDecode(response.body)["rtcToken"];
+          if (kDebugMode) {
+            print("Fucking token is $agoraToken");
+          }
+        });
+      }
+    });
+  }
 
   void _initializeAd() {
     InterstitialAd.load(
@@ -98,9 +137,10 @@ class _ForYouPageState extends State<ForYouPage> {
 
     //dataFireBase();
     super.initState();
-        nativeAdModel.loadAds(5); // Load 5 ads (or any number based on your needs)
+    nativeAdModel.loadAds(5); // Load 5 ads (or any number based on your needs)
 
     // initZego();
+    getToken();
 
     _initializeAd();
     if (kDebugMode) {
@@ -193,7 +233,6 @@ class _ForYouPageState extends State<ForYouPage> {
   final dateFormat = DateFormat('yyyy-MM-dd hh:mm');
 
   FirebaseFirestore db = FirebaseFirestore.instance;
-  final FirebaseDatabaseSource _databaseSource = FirebaseDatabaseSource();
 
   bool _isAdLoaded = false;
   int counterAd = 0;
@@ -453,12 +492,18 @@ class _ForYouPageState extends State<ForYouPage> {
                                       children: [
                                         GestureDetector(
                                           onTap: () async {
-                                            setState(() {
-                                              isFavorite = !isFavorite;
-                                              likes += isFavorite ? 1 : -1;
+                                            // Update the state safely after the build
+                                            WidgetsBinding.instance
+                                                .addPostFrameCallback((_) {
+                                              if (mounted) {
+                                                setState(() {
+                                                  isFavorite = !isFavorite;
+                                                  likes += isFavorite ? 1 : -1;
+                                                });
+                                              }
                                             });
 
-                                            // Update the like count and favorite status in Firestore
+                                            // Firestore update logic
                                             _databaseSource.addFav(id, likes);
                                             _databaseSource.addFav2(
                                                 id, isFavorite.toString());
@@ -470,48 +515,34 @@ class _ForYouPageState extends State<ForYouPage> {
                                                   'assets/audio/ting.mp3');
                                               player.play();
 
-                                              // Dismiss the dialog
-                                              Navigator.pushReplacement(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          MainPage(tab: 0)));
+                                              // Safely navigate after the update
 
-                                              // Show Snackbar after the dialog is dismissed
-                                              Future.delayed(Duration.zero, () {
-                                                Get.snackbar(
-                                                    backgroundColor:
-                                                        const Color(0xff607d8b),
-                                                    snackPosition:
-                                                        SnackPosition.TOP,
-                                                    duration:
-                                                        Duration(seconds: 4),
-                                                    "Favourites",
-                                                    "$name is added in the favorites by you. See in the Favorite tab");
-                                              });
+                                              Get.snackbar(
+                                                backgroundColor:
+                                                    const Color(0xff607d8b),
+                                                snackPosition:
+                                                    SnackPosition.TOP,
+                                                duration:
+                                                    const Duration(seconds: 4),
+                                                "Favourites",
+                                                "$name is added to favorites.",
+                                              );
                                             } else {
                                               await addF(myid, otherId,
                                                   "removeF", index);
 
-                                              // Dismiss the dialog
-                                              Navigator.pushReplacement(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          MainPage(tab: 0)));
+                                              // Safely navigate after the update
 
-                                              // Show Snackbar after the dialog is dismissed
-                                              Future.delayed(Duration.zero, () {
-                                                Get.snackbar(
-                                                    backgroundColor:
-                                                        const Color(0xff607d8b),
-                                                    snackPosition:
-                                                        SnackPosition.TOP,
-                                                    duration: const Duration(
-                                                        seconds: 4),
-                                                    "Favourites",
-                                                    "$name is removed from the favorites by you.");
-                                              });
+                                              Get.snackbar(
+                                                backgroundColor:
+                                                    const Color(0xff607d8b),
+                                                snackPosition:
+                                                    SnackPosition.TOP,
+                                                duration:
+                                                    const Duration(seconds: 4),
+                                                "Favourites",
+                                                "$name is removed from favorites.",
+                                              );
                                             }
                                           },
                                           child: Icon(
@@ -664,10 +695,21 @@ class _ForYouPageState extends State<ForYouPage> {
                                   type == "live"
                                       ? GestureDetector(
                                           onTap: () {
+                                            String chatId =
+                                                compareAndCombineIds(myid, id);
+
+                                            _startCall(
+                                                "video", chatId, myid, id);
+
                                             VideoCallFcm.sendCallNotification(
+                                                FirebaseAuth
+                                                        .instance
+                                                        .currentUser!
+                                                        .displayName ??
+                                                    "",
                                                 token,
                                                 "smart_call_app",
-                                                "007eJxTYLhwLq7i2b4u2QWOVy8FxG5Qe8vgtvHrA4bjt0806j6yuKukwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUFKb1K60hkJHh/zZ+FkYGCATx+RiKcxOLSuKTE3Ny4hMLChgYAIFIJgw=",
+                                                "007eJxTYKgqO6gXVnrxxLo9AacmXRbtsby4jPHTR+cjm3q4Tj7q/qyrwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUtNVeLL0hkJFhQ6YWAyMUgvh8DMW5iUUl8cmJOTnxiQUFDAwAbtklag==",
                                                 name);
                                             Navigator.push(
                                               context,
@@ -678,7 +720,7 @@ class _ForYouPageState extends State<ForYouPage> {
                                                   agoraAppId:
                                                       "18c4ec28d42d4dbda9159124878e6cbb",
                                                   agoraAppToken:
-                                                      "007eJxTYLhwLq7i2b4u2QWOVy8FxG5Qe8vgtvHrA4bjt0806j6yuKukwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUFKb1K60hkJHh/zZ+FkYGCATx+RiKcxOLSuKTE3Ny4hMLChgYAIFIJgw=", // Use dynamic channel name
+                                                      "007eJxTYKgqO6gXVnrxxLo9AacmXRbtsby4jPHTR+cjm3q4Tj7q/qyrwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUtNVeLL0hkJFhQ6YWAyMUgvh8DMW5iUUl8cmJOTnxiQUFDAwAbtklag==",
                                                   agoraAppCertificate:
                                                       "064b1a009cc248afa93a01234876a4c9", // Use your dynamic token
                                                   agoraAppChannelName:
@@ -830,20 +872,29 @@ class _ForYouPageState extends State<ForYouPage> {
                           return Expanded(
                             child: ListView.builder(
                               itemCount: result.length + (result.length ~/ 5),
-                itemBuilder: (BuildContext context, int index) {
-                  if (index != 0 && index % 5 == 0) {
-                    // Show native ad every 5th item
-                    final adIndex = index ~/ 5;
+                              itemBuilder: (BuildContext context, int index) {
+                                if (index != 0 && index % 5 == 0) {
+                                  // Show native ad every 5th item
+                                  final adIndex = index ~/ 5;
                                   // Display the native ad after every 5th user
-                                   return Obx(() {
-                      return nativeAdModel.isAdLoaded(adIndex)
-                          ? Container(
-                              height: MediaQuery.of(context).size.height * 0.2,
-                              width: MediaQuery.of(context).size.width,
-                              child: AdWidget(ad: nativeAdModel.getAd(adIndex)!),
-                            )
-                          : const Center(child: CircularProgressIndicator());
-                    });
+                                  return Obx(() {
+                                    if (nativeAdModel.isAdLoaded(adIndex)) {
+                                      // The ad is loaded, so display it
+                                      return Container(
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.2,
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        child: AdWidget(
+                                            ad: nativeAdModel.getAd(adIndex)!),
+                                      );
+                                    } else {
+                                      // Show a loading indicator while the ad is loading
+                                      return const Center(
+                                          child: CircularProgressIndicator());
+                                    }
+                                  });
                                 } else {
                                   final int itemIndex = index - (index ~/ 5);
                                   return GestureDetector(
@@ -955,7 +1006,7 @@ class _ForYouPageState extends State<ForYouPage> {
   void dispose() {
     super.dispose();
     _interstitialAd!.dispose();
-        nativeAdModel.dispose();
+    nativeAdModel.dispose();
 
     // _uninitializeCallInvitationService();
   }

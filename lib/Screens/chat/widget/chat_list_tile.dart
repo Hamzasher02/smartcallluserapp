@@ -28,15 +28,19 @@ class _ChatListTileState extends State<ChatListTile> {
            widget.chatWithUser.chat.lastMessage?.senderId != widget.myUserId;
   }
 
+  void _markMessageAsSeen() {
+    setState(() {
+      if (isMessageUnseen()) {
+        widget.chatWithUser.chat.lastMessage?.seen = true;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (isMessageUnseen()) {
-          setState(() {
-            widget.chatWithUser.chat.lastMessage?.seen = true;
-          });
-        }
+        _markMessageAsSeen();
         widget.onTap.call();
       },
       onLongPress: () {
@@ -88,7 +92,8 @@ class _ChatListTileState extends State<ChatListTile> {
                               ),
                             ),
                           ),
-                  ],
+                    // Red dot indicator for unseen messages
+                                    ],
                 ),
               ),
             ),
@@ -134,42 +139,42 @@ class _ChatListTileState extends State<ChatListTile> {
     );
   }
 
-Widget getBottomRow(BuildContext context) {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Expanded(
-        child: Opacity(
-          opacity: 0.6,
-          child: Text(
-            widget.chatWithUser.chat.lastMessage != null
-                ? (isLastMessageMyText() ? "You: " : "") +
-                  (widget.chatWithUser.chat.lastMessage!.type == "text"
-                      ? widget.chatWithUser.chat.lastMessage!.text
-                      : widget.chatWithUser.chat.lastMessage!.type)
-                : "Say Hello 👋",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.primary,
-              fontSize: 14,
-              fontWeight: isMessageUnseen() ? FontWeight.bold : FontWeight.normal,
+  Widget getBottomRow(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Opacity(
+            opacity: 0.6,
+            child: Text(
+              widget.chatWithUser.chat.lastMessage != null
+                  ? (isLastMessageMyText() ? "You: " : "") +
+                    (widget.chatWithUser.chat.lastMessage!.type == "text"
+                        ? widget.chatWithUser.chat.lastMessage!.text
+                        : widget.chatWithUser.chat.lastMessage!.type)
+                  : "Say Hello 👋",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontSize: 14,
+                fontWeight: isMessageUnseen() ? FontWeight.bold : FontWeight.normal,
+              ),
             ),
           ),
         ),
-      ),
-      SizedBox(
-        width: 40,
-        child: widget.chatWithUser.chat.lastMessage != null && isMessageUnseen()
-            ? Icon(Icons.circle, color: Colors.red, size: 20)
-            : Container(),
-      ),
-    ],
-  );
-}
-
-
-
+        SizedBox(
+          width: 40,
+          child: widget.chatWithUser.chat.lastMessage != null && isMessageUnseen()
+              ? CircleAvatar(
+                          radius: 5,
+                          backgroundColor: Colors.red,
+                        ) // Optional: display an icon if unseen
+              : null,
+        ),
+      ],
+    );
+  }
 
   bool isLastMessageMyText() {
     return widget.chatWithUser.chat.lastMessage?.senderId == widget.myUserId;

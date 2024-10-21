@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:googleapis_auth/auth_io.dart' as auth;
- class VideoCallFcm{
-   static Future<String> getAccessToken() async {
+
+class VideoCallFcm {
+  static Future<String> getAccessToken() async {
     final serviceAccountJson = {
       "type": "service_account",
       "project_id": "smart-call-app",
@@ -41,46 +42,62 @@ import 'package:googleapis_auth/auth_io.dart' as auth;
             client);
 
     client.close();
-    if(kDebugMode){
+    if (kDebugMode) {
       print("The Server key is ${credentials.accessToken.data}");
     }
     return credentials.accessToken.data;
   }
 
- static Future<void> sendCallNotification(String inviteeToken, String channelName, String agoraToken, String recieverName) async {
-   if(kDebugMode){
-          print("The reciver name is $recieverName");
-          print("The agora token is $agoraToken");
-          print("The channel Name is $channelName");
-          print("The invitee token is $inviteeToken");
+  static Future<void> sendCallNotification(String currentUserName,String inviteeToken,
+      String channelName, String agoraToken, String recieverName) async {
+    if (kDebugMode) {
+      print("The reciver name is $recieverName");
+      print("The agora token is $agoraToken");
+      print("The channel Name is $channelName");
+      print("The invitee token is $inviteeToken");
+            print("Current user name is $currentUserName");
+
+    }
+    final String accessToken = await getAccessToken();
+
+    final response = await http.post(
+      Uri.parse(
+          'https://fcm.googleapis.com/v1/projects/smart-call-app/messages:send'),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        "message": {
+          "token": inviteeToken, // Device token of the recipient
+          "data": {
+            // Use 'data' only, not 'notification'
+            "type": "call",
+            "receiverName": recieverName,
+            "callerName":currentUserName,
+            "channelName": channelName,
+            "agoraToken": agoraToken,
+            "action": "incoming_call" , // Pass the action as part of the data payload
+
+            "click_action":
+                "FLUTTER_NOTIFICATION_CLICK" // This is important for handling the background state
+          }, // Custom data
+          "notification": {
+            // Optional: Display notification
+            "title": "Incoming Call", // Change as needed
+            "body": "You have an incoming call." // Change as needed
+          },
+          "android": {
+            "priority": "high" // Set priority for Android devices
+          }
         }
-  final String serverKey = await getAccessToken(); // Your FCM server key
+      }),
+    );
 
-  final Map<String, dynamic> notificationData = {
-    "to": inviteeToken,
-    "data": { // Use 'data' only, not 'notification'
-      "type": "call",
-      "receiverName": recieverName,
-      "channelName": channelName,
-      "agoraToken": agoraToken,
-      "click_action": "FLUTTER_NOTIFICATION_CLICK" // This is important for handling the background state
-    },
-    "priority": "high",
-  };
-
-  final response = await http.post(
-    Uri.parse('https://fcm.googleapis.com/v1/projects/smart-call-app/messages:send'),
-    headers: <String, String>{
-      'Content-Type': 'application/json',
-      'Authorization': 'key=$serverKey',
-    },
-    body: jsonEncode(notificationData),
-  );
-
-  if (response.statusCode == 200) {
-    print('Call notification sent successfully');
-  } else {
-    print('Failed to send call notification: ${response.body}');
+    if (response.statusCode == 200) {
+      print('Call notification sent successfully.');
+    } else {
+      print('Failed to send call notification: ${response.body}');
+    }
   }
 }
- }

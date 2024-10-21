@@ -34,12 +34,17 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadIconState();
   }
 
-  Future<void> _loadIconState() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _onlineVisible = prefs.getBool('eyeIconState') ?? true;
+ Future<void> _loadIconState() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  if (mounted) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _onlineVisible = prefs.getBool('eyeIconState') ?? true;
+      });
     });
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -86,10 +91,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () async {
                         SharedPreferences prefs =
                             await SharedPreferences.getInstance();
-                        setState(() {
-                          _onlineVisible = !_onlineVisible;
-                          prefs.setBool('eyeIconState', _onlineVisible);
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          setState(() {
+                            _onlineVisible = !_onlineVisible;
+                            prefs.setBool('eyeIconState', _onlineVisible);
+                          });
                         });
+
                         if (_onlineVisible) {
                           await _databaseSource.updateStatus(
                               widget.myuser.id, "online");
@@ -115,31 +123,35 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: TextStyle(color: Colors.black),
                                 textAlign: TextAlign.center,
                               ),
-                              backgroundColor: Colors.red,
+                              backgroundColor: Colors.redAccent,
                               behavior: SnackBarBehavior.floating,
                               width: 200,
                             ),
                           );
                         }
                       },
-                    ),
+                    )
                   ],
                 )),
           ),
         ];
       },
-      body: PageView.builder(
-          physics: const ClampingScrollPhysics(),
-          controller: _pageController,
-          onPageChanged: (int page) {
-            setState(() {
-              _currentPage = page;
-            });
-          },
-          itemCount: pages.length,
-          itemBuilder: (BuildContext context, int index) {
-            return pages[index];
-          }),
+      body:PageView.builder(
+  controller: _pageController,
+  onPageChanged: (index) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _currentPage = index;
+      });
+    });
+  },
+  itemCount: pages.length,
+  itemBuilder: (context, index) {
+    return pages[index];
+  },
+)
+
+
     );
   }
 

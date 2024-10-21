@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:smart_call_app/db/entity/fvrt.dart';
 import '../entity/app_user.dart';
 import '../entity/chat.dart';
@@ -19,6 +20,13 @@ class FirebaseDatabaseSource {
   int? callDuration, // Duration in seconds, optional
 }) async {
   String callId = DateTime.now().millisecondsSinceEpoch.toString();
+  if(kDebugMode){
+    print("The id of the current user is $myUserId");
+    print("The id of the other user is $otherUserId");
+    print("The chat id is $chatId");
+    print("The call type is $callType");
+
+  }
 
   // Store call info for both users
   await instance.collection('users').doc(myUserId).collection('calls').doc(callId).set({
