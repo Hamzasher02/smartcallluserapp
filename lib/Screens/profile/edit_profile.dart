@@ -433,66 +433,84 @@ class _EditProfileState extends State<EditProfile> {
                       backgroundColor: Theme.of(context).colorScheme.secondary,
                     ),
                     onPressed: () {
-                      showCountryPicker(
-                          context: context,
-                          countryListTheme: CountryListThemeData(
-                            textStyle: const TextStyle(
-                              fontSize: 16,
-                              color: Colors
-                                  .black, // Ensure the country names are black
-                            ),
-                            searchTextStyle: const TextStyle(
-                              color: Colors
-                                  .black, // Ensure the entered text color is black
-                            ),
-                            flagSize: 25,
-                            backgroundColor: Colors.white,
-                            // backgroundColor: Theme.of(context).secondaryHeaderColor,
+                      bool isDarkMode =
+                          Theme.of(context).brightness == Brightness.dark;
 
-                            bottomSheetHeight: 500,
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(20.0),
-                              topRight: Radius.circular(20.0),
+                      showCountryPicker(
+                        context: context,
+                        countryListTheme: CountryListThemeData(
+                          textStyle: TextStyle(
+                            fontSize: 16,
+                            color: isDarkMode
+                                ? Colors.white
+                                : Colors
+                                    .black, // Country names color based on theme
+                          ),
+                          searchTextStyle: TextStyle(
+                            color: isDarkMode
+                                ? Colors.white
+                                : Colors
+                                    .black, // Search text color based on theme
+                          ),
+                          flagSize: 25,
+                          backgroundColor: isDarkMode
+                              ? Colors.black
+                              : Colors.white, // Background color based on theme
+                          bottomSheetHeight: 500,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(20.0),
+                            topRight: Radius.circular(20.0),
+                          ),
+                          inputDecoration: InputDecoration(
+                            labelText: 'Search',
+                            labelStyle: TextStyle(
+                              color: isDarkMode
+                                  ? Colors.white70
+                                  : Colors
+                                      .black87, // Label text color based on theme
                             ),
-                            inputDecoration: InputDecoration(
-                              labelText: 'Search',
-                              labelStyle: TextStyle(color: Colors.black),
-                              hintText: 'Start typing to search',
-                              hintStyle: TextStyle(
-                                color: Colors.black,
-                              ),
-                              prefixIcon: const Icon(
-                                Icons.search,
-                                color: Colors.black, // Search icon color black
-                              ),
-                              border: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color:
-                                      const Color(0xFF8C98A8).withOpacity(0.2),
-                                ),
+                            hintText: 'Start typing to search',
+                            hintStyle: TextStyle(
+                              color: isDarkMode
+                                  ? Colors.white54
+                                  : Colors
+                                      .black54, // Hint text color based on theme
+                            ),
+                            prefixIcon: Icon(
+                              Icons.search,
+                              color: isDarkMode
+                                  ? Colors.white
+                                  : Colors
+                                      .black, // Search icon color based on theme
+                            ),
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: const Color(0xFF8C98A8).withOpacity(0.2),
                               ),
                             ),
                           ),
-                          onSelect: (Country cou) {
-                            setState(() {
-                              country = cou.countryCode;
-                            });
-                          }
-
-                          // print('Select country: ${country.displayName}'),
-                          );
+                        ),
+                        onSelect: (Country cou) {
+                          setState(() {
+                            country = cou.countryCode;
+                          });
+                        },
+                      );
                     },
                     child: Text(
                       country == 'Select Country'
                           ? widget.myuser.country
                           : country,
                       style: TextStyle(
-                          fontSize: 18,
-                          color:
-                              Theme.of(context).colorScheme.secondaryContainer),
+                        fontSize: 18,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .secondaryContainer, // Button text color
+                      ),
                     ),
                   ),
                 ),
+
                 const SizedBox(
                   height: 30,
                 ),

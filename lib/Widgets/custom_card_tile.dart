@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:smart_call_app/Screens/call/agora/video_call_screen_1.dart';
 import 'package:smart_call_app/Util/app_url.dart';
@@ -121,15 +120,27 @@ class _CustomCardTileState extends State<CustomCardTile> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Container(
-        height: MediaQuery.of(context).size.height * 0.135,
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.outline,
-          borderRadius: const BorderRadius.all(
-            Radius.circular(10),
-          ),
-        ),
+                  color: Theme.of(context).colorScheme.outline,
+                  borderRadius: BorderRadius.circular(16.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.3),
+                      spreadRadius: 2,
+                      blurRadius: 8,
+                      offset:const  Offset(0, 4),
+                    ),
+                  ],
+                ),
+        height: MediaQuery.of(context).size.height * 0.135,
+        // decoration: BoxDecoration(
+        //   color: Theme.of(context).colorScheme.outline,
+        //   borderRadius: const BorderRadius.all(
+        //     Radius.circular(10),
+        //   ),
+        // ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
@@ -201,21 +212,22 @@ class _CustomCardTileState extends State<CustomCardTile> {
                                 onTap: () {
                                   String chatId = compareAndCombineIds(
                                       widget.currentUserId, widget.id);
-                                  if (widget.status == "offline") {
-                                    Get.snackbar(
-                                      backgroundColor: const Color(0xff607d8b),
-                                      "Call Invitation",
-                                      "${widget.name} is offline. Please try later",
-                                      snackPosition: SnackPosition.TOP,
-                                    );
-                                  } else {
+                                  // if (widget.status == "offline") {
+                                  //   Get.snackbar(
+                                  //     backgroundColor: const Color(0xff607d8b),
+                                  //     "Call Invitation",
+                                  //     "${widget.name} is offline. Please try later",
+                                  //     snackPosition: SnackPosition.TOP,
+                                  //   );
+                                  // }
+                                 
                                     if (widget.name.isNotEmpty) {
                                       _startCall("video", chatId);
                                       VideoCallFcm.sendCallNotification(
                                           widget.currentUserName,
                                           widget.recieverDeviceToken,
                                           "smart_call_app",
-                                          "007eJxTYKgqO6gXVnrxxLo9AacmXRbtsby4jPHTR+cjm3q4Tj7q/qyrwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUtNVeLL0hkJFhQ6YWAyMUgvh8DMW5iUUl8cmJOTnxiQUFDAwAbtklag==",
+                                          "007eJxTYNBd3bHmm6XbfSGBhUHZpyPtM5/bbF2uPl94lZZQ/6HElVwKDIYWySapyUYWKSZGKSYpSSmJloamloZGJhbmFqlmyUlJ0ziN0hsCGRnefdvJwAiFID4fQ3FuYlFJfHJiTk58YkEBAwMASV4i1A==",
                                           widget.name);
                                     }
 
@@ -227,14 +239,14 @@ class _CustomCardTileState extends State<CustomCardTile> {
                                           agoraAppId:
                                               "18c4ec28d42d4dbda9159124878e6cbb",
                                           agoraAppToken:
-                                              "007eJxTYKgqO6gXVnrxxLo9AacmXRbtsby4jPHTR+cjm3q4Tj7q/qyrwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUtNVeLL0hkJFhQ6YWAyMUgvh8DMW5iUUl8cmJOTnxiQUFDAwAbtklag==", // Use dynamic channel name
+                                              "007eJxTYNBd3bHmm6XbfSGBhUHZpyPtM5/bbF2uPl94lZZQ/6HElVwKDIYWySapyUYWKSZGKSYpSSmJloamloZGJhbmFqlmyUlJ0ziN0hsCGRnefdvJwAiFID4fQ3FuYlFJfHJiTk58YkEBAwMASV4i1A==", // Use dynamic channel name
                                           agoraAppCertificate:
                                               "064b1a009cc248afa93a01234876a4c9", // Use your dynamic token
                                           agoraAppChannelName: "smart_call_app",
                                         ),
                                       ),
                                     );
-                                  }
+                                  
                                 },
                                 child: Container(
                                   width: 45,

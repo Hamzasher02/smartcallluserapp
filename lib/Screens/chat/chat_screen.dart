@@ -17,6 +17,7 @@ import 'package:smart_call_app/Screens/chat/widget/chat_top_bar.dart';
 import 'package:smart_call_app/Screens/chat/widget/message_bubble.dart';
 import 'package:smart_call_app/Util/video_call_fcm.dart';
 import 'package:smart_call_app/Widgets/country_to_flag.dart';
+import 'package:smart_call_app/Widgets/dummy_waiting_call_screen.dart';
 import 'package:smart_call_app/db/Models/chat_with_user.dart';
 import 'package:smart_call_app/db/entity/sentmessage.dart';
 import 'package:smart_call_app/db/entity/utils.dart';
@@ -40,6 +41,7 @@ class MessageScreen extends StatefulWidget {
       this.otherUserDeviceToken,
       this.country,
       this.gender,
+      this.token,
       this.image,
       this.userType,
       this.date,
@@ -50,6 +52,7 @@ class MessageScreen extends StatefulWidget {
   final String chatId;
   String? gender;
   String? country;
+  String ? token;
   String? age;
   String? image;
   String? otherUserDeviceToken;
@@ -569,60 +572,86 @@ class _MessageScreenState extends State<MessageScreen> {
                                       ),
                                     ),
                                   ),
-                                  // type == "live"
-                                  //     ? SizedBox(
-                                  //         width: 90.0, // Set your desired width
-                                  //         height:
-                                  //             90.0, // Set your desired height
-                                  //         child: FittedBox(
-                                  //           fit: BoxFit.cover,
-                                  //           child: ZegoSendCallInvitationButton(
-                                  //             isVideoCall: true,
-                                  //             resourceID: "zegouikit_call",
-                                  //             invitees: [
-                                  //               ZegoUIKitUser(
-                                  //                 id: id,
-                                  //                 name: name,
-                                  //               ),
-                                  //             ],
-                                  //             icon: ButtonIcon(
-                                  //                 icon: const Icon(
-                                  //                   Icons.videocam_rounded,
-                                  //                   size: 50,
-                                  //                   color: Colors.white,
-                                  //                 ),
-                                  //                 backgroundColor:
-                                  //                     Colors.green),
-                                  //           ),
-                                  //         ),
-                                  //       )
-                                  //     : type == "fake"
-                                  //         ? GestureDetector(
-                                  //             onTap: () {
-                                  //               Navigator.push(
-                                  //                   context,
-                                  //                   MaterialPageRoute(
-                                  //                       builder: (context) =>
-                                  //                           DummyWaitingCallScreen(
-                                  //                             userImage: img,
-                                  //                             userName: name,
-                                  //                           )));
-                                  //             },
-                                  //             child: const Align(
-                                  //               alignment:
-                                  //                   Alignment.centerRight,
-                                  //               child: CircleAvatar(
-                                  //                 backgroundColor: Colors.green,
-                                  //                 radius: 30,
-                                  //                 child: Icon(
-                                  //                   Icons.videocam_rounded,
-                                  //                   size: 40,
-                                  //                   color: Colors.white,
-                                  //                 ),
-                                  //               ),
-                                  //             ),
-                                  //           )
-                                  //         : Container(),
+                                   type == "live"
+                                      ? GestureDetector(
+                                          onTap: () {
+                                            String chatId =
+                                                compareAndCombineIds(myid, id);
+
+                                            _startCall(
+                                                "video");
+
+                                            VideoCallFcm.sendCallNotification(
+                                                FirebaseAuth
+                                                        .instance
+                                                        .currentUser!
+                                                        .displayName ??
+                                                    "",
+                                                widget.token ?? "",
+                                                "smart_call_app",
+                                                "007eJxTYDB4tby/x9u89qvalpzLyvNuuM/gXbpGMUHg+IcjQgsnvi5QYDC0SDZJTTaySDExSjFJSUpJtDQ0tTQ0MrEwt0g1S05K6u5QSG8IZGTwuHaCkZEBAkF8Pobi3MSikvjkxJyc+MSCAgYGAPZ4JJs=",
+                                                name);
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    VideoCallScreen1(
+                                                  recieverName: name,
+                                                  agoraAppId:
+                                                      "18c4ec28d42d4dbda9159124878e6cbb",
+                                                  agoraAppToken:
+                                                      "007eJxTYDB4tby/x9u89qvalpzLyvNuuM/gXbpGMUHg+IcjQgsnvi5QYDC0SDZJTTaySDExSjFJSUpJtDQ0tTQ0MrEwt0g1S05K6u5QSG8IZGTwuHaCkZEBAkF8Pobi3MSikvjkxJyc+MSCAgYGAPZ4JJs=",
+                                                  agoraAppCertificate:
+                                                      "064b1a009cc248afa93a01234876a4c9", // Use your dynamic token
+                                                  agoraAppChannelName:
+                                                      "smart_call_app",
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          child: Container(
+                                            width: 45,
+                                            height: 45,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.green,
+                                            ),
+                                            child: const Center(
+                                              child: Icon(
+                                                Icons.videocam,
+                                                size: 25,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : type == "fake"
+                                          ? GestureDetector(
+                                              onTap: () {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            DummyWaitingCallScreen(
+                                                              userImage: img,
+                                                              userName: name,
+                                                            )));
+                                              },
+                                              child: const Align(
+                                                alignment:
+                                                    Alignment.centerRight,
+                                                child: CircleAvatar(
+                                                  backgroundColor: Colors.green,
+                                                  radius: 30,
+                                                  child: Icon(
+                                                    Icons.videocam_rounded,
+                                                    size: 40,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          : Container(),
                                 ],
                               ),
                             ),
@@ -813,7 +842,7 @@ class _MessageScreenState extends State<MessageScreen> {
 
     if (response.statusCode == 200) {
       print('FCM message sent successfully.');
-    } else { 
+    } else {
       print('Failed to send FCM message: ${response.body}');
     }
   }
@@ -1267,7 +1296,7 @@ class _MessageScreenState extends State<MessageScreen> {
                         FirebaseAuth.instance.currentUser!.displayName ?? "",
                         widget.otherUserDeviceToken ?? "",
                         "smart_call_app",
-                        "007eJxTYKgqO6gXVnrxxLo9AacmXRbtsby4jPHTR+cjm3q4Tj7q/qyrwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUtNVeLL0hkJFhQ6YWAyMUgvh8DMW5iUUl8cmJOTnxiQUFDAwAbtklag==",
+                        "007eJxTYPjyK/hOyNEvRX47120/kVuo9zl24yfr88e/uM8sUFJpWsGrwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyU9JJNP70hkJHhU/w/JkYGCATx+RiKcxOLSuKTE3Ny4hMLChgYANnGJuc=",
                         widget.otherUserName);
                     Navigator.push(
                       context,
@@ -1276,7 +1305,7 @@ class _MessageScreenState extends State<MessageScreen> {
                           recieverName: widget.otherUserName,
                           agoraAppId: "18c4ec28d42d4dbda9159124878e6cbb",
                           agoraAppToken:
-                              "007eJxTYKgqO6gXVnrxxLo9AacmXRbtsby4jPHTR+cjm3q4Tj7q/qyrwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUtNVeLL0hkJFhQ6YWAyMUgvh8DMW5iUUl8cmJOTnxiQUFDAwAbtklag==", // Use dynamic channel name
+                              "007eJxTYPjyK/hOyNEvRX47120/kVuo9zl24yfr88e/uM8sUFJpWsGrwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyU9JJNP70hkJHhU/w/JkYGCATx+RiKcxOLSuKTE3Ny4hMLChgYANnGJuc=", // Use dynamic channel name
                           agoraAppCertificate:
                               "064b1a009cc248afa93a01234876a4c9", // Use your dynamic token
                           agoraAppChannelName: "smart_call_app",
@@ -1301,13 +1330,13 @@ class _MessageScreenState extends State<MessageScreen> {
                   maxLines: 3,
                   minLines: 1,
                   decoration: InputDecoration(
-                    suffixIcon: IconButton(
-                      icon: const Icon(
-                        Icons.attach_file,
-                        color: Color(0xff607d8b),
-                      ),
-                      onPressed: () => _showMultiIcon(),
-                    ),
+                    // suffixIcon: IconButton(
+                    //   icon: const Icon(
+                    //     Icons.attach_file,
+                    //     color: Color(0xff607d8b),
+                    //   ),
+                    //   onPressed: () => _showMultiIcon(),
+                    // ),
                     contentPadding: const EdgeInsets.only(left: 20),
                     hintText: "Type Something...",
                     hintStyle: const TextStyle(color: Color(0xff607d8b)),
@@ -1437,12 +1466,6 @@ class ThreeDotMenu extends StatelessWidget {
           value: 'Clear',
           child: ListTile(
             title: Text('Clear'),
-          ),
-        ),
-        const PopupMenuItem(
-          value: 'Video Call',
-          child: ListTile(
-            title: Text('Video Call'),
           ),
         ),
         const PopupMenuItem(

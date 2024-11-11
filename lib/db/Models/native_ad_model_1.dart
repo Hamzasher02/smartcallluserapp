@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -7,7 +6,7 @@ class NativeAdModel1 extends GetxController {
   RxList<RxBool> isAdLoadedList = <RxBool>[].obs;
 
   // Use the test ad unit ID for debugging
-  final String adUnitId = "ca-app-pub-3940256099942544/2247696110"; 
+  final String adUnitId = "ca-app-pub-3940256099942544/2247696110";
 
   // Load multiple native ads
   void loadAds(int count) {
@@ -15,21 +14,17 @@ class NativeAdModel1 extends GetxController {
       final NativeAd nativeAd = NativeAd(
         adUnitId: adUnitId,
         listener: NativeAdListener(
-          onAdLoaded: (ad) {
-            isAdLoadedList[i].value = true;
-            if (kDebugMode) {
-              print("Native Ad $i is loaded");
-            }
-          },
-          onAdFailedToLoad: (ad, error) {
-            isAdLoadedList[i].value = false;
-            if (kDebugMode) {
-              print("Failed to load native ad $i: $error");
-            }
-            ad.dispose();
-          },
-        ),
-        nativeTemplateStyle: NativeTemplateStyle(templateType: TemplateType.medium),
+            // In your NativeAdModel1 class, when an ad loads successfully or fails to load
+            onAdLoaded: (ad) {
+          isAdLoadedList[i].value = true;
+          print("Ad $i loaded successfully.");
+        }, onAdFailedToLoad: (ad, error) {
+          isAdLoadedList[i].value = false;
+          print("Ad $i failed to load: $error");
+          ad.dispose();
+        }),
+        nativeTemplateStyle:
+            NativeTemplateStyle(templateType: TemplateType.medium),
         request: const AdRequest(),
       );
 

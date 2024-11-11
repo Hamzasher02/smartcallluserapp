@@ -180,14 +180,15 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                             //         (route) => false,
                                             //   );
                                             // }
+                                            Navigator.pop(context);
                                           },
                                           child: Icon(
                                             fvtVisible
                                                 ? Icons.favorite
                                                 : Icons.favorite_border,
                                             color: fvtVisible
-                                                ? Colors.redAccent
-                                                : Colors.redAccent,
+                                                ? Colors.red
+                                                : Colors.white,
                                             size: 20,
                                           ),
                                         ),

@@ -16,7 +16,7 @@ class CustomGridView extends StatelessWidget {
     required this.age,
     required this.gender,
     required this.country,
-    required this.profileImage,
+    required this.profileImage, 
   });
 
   @override

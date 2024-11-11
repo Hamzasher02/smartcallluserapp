@@ -123,6 +123,7 @@ Future<void> addFavourite(String myId, AddFavourites fav) async {
       "views": view,
     });
   }
+  
 
   void addFav(id, fav) async {
     instance.collection('users').doc(id).update({

@@ -11,7 +11,13 @@ class ThemeModes {
         outline: Colors.white,
         onPrimary: const Color(0xff8097a2),
         onSecondary: Colors.grey.shade300,
-        secondary: Colors.black87),
+        secondary: Colors.black87,
+        
+        onSecondaryContainer:const Color.fromARGB(228, 255, 255, 255)
+        
+        
+        ),
+        
         
 
   );
@@ -26,6 +32,7 @@ class ThemeModes {
         outline: const Color(0xff3b3b3b),
         secondary: Colors.white,
         onSecondary: Colors.black,
+        onSecondaryContainer: Colors.black,
         onPrimary: const Color(0xff8097a2)),
   );
 }

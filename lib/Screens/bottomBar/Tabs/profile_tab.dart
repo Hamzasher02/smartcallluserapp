@@ -31,8 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-
+      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
       body: StreamBuilder<DocumentSnapshot>(
           stream: db.collection("users").doc(widget.currentUserID).snapshots(),
           builder: (context, snapshot) {
@@ -56,10 +55,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               MediaQuery.of(context).size.width, 100.0)),
                     ),
                     child: Padding(
-                      padding:
-                        const  EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 40),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Column(
@@ -140,54 +139,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ],
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.visibility,
-                                    size: 30,
-                                    color: Colors.white,
-                                  ),
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
-                                  Text(
-                                    myuser.views.toString(),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
+                              const Icon(
+                                Icons.visibility,
+                                size: 30,
+                                color: Colors.white,
                               ),
                               const SizedBox(
-                                width: 15,
+                                height: 10,
                               ),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.favorite,
-                                    size: 30,
-                                    color: Colors.white,
-                                  ),
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
-                                  Text(
-                                    myuser.likes.toString(),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                myuser.views.toString(),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                          // const SizedBox(
+                          //   width: 50,
+                          // ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.favorite,
+                                size: 30,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              Text(
+                                myuser.likes.toString(),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
                             ],
                           )

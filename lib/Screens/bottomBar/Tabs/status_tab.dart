@@ -22,6 +22,8 @@ class StatusScreen extends StatefulWidget {
 }
 
 class _StatusScreenState extends State<StatusScreen> {
+    bool _isLoading1 = true; // Add this line
+
   FirebaseFirestore db = FirebaseFirestore.instance;
   final FirebaseDatabaseSource _databaseSource = FirebaseDatabaseSource();
   List<Story> storyData = [];
@@ -36,6 +38,12 @@ class _StatusScreenState extends State<StatusScreen> {
     super.initState();
     cleanupOldStatuses();
     _initialize();
+  }
+   // This is the callback function that will trigger UI update in StatusScreen
+  void updateUserStatus() {
+    setState(() {
+      // This triggers a UI rebuild by calling setState
+    });
   }
 
   Future<void> _initialize() async {
@@ -72,9 +80,7 @@ class _StatusScreenState extends State<StatusScreen> {
           (story) => story.timestamp.add(Duration(days: 7)).isBefore(now));
 
       setState(() {
-        storyData = allStories.where((story) {
-          return usersData.any((user) => user.id == story.userId);
-        }).toList();
+        storyData = allStories;
         storyData.shuffle();
         if (kDebugMode) {
           print("Statuses are $storyData");
@@ -174,6 +180,7 @@ class _StatusScreenState extends State<StatusScreen> {
   }
 
   showStatus(BuildContext context, String image, String likes, String name,
+
       String country) {
     return showMaterialModalBottomSheet(
       context: context,
@@ -315,6 +322,8 @@ class _StatusScreenState extends State<StatusScreen> {
                                 height: 100,
                                 width: MediaQuery.of(context).size.width,
                                 child: StatusBarListView(
+                                                      onFavoriteChange:fetchUsersData(), // Pass the callback
+
                                   fakeUser: usersData,
                                   myuser: widget.myuser,
                                 ),
@@ -338,11 +347,6 @@ class _StatusScreenState extends State<StatusScreen> {
                                       storyData.length, // Adjust item count
                                   shrinkWrap: true,
                                   itemBuilder: (context, index) {
-                                    // Calculate the storyData index considering the ads
-
-                                    // Check if the current position is where an ad should be displayed
-
-                                    // Ensure that index is within the bounds of storyData
                                     if (index < storyData.length) {
                                       return GestureDetector(
                                         onTap: () {
@@ -351,7 +355,8 @@ class _StatusScreenState extends State<StatusScreen> {
                                               .push(MaterialPageRoute(
                                             builder: (context) =>
                                                 StatusScrollImage(
-                                                  userImage:storyData[index].imageUrl,
+                                              userImage:
+                                                  storyData[index].imageUrl,
                                               story: storyData,
                                               statusId: storyData[index].id,
                                               currentUserId: widget.myuser.id,

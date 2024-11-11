@@ -62,7 +62,7 @@ class _MainPageState extends State<MainPage>
             )
           : null,
       padding: const EdgeInsets.all(8.0),
-      child: Icon(
+      child: Icon(    
         icon,
         color: isSelected ? Colors.blue : Colors.white, // Icon color
         size: isSelected ? 30 : 24, // Size of the icon when selected
@@ -297,52 +297,70 @@ class _MainPageState extends State<MainPage>
         child: Scaffold(
           backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
           appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(60),
-            child:AppBar(
-  elevation: 0,
-  backgroundColor: Theme.of(context).colorScheme.onPrimary,
-  bottom: TabBar(
-    controller: _tabController,
-    labelColor: Colors.white,
-    unselectedLabelColor: Colors.white,
-    indicator: BoxDecoration(
-      color: Color(0xffD3D3D3), // Background color for the selected tab
-      borderRadius: BorderRadius.circular(20), // Rounded corners
-    ),
-    indicatorPadding: const EdgeInsets.symmetric(
-      horizontal: 15.0,
-      vertical: 8.0,
-    ), // Adjust padding for the size of the container
-    indicatorSize: TabBarIndicatorSize.tab, // Makes the indicator cover the entire tab
-    tabs: [
-      Tab(
-        icon: Icon(
-          Icons.cabin,
-          color: Colors.white,
-        ),
-      ),
-      Tab(
-        icon: Icon(
-          Icons.add_chart,
-          color: Colors.white,
-        ),
-      ),
-      Tab(
-        icon: Icon(
-          Icons.chat,
-          color: Colors.white,
-        ),
-      ),
-      Tab(
-        icon: Icon(
-          Icons.person,
-          color: Colors.white,
-        ),
-      ),
-    ],
-  ),
-),
-          ),
+              preferredSize: const Size.fromHeight(60),
+              child: AppBar(
+                elevation: 0,
+                backgroundColor: Theme.of(context).colorScheme.onPrimary,
+                bottom: TabBar(
+                  controller: _tabController,
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white,
+                  indicator: BoxDecoration(
+                    color: Color(0xffD3D3D3).withOpacity(
+                        0.4), // Lighter opacity for the selected tab background
+                    borderRadius: BorderRadius.circular(20), // Rounded corners
+                  ),
+                  indicatorPadding: const EdgeInsets.symmetric(
+                    horizontal: 15.0,
+                    vertical: 8.0,
+                  ), // Adjust padding for the size of the container
+                  indicatorSize: TabBarIndicatorSize
+                      .tab, // Makes the indicator cover the entire tab
+                  tabs: [
+                   const Tab(
+                      icon: Icon(
+                        Icons.cabin,
+                        color: Colors.white,
+                      ),
+                    ),
+                const    Tab(
+                      icon: Icon(
+                        Icons.add_chart,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Tab(
+                      icon: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                         const Icon(
+                            Icons.chat,
+                            color: Colors.white,
+                          ),
+                          Positioned(
+                            right: -4.0, // Move the dot further right
+                            top: -4.0, // Move the dot further up
+                            child: Container(
+                              width: 8.0,
+                              height: 8.0,
+                              decoration:const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white, // Dot color
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+               const     Tab(
+                      icon: Icon(
+                        Icons.person,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              )),
           body: isLoading
               ? TabBarView(
                   controller: _tabController,

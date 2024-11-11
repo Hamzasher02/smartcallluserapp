@@ -4,9 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_call_app/Util/app_url.dart';
 import 'package:smart_call_app/Widgets/dummy_waiting_call_screen.dart';
+import 'package:smart_call_app/db/entity/fvrt.dart';
 import 'package:smart_call_app/db/entity/story.dart';
 import 'package:tiktoklikescroller/tiktoklikescroller.dart';
 import '../Screens/chat/chat_screen.dart';
@@ -46,6 +48,8 @@ class StatusScrollImage extends StatefulWidget {
 }
 
 class _StatusScrollImageState extends State<StatusScrollImage> {
+  late AudioPlayer player;
+
   int _currentIndex = 0; // Track the current index
 
   List<dynamic> combinedContent = [];
@@ -159,6 +163,16 @@ class _StatusScrollImageState extends State<StatusScrollImage> {
   //   _callInvitationService.uninit();
   // }
 
+  addF(String myId, String otherId, String added, index) async {
+    if (added == "addF") {
+      // Add favorite
+      await _databaseSource.addFavourite(myId, AddFavourites(otherId, added));
+    } else {
+      // Remove favorite
+      await _databaseSource.removeFavourite(myId, otherId);
+    }
+  }
+
   AppUser? otherUser;
   String myid = '';
   FirebaseFirestore db = FirebaseFirestore.instance;
@@ -199,6 +213,7 @@ class _StatusScrollImageState extends State<StatusScrollImage> {
 
   @override
   void initState() {
+    player = AudioPlayer();
     super.initState();
     combinedContent = List.from(widget.img);
     _loadNativeAd();
@@ -222,13 +237,13 @@ class _StatusScrollImageState extends State<StatusScrollImage> {
   Widget _buildAdWidget() {
     return Obx(() {
       if (nativeAdModel.isAdLoaded.value) {
-        return Container(
+        return SizedBox(
           height: MediaQuery.of(context).size.height,
           width: MediaQuery.of(context).size.width,
           child: AdWidget(ad: nativeAdModel.nativeAd!),
         );
       } else {
-        return Center(
+        return const Center(
           child: CircularProgressIndicator(
             color: Colors.black,
           ),
@@ -337,160 +352,239 @@ class _StatusScrollImageState extends State<StatusScrollImage> {
               onTap: () {
                 Navigator.of(context).pop();
               },
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: CachedNetworkImageProvider(story.imageUrl),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                height: MediaQuery.of(context).size.height,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(30, 0, 20, 20),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(.2),
-                          borderRadius: BorderRadius.circular(8),
+              child: StreamBuilder(
+                stream: db
+                    .collection("users")
+                    .doc(index == 0 ? widget.userId : widget.img[index].userId)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData &&
+                      snapshot.connectionState == ConnectionState.waiting) {
+                    return Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height,
+                      color: Colors.white,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: Theme.of(context).colorScheme.onPrimary,
                         ),
+                      ),
+                    ); // Or any loading indicator
+                  } else if (snapshot.hasError) {
+                    return Container();
+                  } else {
+                    AppUser otherUser = AppUser.fromSnapshot(snapshot.data!);
+                    bool isFavorite = otherUser.temp1 ==
+                        "true"; // Initially set based on the 'temp1' field
+                    int likes = otherUser.likes; // Initialize likes counter
+
+                    return Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: CachedNetworkImageProvider(index == 0
+                              ? widget.path
+                              : widget.img[index].imageUrl),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      height: MediaQuery.of(context).size.height,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(30, 0, 20, 20),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            CircleAvatar(
-                              backgroundColor: Colors.red,
-                              radius: 30,
-                              backgroundImage: NetworkImage(widget.userImage),
-                            ),
-                            Text(
-                              "\t\t\t${widget.userName}\t\t",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: Colors.red,
+                                    radius: 30,
+                                    backgroundImage: NetworkImage(
+                                        otherUser.profilePhotoPath),
                                   ),
+                                  Text(
+                                    "\t\t\t${otherUser.name}\t\t",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge!
+                                        .copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                ],
+                              ),
                             ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                DummyWaitingCallScreen(
+                                                  story: widget.story,
+                                                  storyId: widget.statusId,
+                                                  currentUserId:
+                                                      widget.currentUserId,
+                                                  path: widget.path,
+                                                  img: widget.img,
+                                                  userName1: widget.userName,
+                                                  userId: widget.userId,
+                                                  myUser: widget.myuser,
+                                                  userImage: widget
+                                                      .myuser.profilePhotoPath,
+                                                  userName: widget.userName,
+                                                )));
+                                  },
+                                  child: const Align(
+                                    alignment: Alignment.centerRight,
+                                    child: CircleAvatar(
+                                      backgroundColor: Colors.green,
+                                      radius: 30,
+                                      child: Icon(
+                                        Icons.videocam_rounded,
+                                        size: 40,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                GestureDetector(
+                                  onTap: () async {
+                                    bool newIsFavorite =
+                                        !isFavorite; // Toggle favorite status
+                                    int newLikes = likes +
+                                        (newIsFavorite
+                                            ? 1
+                                            : -1); // Update like count
+
+                                    try {
+                                      // Update Firestore with new favorite status and like count
+                                      _databaseSource.addFav(
+                                          otherUser.id, newLikes);
+                                      _databaseSource.addFav2(otherUser.id,
+                                          newIsFavorite.toString());
+
+                                      setState(() {
+                                        isFavorite = newIsFavorite;
+                                        likes = newLikes;
+                                      });
+
+                                      if (isFavorite) {
+                                        await addF(
+                                            myid, otherUser.id, "addF", index);
+                                        player
+                                            .setAsset('assets/audio/ting.mp3');
+                                        player.play();
+
+                                        Get.snackbar(
+                                          backgroundColor:
+                                              const Color(0xff607d8b),
+                                          snackPosition: SnackPosition.TOP,
+                                          duration: const Duration(seconds: 4),
+                                          "Favourites",
+                                          "${otherUser.name} is added to favorites.",
+                                        );
+                                      } else {
+                                        await addF(myid, otherUser.id,
+                                            "removeF", index);
+
+                                        Get.snackbar(
+                                          backgroundColor:
+                                              const Color(0xff607d8b),
+                                          snackPosition: SnackPosition.TOP,
+                                          duration: const Duration(seconds: 4),
+                                          "Favourites",
+                                          "${otherUser.name} is removed from favorites.",
+                                        );
+                                      }
+
+                                      // Close the dialog
+                                      Navigator.pop(context);
+                                    } catch (e) {
+                                      print("Error updating favorites: $e");
+                                    }
+                                  },
+                                  child: Icon(
+                                    isFavorite
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    color:
+                                        isFavorite ? Colors.red : Colors.white,
+                                    size: 60,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text('$likes'),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    String chatId = compareAndCombineIds(
+                                      widget.currentUserId,
+                                      widget.userId,
+                                    );
+                                    Message1 message = Message1(
+                                      epochTimeMs:
+                                          DateTime.now().millisecondsSinceEpoch,
+                                      seen: false,
+                                      senderId: myid,
+                                      text: "Say Hello 👋",
+                                      type: "text",
+                                    );
+                                    _databaseSource
+                                        .addChat(Chat(chatId, message));
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => MessageScreen(
+                                          chatId: chatId,
+                                          myUserId: widget.currentUserId,
+                                          otherUserId: widget.userId,
+                                          user: widget.myuser,
+                                          otherUserName: widget.userName,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: CircleAvatar(
+                                      backgroundColor: Colors.blue,
+                                      radius: 30,
+                                      child: const Icon(
+                                        Icons.chat,
+                                        size: 25,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                              ],
+                            )
                           ],
                         ),
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          DummyWaitingCallScreen(
-                                            story: widget.story,
-                                            storyId: widget.statusId,
-                                            currentUserId: widget.currentUserId,
-                                            path: widget.path,
-                                            img: widget.img,
-                                            userName1: widget.userName,
-                                            userId: widget.userId,
-                                            myUser: widget.myuser,
-                                            userImage:
-                                                widget.myuser.profilePhotoPath,
-                                            userName: widget.userName,
-                                          )));
-                            },
-                            child: const Align(
-                              alignment: Alignment.centerRight,
-                              child: CircleAvatar(
-                                backgroundColor: Colors.green,
-                                radius: 30,
-                                child: Icon(
-                                  Icons.videocam_rounded,
-                                  size: 40,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              // handleLikeOrDislike(story, widget.currentUserId);
-                            },
-                            child: Container(
-                              // No background color, just the icon
-                              child: Icon(
-                                Icons.favorite,
-                                color: Colors.red,
-                                size: 60, // Adjust the size as needed
-                              ),
-                            ),
-                          ),
-
-                          // SizedBox(height: 5),
-                          // Text(
-                          //   '${story.likes.length} Likes',
-                          //   style: TextStyle(
-                          //     color: Colors.white,
-                          //     fontSize: 16,
-                          //   ),
-                          // ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              String chatId = compareAndCombineIds(
-                                widget.currentUserId,
-                                widget.userId,
-                              );
-                              Message1 message = Message1(
-                                epochTimeMs:
-                                    DateTime.now().millisecondsSinceEpoch,
-                                seen: false,
-                                senderId: myid,
-                                text: "Say Hello 👋",
-                                type: "text",
-                              );
-                              _databaseSource.addChat(Chat(chatId, message));
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => MessageScreen(
-                                    chatId: chatId,
-                                    myUserId: widget.currentUserId,
-                                    otherUserId: widget.userId,
-                                    user: widget.myuser,
-                                    otherUserName: widget.userName,
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: CircleAvatar(
-                                backgroundColor: Colors.blue,
-                                radius: 30,
-                                child: const Icon(
-                                  Icons.chat,
-                                  size: 25,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
+                    );
+                  }
+                },
               ),
             );
           }

@@ -34,17 +34,16 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadIconState();
   }
 
- Future<void> _loadIconState() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  if (mounted) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        _onlineVisible = prefs.getBool('eyeIconState') ?? true;
+  Future<void> _loadIconState() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _onlineVisible = prefs.getBool('eyeIconState') ?? true;
+        });
       });
-    });
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -59,100 +58,97 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
     // country?.countryCode = "AL";
     return NestedScrollView(
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            automaticallyImplyLeading: false,
-            pinned: false,
-            backgroundColor: Theme.of(context).colorScheme.onPrimary,
-            floating: true,
-            forceElevated: innerBoxIsScrolled,
-            flexibleSpace: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Country Picker Icon or Flag
-                    CountryListPicker(context),
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          return <Widget>[
+            SliverAppBar(
+              automaticallyImplyLeading: false,
+              pinned: false,
+              backgroundColor: Theme.of(context).colorScheme.onPrimary,
+              floating: true,
+              forceElevated: innerBoxIsScrolled,
+              flexibleSpace: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Country Picker Icon or Flag
+                      CountryListPicker(context),
 
-                    // Expanded widget wraps the _buildTabText to allow flexible space for the texts
-                    Expanded(
-                      child: _buildTabText(),
-                    ),
-
-                    // Visibility Icon
-                    IconButton(
-                      icon: Icon(
-                        _onlineVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                        color: Colors.white,
+                      // Expanded widget wraps the _buildTabText to allow flexible space for the texts
+                      Expanded(
+                        child: _buildTabText(),
                       ),
-                      onPressed: () async {
-                        SharedPreferences prefs =
-                            await SharedPreferences.getInstance();
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          setState(() {
-                            _onlineVisible = !_onlineVisible;
-                            prefs.setBool('eyeIconState', _onlineVisible);
+
+                      // Visibility Icon
+                      IconButton(
+                        icon: Icon(
+                          _onlineVisible
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.white,
+                        ),
+                        onPressed: () async {
+                          SharedPreferences prefs =
+                              await SharedPreferences.getInstance();
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            setState(() {
+                              _onlineVisible = !_onlineVisible;
+                              prefs.setBool('eyeIconState', _onlineVisible);
+                            });
                           });
-                        });
 
-                        if (_onlineVisible) {
-                          await _databaseSource.updateStatus(
-                              widget.myuser.id, "online");
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                "Online",
-                                style: TextStyle(color: Colors.black),
-                                textAlign: TextAlign.center,
+                          if (_onlineVisible) {
+                            await _databaseSource.updateStatus(
+                                widget.myuser.id, "online");
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Online",
+                                  style: TextStyle(color: Colors.black),
+                                  textAlign: TextAlign.center,
+                                ),
+                                backgroundColor: Colors.greenAccent,
+                                behavior: SnackBarBehavior.floating,
+                                width: 200,
                               ),
-                              backgroundColor: Colors.greenAccent,
-                              behavior: SnackBarBehavior.floating,
-                              width: 200,
-                            ),
-                          );
-                        } else {
-                          await _databaseSource.updateStatus(
-                              widget.myuser.id, "offline");
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                "Offline",
-                                style: TextStyle(color: Colors.black),
-                                textAlign: TextAlign.center,
+                            );
+                          } else {
+                            await _databaseSource.updateStatus(
+                                widget.myuser.id, "offline");
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Offline",
+                                  style: TextStyle(color: Colors.black),
+                                  textAlign: TextAlign.center,
+                                ),
+                                backgroundColor: Colors.redAccent,
+                                behavior: SnackBarBehavior.floating,
+                                width: 200,
                               ),
-                              backgroundColor: Colors.redAccent,
-                              behavior: SnackBarBehavior.floating,
-                              width: 200,
-                            ),
-                          );
-                        }
-                      },
-                    )
-                  ],
-                )),
-          ),
-        ];
-      },
-      body:PageView.builder(
-  controller: _pageController,
-  onPageChanged: (index) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        _currentPage = index;
-      });
-    });
-  },
-  itemCount: pages.length,
-  itemBuilder: (context, index) {
-    return pages[index];
-  },
-)
-
-
-    );
+                            );
+                          }
+                        },
+                      )
+                    ],
+                  )),
+            ),
+          ];
+        },
+        body: PageView.builder(
+          controller: _pageController,
+          onPageChanged: (index) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              setState(() {
+                _currentPage = index;
+              });
+            });
+          },
+          itemCount: pages.length,
+          itemBuilder: (context, index) {
+            return pages[index];
+          },
+        ));
   }
 
   GestureDetector CountryListPicker(BuildContext context) {
@@ -161,14 +157,22 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           countryRename = null;
         });
+
+        // Detect if the theme is dark or light
+        bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
         showCountryPicker(
           context: context,
           countryListTheme: CountryListThemeData(
             flagSize: 25,
-            backgroundColor: Colors.white,
-            textStyle: const TextStyle(
+            backgroundColor: isDarkMode
+                ? Colors.black
+                : Colors.white, // Background based on theme
+            textStyle: TextStyle(
               fontSize: 16,
-              color: Colors.black, // Ensure the country names are black
+              color: isDarkMode
+                  ? Colors.white
+                  : Colors.black, // Text color based on theme
             ),
             bottomSheetHeight: 500,
             borderRadius: const BorderRadius.only(
@@ -177,34 +181,40 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             inputDecoration: InputDecoration(
               labelText: 'Search',
-              labelStyle: const TextStyle(
-                color: Colors.black, // Label text color black
+              labelStyle: TextStyle(
+                color: isDarkMode
+                    ? Colors.white70
+                    : Colors.black87, // Label text color
               ),
               hintText: 'Start typing to search',
-              hintStyle: const TextStyle(
-                color: Colors.black, // Hint text color black
+              hintStyle: TextStyle(
+                color: isDarkMode
+                    ? Colors.white54
+                    : Colors.black54, // Hint text color
               ),
-              prefixIcon: const Icon(
+              prefixIcon: Icon(
                 Icons.search,
-                color: Colors.black, // Search icon color black
+                color: isDarkMode
+                    ? Colors.white
+                    : Colors.black, // Search icon color
               ),
               border: OutlineInputBorder(
                 borderSide: BorderSide(
                   color: const Color(0xFF8C98A8).withOpacity(0.2),
                 ),
               ),
-              // Add the style for the text entered in the search field
               contentPadding: const EdgeInsets.all(12.0),
-              // Set the text style for the search input
               focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(
-                  color: Colors.black.withOpacity(0.5),
+                  color: isDarkMode
+                      ? Colors.white.withOpacity(0.5)
+                      : Colors.black.withOpacity(0.5),
                 ),
               ),
             ),
-            // Set the style for the search input text
-            searchTextStyle: const TextStyle(
-              color: Colors.black, // Ensure the entered text color is black
+            searchTextStyle: TextStyle(
+              color:
+                  isDarkMode ? Colors.white : Colors.black, // Search text color
             ),
           ),
           onSelect: (Country country) {
@@ -219,7 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: countryRename == null
           ? const Icon(
               Icons.public,
-              color: Colors.white, // Set icon color to white
+              color: Colors.white, // Icon color
               size: 30,
             )
           : Text(
@@ -227,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.normal,
-                color: Colors.white, // Set text color to white
+                color: Colors.white, // Text color for selected country flag
               ),
             ),
     );

@@ -1,18 +1,16 @@
 import 'dart:convert';
-import 'dart:math';
+import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:smart_call_app/Screens/bottomBar/main_page.dart';
 import 'package:smart_call_app/Screens/call/agora/video_call_screen_1.dart';
 import 'package:smart_call_app/Screens/chat/chat_screen.dart';
 import 'package:smart_call_app/Util/app_url.dart';
@@ -28,6 +26,8 @@ import 'package:smart_call_app/db/entity/message.dart';
 import 'package:smart_call_app/db/entity/sentmessage.dart';
 import 'package:smart_call_app/db/entity/utils.dart';
 import 'package:smart_call_app/db/remote/firebase_database_source.dart';
+
+final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
 class ForYouPage extends StatefulWidget {
   final AppUser myuser;
@@ -163,72 +163,11 @@ class _ForYouPageState extends State<ForYouPage> {
     dataFireBase();
   }
 
-  // void initZego() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   String? storedUserId = prefs.getString('userId');
-  //   String? storedUserName = prefs.getString('userName');
-
-  //   if (kDebugMode) {
-  //     print("Id of the current user is $storedUserId");
-  //     print("Name of the current user is $storedUserName");
-  //   }
-
-  //   // Ensure userID and userName are not null before passing them to Zego
-  //   await ZegoUIKitPrebuiltCallInvitationService().init(
-  //       appID: Utils.appId,
-  //       appSign: Utils.appSignin,
-  //       userID: storedUserId ?? "defaultUserId",
-  //       userName: storedUserName ?? "defaultUserName",
-  //       notifyWhenAppRunningInBackgroundOrQuit: true,
-  //       androidNotificationConfig: ZegoAndroidNotificationConfig(
-  //         channelID: "ZegoUIKit",
-  //         channelName: "Call Notifications",
-  //         sound: "notification",
-  //         icon: "notification_icon",
-  //       ),
-  //       iOSNotificationConfig: ZegoIOSNotificationConfig(
-  //         isSandboxEnvironment: false,
-  //         systemCallingIconName: 'CallKitIcon',
-  //       ),
-  //       plugins: [ZegoUIKitSignalingPlugin()],
-  //       requireConfig: (ZegoCallInvitationData data) {
-  //         final config = (data.invitees.length > 1)
-  //             ? ZegoCallType.videoCall == data.type
-  //                 ? ZegoUIKitPrebuiltCallConfig.groupVideoCall()
-  //                 : ZegoUIKitPrebuiltCallConfig.groupVoiceCall()
-  //             : ZegoCallType.videoCall == data.type
-  //                 ? ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall()
-  //                 : ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall();
-
-  //         config.topMenuBarConfig.isVisible = true;
-  //         config.topMenuBarConfig.buttons
-  //             .insert(0, ZegoMenuBarButtonName.minimizingButton);
-  //         // Handle when the call ends
-
-  //         // Handle when the call ends
-  //         // config.onHangUpConfirmation = (context) async {
-  //         //   onCallEnd();
-  //         //   return Future.value(true);
-  //         // };
-
-  //         // // Handle when the call is declined
-  //         // config.onHangUp = () {
-  //         //   onCallDecline();
-  //         // };
-
-  //         return config;
-  //       });
-  // }
-
-  // void _uninitializeCallInvitationService() {
-  //   _callInvitationService.uninit();
-  // }
-
   String country = 'Country';
 
   String myid = '';
   List result = [];
-  AppUser? myuser;
+  AppUser? myuser; 
   late AudioPlayer player;
   final dateFormat = DateFormat('yyyy-MM-dd hh:mm');
 
@@ -395,403 +334,406 @@ class _ForYouPageState extends State<ForYouPage> {
     }
   }
 
-  showUserView(
-      BuildContext context,
-      String token,
-      String type,
-      String id,
-      img,
-      name,
-      country,
-      date,
-      age,
-      gender,
-      view,
-      like,
-      myid,
-      myuser,
-      otherId,
-      index,
-      temp1) {
-    int views = view + 1;
-    bool isFavorite =
-        temp1 == "true"; // Initially set based on the 'temp1' field
-    int likes = like; // Initialize likes counter
+bool isFavorite = false;
 
-    // Update views in Firestore
-    _databaseSource.addView(id, views);
+Future<void> checkIfFavorited(String userId, String otherId) async {
+  try {
+    final docSnapshot = await db
+        .collection('users')
+        .doc(userId)
+        .collection('favourites')
+        .doc(otherId)
+        .get();
 
-    showAnimatedDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              contentPadding: EdgeInsets.zero,
-              content: Container(
-                height: MediaQuery.of(context).size.height * 0.8,
-                width: MediaQuery.of(context).size.width * 0.9,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20),
-                        ),
-                        child: Image.network(
-                          img,
-                          fit: BoxFit.cover,
-                          height: MediaQuery.of(context).size.height * 0.3,
-                          width: MediaQuery.of(context).size.width,
-                        ),
+    if (mounted) { // Ensure the widget is still mounted
+      setState(() {
+        isFavorite = docSnapshot.exists;
+      });
+    }
+  } catch (e) {
+    print("Error fetching favorites: $e");
+  }
+}
+
+Future<void> showUserView(
+  BuildContext context,
+  String token,
+  String type,
+  String id,
+  img,
+  name,
+  country,
+  date,
+  age,
+  gender,
+  view,
+  like,
+  myid,
+  myuser,
+  otherId,
+  index,
+  temp1,
+) async {
+int views = view + 1;
+  int likes = like;
+
+  // Perform async check before showing the dialog
+  await checkIfFavorited(myid, otherId);
+
+  // Update views in Firestore
+  _databaseSource.addView(id, views);
+
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            contentPadding: EdgeInsets.zero,
+            content: Container(
+              height: MediaQuery.of(context).size.height * 0.8,
+              width: MediaQuery.of(context).size.width * 0.9,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: const BorderRadius.all(Radius.circular(20)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                      child: Image.network(
+                        img,
+                        fit: BoxFit.cover,
+                        height: MediaQuery.of(context).size.height * 0.3,
+                        width: MediaQuery.of(context).size.width,
                       ),
                     ),
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 15, vertical: 10),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            /// Name and Favorite Icon
-                            Expanded(
-                              flex: 2,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    flex: 2,
-                                    child: Text(
-                                      name,
-                                      style: const TextStyle(
-                                        fontSize: 26,
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 15, vertical: 10),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    name,
+                                    style: const TextStyle(
+                                      fontSize: 26,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
-                                  Expanded(
-                                    flex: 1,
-                                    child: Column(
-                                      children: [
-                                        GestureDetector(
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: Column(
+                                    children: [
+                                      GestureDetector(
                                           onTap: () async {
-                                            // Update the state safely after the build
-                                            WidgetsBinding.instance
-                                                .addPostFrameCallback((_) {
-                                              if (mounted) {
-                                                setState(() {
-                                                  isFavorite = !isFavorite;
-                                                  likes += isFavorite ? 1 : -1;
-                                                });
-                                              }
-                                            });
+                              bool newIsFavorite = !isFavorite;
+                              int newLikes = likes + (newIsFavorite ? 1 : -1);
 
-                                            // Firestore update logic
-                                            _databaseSource.addFav(id, likes);
-                                            _databaseSource.addFav2(
-                                                id, isFavorite.toString());
+                                          try {
+                                            // Update Firestore with new favorite status and like count
+                                           _databaseSource.addFav(id, newLikes);
+                                _databaseSource.addFav2(id, newIsFavorite.toString());
+
+                                if (mounted) {
+                                  setState(() {
+                                    isFavorite = newIsFavorite;
+                                    likes = newLikes;
+                                  });
+                                }
 
                                             if (isFavorite) {
-                                              await addF(
-                                                  myid, otherId, "addF", index);
-                                              player.setAsset(
-                                                  'assets/audio/ting.mp3');
+                                              await addF(myid, otherId, "addF", index);
+                                              player.setAsset('assets/audio/ting.mp3');
                                               player.play();
 
-                                              // Safely navigate after the update
-
                                               Get.snackbar(
-                                                backgroundColor:
-                                                    const Color(0xff607d8b),
-                                                snackPosition:
-                                                    SnackPosition.TOP,
-                                                duration:
-                                                    const Duration(seconds: 4),
+                                                backgroundColor: const Color(0xff607d8b),
+                                                snackPosition: SnackPosition.TOP,
+                                                duration: const Duration(seconds: 4),
                                                 "Favourites",
                                                 "$name is added to favorites.",
                                               );
                                             } else {
-                                              await addF(myid, otherId,
-                                                  "removeF", index);
-
-                                              // Safely navigate after the update
+                                              await addF(myid, otherId, "removeF", index);
 
                                               Get.snackbar(
-                                                backgroundColor:
-                                                    const Color(0xff607d8b),
-                                                snackPosition:
-                                                    SnackPosition.TOP,
-                                                duration:
-                                                    const Duration(seconds: 4),
+                                                backgroundColor: const Color(0xff607d8b),
+                                                snackPosition: SnackPosition.TOP,
+                                                duration: const Duration(seconds: 4),
                                                 "Favourites",
                                                 "$name is removed from favorites.",
                                               );
                                             }
-                                          },
-                                          child: Icon(
-                                            isFavorite
-                                                ? Icons.favorite
-                                                : Icons.favorite_border,
-                                            color: isFavorite
-                                                ? Colors.redAccent
-                                                : Theme.of(context)
-                                                    .colorScheme
-                                                    .primary,
-                                            size: 20,
-                                          ),
+
+                                            // Close the dialog
+                                            Navigator.pop(context);
+                                            _refresh();
+                                          } catch (e) {
+                                            print("Error updating favorites: $e");
+                                          }
+                                        },
+                                        child: Icon(
+                                         isFavorite ? Icons.favorite : Icons.favorite_border,
+                              color: isFavorite ? Colors.red : Colors.white,
                                         ),
-                                        Text(
-                                          showZeroIfNegative(likes).toString(),
-                                          style: const TextStyle(fontSize: 16),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                                      )
 
-                            /// Country
-                            Expanded(
-                              flex: 1,
-                              child: Row(
-                                children: [
-                                  Text(countryCodeToEmoji(country)),
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
-                                  Text(
-                                    Country.tryParse(country)!.name,
-                                    style: const TextStyle(fontSize: 20),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: Row(
-                                children: [
-                                  Text(
-                                    date,
-                                    style: const TextStyle(fontSize: 18),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            /// Age
-                            Expanded(
-                              flex: 1,
-                              child: Row(
-                                children: [
-                                  const Text(
-                                    "Age: ",
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    "$age",
-                                    style: const TextStyle(fontSize: 20),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            /// Gender
-                            Expanded(
-                              flex: 1,
-                              child: Row(
-                                children: [
-                                  const Text(
-                                    "Gender: ",
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    "$gender",
-                                    style: const TextStyle(fontSize: 20),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            /// Buttons
-                            Expanded(
-                              flex: 2,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  GestureDetector(
-                                    onTap: () {
-                                      String chatId = compareAndCombineIds(
-                                        myid,
-                                        id,
-                                      );
-                                      Message1 message = Message1(
-                                        epochTimeMs: DateTime.now()
-                                            .millisecondsSinceEpoch,
-                                        seen: false,
-                                        senderId: myid,
-                                        text: "Say Hello 👋",
-                                        type: "text",
-                                      );
-                                      _databaseSource
-                                          .addChat(Chat(chatId, message));
-                                      chatBuddySent(myid, id, "Buddy Sent");
-                                      chatBuddyReceived(
-                                          id, myid, "Buddy received");
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) => MessageScreen(
-                                            gender: gender,
-                                            userType: type,
-                                            otherUserDeviceToken: token,
-                                            date: date,
-                                            age: age,
-                                            image: img,
-                                            country: country,
-                                            chatId:
-                                                compareAndCombineIds(myid, id),
-                                            myUserId: myid,
-                                            otherUserId: id,
-                                            otherUserName: name,
-                                            user: myuser,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    child: CircleAvatar(
-                                      backgroundColor:
-                                          Colors.blue.withOpacity(0.7),
-                                      radius: 30,
-                                      child: const Icon(
-                                        Icons.chat,
-                                        size: 25,
-                                        color: Colors.white,
+                                        ],
                                       ),
                                     ),
-                                  ),
-                                  type == "live"
-                                      ? GestureDetector(
-                                          onTap: () {
-                                            String chatId =
-                                                compareAndCombineIds(myid, id);
+                                  ],
+                                ),
+                              ),
 
-                                            _startCall(
-                                                "video", chatId, myid, id);
+                              /// Country
+                              Expanded(
+                                flex: 1,
+                                child: Row(
+                                  children: [
+                                    Text(countryCodeToEmoji(country)),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    Text(
+                                      Country.tryParse(country)!.name,
+                                      style: const TextStyle(fontSize: 20),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      date,
+                                      style: const TextStyle(fontSize: 18),
+                                    ),
+                                  ],
+                                ),
+                              ),
 
-                                            VideoCallFcm.sendCallNotification(
-                                                FirebaseAuth
-                                                        .instance
-                                                        .currentUser!
-                                                        .displayName ??
-                                                    "",
-                                                token,
-                                                "smart_call_app",
-                                                "007eJxTYKgqO6gXVnrxxLo9AacmXRbtsby4jPHTR+cjm3q4Tj7q/qyrwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUtNVeLL0hkJFhQ6YWAyMUgvh8DMW5iUUl8cmJOTnxiQUFDAwAbtklag==",
-                                                name);
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    VideoCallScreen1(
-                                                  recieverName: name,
-                                                  agoraAppId:
-                                                      "18c4ec28d42d4dbda9159124878e6cbb",
-                                                  agoraAppToken:
-                                                      "007eJxTYKgqO6gXVnrxxLo9AacmXRbtsby4jPHTR+cjm3q4Tj7q/qyrwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyUtNVeLL0hkJFhQ6YWAyMUgvh8DMW5iUUl8cmJOTnxiQUFDAwAbtklag==",
-                                                  agoraAppCertificate:
-                                                      "064b1a009cc248afa93a01234876a4c9", // Use your dynamic token
-                                                  agoraAppChannelName:
-                                                      "smart_call_app",
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                          child: Container(
-                                            width: 45,
-                                            height: 45,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.green,
-                                            ),
-                                            child: const Center(
-                                              child: Icon(
-                                                Icons.videocam,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
+                              /// Age
+                              Expanded(
+                                flex: 1,
+                                child: Row(
+                                  children: [
+                                    const Text(
+                                      "Age: ",
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      "$age",
+                                      style: const TextStyle(fontSize: 20),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              /// Gender
+                              Expanded(
+                                flex: 1,
+                                child: Row(
+                                  children: [
+                                    const Text(
+                                      "Gender: ",
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      "$gender",
+                                      style: const TextStyle(fontSize: 20),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              /// Buttons
+                              Expanded(
+                                flex: 2,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        String chatId = compareAndCombineIds(
+                                          myid,
+                                          id,
+                                        );
+                                        Message1 message = Message1(
+                                          epochTimeMs: DateTime.now()
+                                              .millisecondsSinceEpoch,
+                                          seen: false,
+                                          senderId: myid,
+                                          text: "Say Hello 👋",
+                                          type: "text",
+                                        );
+                                        _databaseSource
+                                            .addChat(Chat(chatId, message));
+                                        chatBuddySent(myid, id, "Buddy Sent");
+                                        chatBuddyReceived(
+                                            id, myid, "Buddy received");
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) => MessageScreen(
+                                              gender: gender,
+                                              userType: type,
+                                              otherUserDeviceToken: token,
+                                              date: date,
+                                              age: age,
+                                              image: img,
+                                              country: country,
+                                              chatId: compareAndCombineIds(
+                                                  myid, id),
+                                              myUserId: myid,
+                                              otherUserId: id,
+                                              otherUserName: name,
+                                              user: myuser,
                                             ),
                                           ),
-                                        )
-                                      : type == "fake"
-                                          ? GestureDetector(
-                                              onTap: () {
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            DummyWaitingCallScreen(
-                                                              userImage: img,
-                                                              userName: name,
-                                                            )));
-                                              },
-                                              child: const Align(
-                                                alignment:
-                                                    Alignment.centerRight,
-                                                child: CircleAvatar(
-                                                  backgroundColor: Colors.green,
-                                                  radius: 30,
-                                                  child: Icon(
-                                                    Icons.videocam_rounded,
-                                                    size: 40,
-                                                    color: Colors.white,
+                                        );
+                                      },
+                                      child: CircleAvatar(
+                                        backgroundColor:
+                                            Colors.blue.withOpacity(0.7),
+                                        radius: 30,
+                                        child: const Icon(
+                                          Icons.chat,
+                                          size: 25,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                    type == "live"
+                                        ? GestureDetector(
+                                            onTap: () {
+                                              String chatId =
+                                                  compareAndCombineIds(
+                                                      myid, id);
+
+                                              _startCall(
+                                                  "video", chatId, myid, id);
+
+                                              VideoCallFcm.sendCallNotification(
+                                                  FirebaseAuth
+                                                          .instance
+                                                          .currentUser!
+                                                          .displayName ??
+                                                      "",
+                                                  token,
+                                                  "smart_call_app",
+                                                  "007eJxTYPjyK/hOyNEvRX47120/kVuo9zl24yfr88e/uM8sUFJpWsGrwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyU9JJNP70hkJHhU/w/JkYGCATx+RiKcxOLSuKTE3Ny4hMLChgYANnGJuc=",
+                                                  name);
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      VideoCallScreen1(
+                                                    recieverName: name,
+                                                    agoraAppId:
+                                                        "18c4ec28d42d4dbda9159124878e6cbb",
+                                                    agoraAppToken:
+                                                        "007eJxTYPjyK/hOyNEvRX47120/kVuo9zl24yfr88e/uM8sUFJpWsGrwGBokWySmmxkkWJilGKSkpSSaGloamloZGJhbpFqlpyU9JJNP70hkJHhU/w/JkYGCATx+RiKcxOLSuKTE3Ny4hMLChgYANnGJuc=",
+                                                    agoraAppCertificate:
+                                                        "064b1a009cc248afa93a01234876a4c9", // Use your dynamic token
+                                                    agoraAppChannelName:
+                                                        "smart_call_app",
                                                   ),
                                                 ),
+                                              );
+                                            },
+                                            child: Container(
+                                              width: 45,
+                                              height: 45,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Colors.green,
                                               ),
-                                            )
-                                          : Container(),
-                                ],
+                                              child: const Center(
+                                                child: Icon(
+                                                  Icons.videocam,
+                                                  size: 25,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        : type == "fake"
+                                            ? GestureDetector(
+                                                onTap: () {
+                                                  Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              DummyWaitingCallScreen(
+                                                                userImage: img,
+                                                                userName: name,
+                                                              )));
+                                                },
+                                                child: const Align(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: CircleAvatar(
+                                                    backgroundColor:
+                                                        Colors.green,
+                                                    radius: 30,
+                                                    child: Icon(
+                                                      Icons.videocam_rounded,
+                                                      size: 40,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                            : Container(),
+                                  ],
+                                ),
                               ),
-                            ),
 
-                            /// Date
-                          ],
+                              /// Date
+                            ],
+                          ),
                         ),
-                      ),
-                    )
-                  ],
+                      )
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
-        );
-      },
-      animationType: DialogTransitionType.size,
-      curve: Curves.fastOutSlowIn,
-      duration: const Duration(seconds: 1),
-    );
+              );
+            },
+          );
+        },
+        // animationType: DialogTransitionType.size,
+        // curve: Curves.fastOutSlowIn,
+        // duration: const Duration(seconds: 1),
+      );
+
   }
 
   void chatBuddySent(String myid, String otherid, String sent) async {
@@ -825,8 +767,10 @@ class _ForYouPageState extends State<ForYouPage> {
         }
 
         return Scaffold(
+          key: _scaffoldKey,
+
           // backgroundColor: Theme.of(context).colorScheme.surface,
-          backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+          backgroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
           body: RefreshIndicator(
             color: Theme.of(context).colorScheme.onPrimary,
             triggerMode: RefreshIndicatorTriggerMode.onEdge,

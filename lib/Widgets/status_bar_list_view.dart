@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 import 'package:get/get.dart';
@@ -8,13 +10,12 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:skeletons/skeletons.dart';
-import 'package:smart_call_app/Screens/bottomBar/main_page.dart';
+import 'package:smart_call_app/Screens/call/agora/video_call_screen_1.dart';
 import 'package:smart_call_app/Util/app_url.dart';
-import 'package:smart_call_app/Widgets/call_with_timer.dart';
+import 'package:smart_call_app/Util/video_call_fcm.dart';
 import 'package:smart_call_app/Widgets/dummy_waiting_call_screen.dart';
 
 import '../Screens/chat/chat_screen.dart';
-import '../Util/constants.dart';
 import '../db/entity/app_user.dart';
 import '../db/entity/chat.dart';
 import '../db/entity/fvrt.dart';
@@ -27,15 +28,58 @@ import 'country_to_flag.dart';
 class StatusBarListView extends StatefulWidget {
   final List fakeUser;
   final AppUser myuser;
+  final Future<void> onFavoriteChange; // Callback function to notify parent
 
   const StatusBarListView(
-      {super.key, required this.fakeUser, required this.myuser});
+      {super.key,
+      required this.fakeUser,
+      required this.myuser,
+      required this.onFavoriteChange});
 
   @override
   State<StatusBarListView> createState() => _StatusBarListViewState();
 }
 
 class _StatusBarListViewState extends State<StatusBarListView> {
+  InterstitialAd? _interstitialAd;
+  bool _isAdLoaded1 = false;
+
+  void _startCall(String callType, String chatId, String currentUserId,
+      String otherUserId) {
+    if (kDebugMode) {
+      print("The id of the current user is $currentUserId");
+      print("The id of the other user is $otherUserId");
+      print("The chat id is $chatId");
+      print("The call type is $callType");
+    }
+    _databaseSource.storeCallInfo(
+      chatId: chatId,
+      myUserId: currentUserId,
+      otherUserId: otherUserId,
+      callType: callType,
+      callStatus: "Started",
+      isIncoming: false,
+    );
+  }
+
+  void onCallEnd() {
+    if (_isAdLoaded1 && _interstitialAd != null) {
+      _interstitialAd!.show();
+      _interstitialAd = null; // Clear the current ad
+      _isAdLoaded1 = false;
+      _initializeAd(); // Load a new ad for the next call
+    }
+  }
+
+  void onCallDecline() {
+    if (_isAdLoaded1 && _interstitialAd != null) {
+      _interstitialAd!.show();
+      _interstitialAd = null; // Clear the current ad
+      _isAdLoaded1 = false;
+      _initializeAd(); // Load a new ad for the next call
+    }
+  }
+
   @override
   void initState() {
     player = AudioPlayer();
@@ -47,7 +91,6 @@ class _StatusBarListViewState extends State<StatusBarListView> {
   late AudioPlayer player;
   final dateFormat = DateFormat('yyyy-MM-dd hh:mm');
 
-  InterstitialAd? _interstitialAd;
   bool _isAdLoaded = false;
 
   initAd() {
@@ -62,6 +105,23 @@ class _StatusBarListViewState extends State<StatusBarListView> {
       ),
     );
     _interstitialAd!.show();
+  }
+
+  void _initializeAd() {
+    InterstitialAd.load(
+      adUnitId: AppUrls.interstitialAdID,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (InterstitialAd ad) {
+          _interstitialAd = ad;
+          _isAdLoaded1 = true;
+        },
+        onAdFailedToLoad: (LoadAdError error) {
+          debugPrint('InterstitialAd failed to load: $error');
+          _isAdLoaded1 = false;
+        },
+      ),
+    );
   }
 
   void onAdLoaded(InterstitialAd ad) {
@@ -84,6 +144,7 @@ class _StatusBarListViewState extends State<StatusBarListView> {
               onTap: () {
                 initAd();
                 showUserView(
+                  widget.fakeUser[index].token,
                   context,
                   widget.fakeUser[index].type,
                   widget.fakeUser[index].id,
@@ -147,31 +208,6 @@ class _StatusBarListViewState extends State<StatusBarListView> {
     );
   }
 
-  /*
-  * ? null
-                                        : () {
-                                            addF(myid, otherId, "addF", index);
-                                            int likes;
-                                            likes = like + 1;
-                                            _databaseSource.addFav(id, likes);
-                                            player.play();
-                                            setState(() {
-                                              fvtVisible = !fvtVisible;
-                                            });
-                                          },
-                                          *
-                                          * ZegoSendCallInvitationButton(
-                                isVideoCall: true,
-                                resourceID: "hafeez_khan",
-                                //You need to use the resourceID that you created in the subsequent steps. Please continue reading this document.
-                                invitees: [
-                                  ZegoUIKitUser(
-                                    id: id,
-                                    name: name,
-                                  )
-                                ])
-                                * */
-
   void chatBuddySent(String myid, String otherid, String sent) async {
     _databaseSource.addChatBuddy(myid, SentMessage(otherid, sent));
   }
@@ -189,8 +225,24 @@ class _StatusBarListViewState extends State<StatusBarListView> {
     }
   }
 
-  showUserView(BuildContext context, String type, String id, img, name, country,
-      date, age, gender, view, like, myid, myuser, otherId, index, temp1) {
+  showUserView(
+      String token,
+      BuildContext context,
+      String type,
+      String id,
+      img,
+      name,
+      country,
+      date,
+      age,
+      gender,
+      view,
+      like,
+      myid,
+      myuser,
+      otherId,
+      index,
+      temp1) {
     int views;
     bool isFavorite =
         temp1 == "true"; // Initially set based on the 'temp1' field
@@ -271,57 +323,64 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                                       children: [
                                         GestureDetector(
                                           onTap: () async {
-                                            setState(() {
-                                              isFavorite = !isFavorite;
-                                              likes += isFavorite ? 1 : -1;
-                                            });
+                                            bool newIsFavorite =
+                                                !isFavorite; // Toggle favorite status
+                                            int newLikes = likes +
+                                                (newIsFavorite
+                                                    ? 1
+                                                    : -1); // Update like count
 
-                                            // Update the like count and favorite status in Firestore
-                                            _databaseSource.addFav(id, likes);
-                                            _databaseSource.addFav2(
-                                                id, isFavorite.toString());
+                                            try {
+                                              // Update Firestore with new favorite status and like count
+                                              _databaseSource.addFav(
+                                                  id, newLikes);
+                                              _databaseSource.addFav2(
+                                                  id, newIsFavorite.toString());
 
-                                            if (isFavorite) {
-                                              await addF(
-                                                  myid, otherId, "addF", index);
-                                              player.setAsset(
-                                                  'assets/audio/ting.mp3');
-                                              player.play();
-
-                                              // Dismiss the dialog
-                                              Navigator.pop(context);
-
-                                              // Show Snackbar after the dialog is dismissed
-                                              Future.delayed(Duration.zero, () {
-                                                Get.snackbar(
-                                                    backgroundColor:
-                                                        const Color(0xff607d8b),
-                                                    snackPosition:
-                                                        SnackPosition.TOP,
-                                                    duration:
-                                                        Duration(seconds: 4),
-                                                    "Favourites",
-                                                    "$name is added in the favorites by you. See in the Favorite tab");
+                                              setState(() {
+                                                isFavorite = newIsFavorite;
+                                                likes = newLikes;
                                               });
-                                            } else {
-                                              await addF(myid, otherId,
-                                                  "removeF", index);
 
-                                              // Dismiss the dialog
-                                              Navigator.pop(context);
+                                              if (isFavorite) {
+                                                await addF(myid, otherId,
+                                                    "addF", index);
+                                                player.setAsset(
+                                                    'assets/audio/ting.mp3');
+                                                player.play();
 
-                                              // Show Snackbar after the dialog is dismissed
-                                              Future.delayed(Duration.zero, () {
                                                 Get.snackbar(
-                                                    backgroundColor:
-                                                        const Color(0xff607d8b),
-                                                    snackPosition:
-                                                        SnackPosition.TOP,
-                                                    duration: const Duration(
-                                                        seconds: 4),
-                                                    "Favourites",
-                                                    "$name is removed from the favorites by you.");
-                                              });
+                                                  backgroundColor:
+                                                      const Color(0xff607d8b),
+                                                  snackPosition:
+                                                      SnackPosition.TOP,
+                                                  duration: const Duration(
+                                                      seconds: 4),
+                                                  "Favourites",
+                                                  "$name is added to favorites.",
+                                                );
+                                              } else {
+                                                await addF(myid, otherId,
+                                                    "removeF", index);
+
+                                                Get.snackbar(
+                                                  backgroundColor:
+                                                      const Color(0xff607d8b),
+                                                  snackPosition:
+                                                      SnackPosition.TOP,
+                                                  duration: const Duration(
+                                                      seconds: 4),
+                                                  "Favourites",
+                                                  "$name is removed from favorites.",
+                                                );
+                                              }
+                                              widget
+                                                  .onFavoriteChange; // Call the callback to update parent
+
+                                              Navigator.pop(context);
+                                            } catch (e) {
+                                              print(
+                                                  "Error updating favorites: $e");
                                             }
                                           },
                                           child: Icon(
@@ -329,17 +388,12 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                                                 ? Icons.favorite
                                                 : Icons.favorite_border,
                                             color: isFavorite
-                                                ? Colors.redAccent
-                                                : Theme.of(context)
-                                                    .colorScheme
-                                                    .primary,
-                                            size: 20,
+                                                ? Colors.red
+                                                : Colors.white,
                                           ),
                                         ),
-                                        Text(
-                                          showZeroIfNegative(likes).toString(),
-                                          style: const TextStyle(fontSize: 16),
-                                        ),
+                                        const SizedBox(height: 8),
+                                        Text('$likes'),
                                       ],
                                     ),
                                   ),
@@ -427,13 +481,14 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                                         myid,
                                         id,
                                       );
-                                        Message1 message = Message1(
-                                      epochTimeMs: DateTime.now().millisecondsSinceEpoch,
-                                      seen: false,
-                                      senderId: myid,
-                                      text: "Say Hello 👋",
-                                      type: "text",
-                                    );
+                                      Message1 message = Message1(
+                                        epochTimeMs: DateTime.now()
+                                            .millisecondsSinceEpoch,
+                                        seen: false,
+                                        senderId: myid,
+                                        text: "Say Hello 👋",
+                                        type: "text",
+                                      );
                                       _databaseSource
                                           .addChat(Chat(chatId, message));
                                       chatBuddySent(myid, id, "Buddy Sent");
@@ -469,60 +524,86 @@ class _StatusBarListViewState extends State<StatusBarListView> {
                                       ),
                                     ),
                                   ),
-                                  // type == "live"
-                                  //     ? SizedBox(
-                                  //         width: 90.0, // Set your desired width
-                                  //         height:
-                                  //             90.0, // Set your desired height
-                                  //         child: FittedBox(
-                                  //           fit: BoxFit.cover,
-                                  //           child: ZegoSendCallInvitationButton(
-                                  //             isVideoCall: true,
-                                  //             resourceID: "zegouikit_call",
-                                  //             invitees: [
-                                  //               ZegoUIKitUser(
-                                  //                 id: id,
-                                  //                 name: name,
-                                  //               ),
-                                  //             ],
-                                  //             icon: ButtonIcon(
-                                  //                 icon: const Icon(
-                                  //                   Icons.videocam_rounded,
-                                  //                   size: 50,
-                                  //                   color: Colors.white,
-                                  //                 ),
-                                  //                 backgroundColor:
-                                  //                     Colors.green),
-                                  //           ),
-                                  //         ),
-                                  //       )
-                                  //     : type == "fake"
-                                  //         ? GestureDetector(
-                                  //             onTap: () {
-                                  //               Navigator.push(
-                                  //                   context,
-                                  //                   MaterialPageRoute(
-                                  //                       builder: (context) =>
-                                  //                           DummyWaitingCallScreen(
-                                  //                             userImage: img,
-                                  //                             userName: name,
-                                  //                           )));
-                                  //             },
-                                  //             child: const Align(
-                                  //               alignment:
-                                  //                   Alignment.centerRight,
-                                  //               child: CircleAvatar(
-                                  //                 backgroundColor: Colors.green,
-                                  //                 radius: 30,
-                                  //                 child: Icon(
-                                  //                   Icons.videocam_rounded,
-                                  //                   size: 40,
-                                  //                   color: Colors.white,
-                                  //                 ),
-                                  //               ),
-                                  //             ),
-                                  //           )
-                                  //         : Container(),
+                                  type == "live"
+                                      ? GestureDetector(
+                                          onTap: () {
+                                            String chatId =
+                                                compareAndCombineIds(myid, id);
+
+                                            _startCall(
+                                                "video", chatId, myid, id);
+
+                                            VideoCallFcm.sendCallNotification(
+                                                FirebaseAuth
+                                                        .instance
+                                                        .currentUser!
+                                                        .displayName ??
+                                                    "",
+                                                token,
+                                                "smart_call_app",
+                                                "007eJxTYGhc2MU2h+PQ9Yfb5tWdELZZeFrAYwNr7umsQ83G2x9zuJ9TYDC0SDZJTTaySDExSjFJSUpJtDQ0tTQ0MrEwt0g1S05KCmA2Sm8IZGS4yPeCkZEBAkF8Pobi3MSikvjkxJyc+MSCAgYGALgzI2c=",
+                                                name);
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    VideoCallScreen1(
+                                                  recieverName: name,
+                                                  agoraAppId:
+                                                      "18c4ec28d42d4dbda9159124878e6cbb",
+                                                  agoraAppToken:
+                                                      "007eJxTYGhc2MU2h+PQ9Yfb5tWdELZZeFrAYwNr7umsQ83G2x9zuJ9TYDC0SDZJTTaySDExSjFJSUpJtDQ0tTQ0MrEwt0g1S05KCmA2Sm8IZGS4yPeCkZEBAkF8Pobi3MSikvjkxJyc+MSCAgYGALgzI2c=",
+                                                  agoraAppCertificate:
+                                                      "064b1a009cc248afa93a01234876a4c9", // Use your dynamic token
+                                                  agoraAppChannelName:
+                                                      "smart_call_app",
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          child: Container(
+                                            width: 45,
+                                            height: 45,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.green,
+                                            ),
+                                            child: const Center(
+                                              child: Icon(
+                                                Icons.videocam,
+                                                size: 25,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : type == "fake"
+                                          ? GestureDetector(
+                                              onTap: () {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            DummyWaitingCallScreen(
+                                                              userImage: img,
+                                                              userName: name,
+                                                            )));
+                                              },
+                                              child: const Align(
+                                                alignment:
+                                                    Alignment.centerRight,
+                                                child: CircleAvatar(
+                                                  backgroundColor: Colors.green,
+                                                  radius: 30,
+                                                  child: Icon(
+                                                    Icons.videocam_rounded,
+                                                    size: 40,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          : Container(),
                                 ],
                               ),
                             ),
